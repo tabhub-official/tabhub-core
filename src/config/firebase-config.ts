@@ -1,18 +1,13 @@
-import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore/lite';
+import * as admin from 'firebase-admin';
+import * as adminSdkConfig from '../config/admin-sdk-config.json';
 
-const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY,
-  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.FIREBASE_STORAGE_BUCKET,
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.FIREBASE_MESSAGE_SENDER_ID,
-  appId: process.env.FIREBASE_APP_ID,
-  measurementId: 'G-HK0CZ7JP6P',
-};
+// Initialize firebase admin SDK
+admin.initializeApp({
+  credential: admin.credential.cert(adminSdkConfig as any),
+});
 
-export const firebaseApp = initializeApp(firebaseConfig);
-export const db = getFirestore(firebaseApp);
+export const db = admin.firestore();
+export const auth = admin.auth();
 
 export const enum CollectionRegistry {
   Workspace = 'workspaces',

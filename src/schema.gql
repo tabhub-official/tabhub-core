@@ -1,0 +1,42 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+"""Visibility used for repository and workspace"""
+enum AccessVisibility {
+  Private
+  Public
+}
+
+type AppResponse {
+  message: String!
+  type: ResponseType!
+}
+
+input CreateNewWorkspaceArgs {
+  description: String
+  name: String!
+  visibility: Float! = 0
+}
+
+type Mutation {
+  createNewWorkspace(createNewWorksapceArgs: CreateNewWorkspaceArgs!): AppResponse!
+}
+
+type Query {
+  getAllWorkspaces: [Workspace!]!
+}
+
+enum ResponseType {
+  Error
+  Success
+}
+
+type Workspace {
+  created_date: Float!
+  description: String
+  id: String!
+  name: String!
+  updated_date: Float!
+  visibility: AccessVisibility!
+}

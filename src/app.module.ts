@@ -4,12 +4,13 @@ import { AppService } from './app.service';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { GraphQLModule } from '@nestjs/graphql';
 import { WorkspaceResolver, WorkspaceService } from './workspace';
-import { FirebaseService } from './firebase/firebase.service';
 import { ConfigModule } from '@nestjs/config';
+import { join } from 'path';
 
 const graphQLConfiguration = GraphQLModule.forRoot<ApolloDriverConfig>({
   driver: ApolloDriver,
-  autoSchemaFile: true,
+  autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+  sortSchema: true,
 });
 
 const generalConfiguration = ConfigModule.forRoot({
@@ -19,6 +20,6 @@ const generalConfiguration = ConfigModule.forRoot({
 @Module({
   imports: [graphQLConfiguration, generalConfiguration],
   controllers: [AppController],
-  providers: [WorkspaceResolver, WorkspaceService, AppService, FirebaseService],
+  providers: [WorkspaceResolver, WorkspaceService, AppService],
 })
 export class AppModule {}

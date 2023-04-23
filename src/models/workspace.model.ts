@@ -1,11 +1,11 @@
-import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { Field, ObjectType } from '@nestjs/graphql';
 import * as moment from 'moment';
 import { AccessVisibility } from './accessibility';
 
 @ObjectType()
 export class Workspace {
-  @Field(() => Int)
-  id: number;
+  @Field()
+  id: string;
 
   @Field({ nullable: false, defaultValue: moment().unix() })
   created_date: number;
@@ -19,6 +19,6 @@ export class Workspace {
   @Field({ nullable: true })
   description?: string;
 
-  @Field({ defaultValue: AccessVisibility.Private })
-  visibility: number;
+  @Field(() => AccessVisibility, {defaultValue: AccessVisibility.Private})
+  visibility: AccessVisibility;
 }

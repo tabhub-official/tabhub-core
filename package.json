@@ -30,11 +30,13 @@
     "@nestjs/platform-express": "^9.0.0",
     "dotenv": "^16.0.3",
     "firebase": "^9.20.0",
+    "firebase-admin": "^11.7.0",
     "graphql": "^16.6.0",
     "moment": "^2.29.4",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^7.2.0"
+    "rxjs": "^7.2.0",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",
