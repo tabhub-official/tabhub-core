@@ -28,8 +28,7 @@ export class ChangeWorkspaceVisibilityArgs {
 }
 
 @InputType()
-export class UpdateWorkspaceArgs extends PartialType(Workspace, InputType) {
-}
+export class UpdateWorkspaceArgs extends PartialType(Workspace, InputType) {}
 
 @InputType()
 export class DeleteWorkspaceArgs {

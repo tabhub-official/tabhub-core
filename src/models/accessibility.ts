@@ -1,4 +1,4 @@
-import { registerEnumType } from "@nestjs/graphql";
+import { registerEnumType } from '@nestjs/graphql';
 
 export enum AccessVisibility {
   Private = 0,
@@ -7,5 +7,5 @@ export enum AccessVisibility {
 
 registerEnumType(AccessVisibility, {
   name: 'AccessVisibility',
-  description: "Visibility used for repository and workspace"
+  description: 'Visibility used for repository and workspace',
 });

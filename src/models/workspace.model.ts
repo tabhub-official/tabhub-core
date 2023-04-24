@@ -16,7 +16,6 @@ export class Workspace {
   updated_date: number;
 
   @MinLength(1)
-  @MinLength(3)
   @MaxLength(40)
   @Field({ nullable: false })
   name: string;
