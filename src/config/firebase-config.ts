@@ -11,4 +11,7 @@ export const auth = admin.auth();
 
 export const enum CollectionRegistry {
   Workspace = 'workspaces',
+  User = "users",
+  Repository = 'repositories',
+  RepositoryTab = 'repository-tabs'
 }

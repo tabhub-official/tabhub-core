@@ -1,7 +1,13 @@
 import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 import { WorkspaceService } from './workspace.service';
 import { AppResponse, ResponseType, Workspace } from 'src/models';
-import { ChangeWorkspaceVisibilityArgs, CreateNewWorkspaceArgs, DeleteWorkspaceArgs, GetWorkspaceByIdArgs, UpdateWorkspaceArgs } from 'src/dto/workspace';
+import {
+  ChangeWorkspaceVisibilityArgs,
+  CreateNewWorkspaceArgs,
+  DeleteWorkspaceArgs,
+  GetWorkspaceByIdArgs,
+  UpdateWorkspaceArgs,
+} from 'src/dto/workspace';
 
 @Resolver(() => Workspace)
 export class WorkspaceResolver {
@@ -10,7 +16,7 @@ export class WorkspaceResolver {
   @Query(() => [Workspace])
   async getAllWorkspaces() {
     try {
-      return this.workspaceService.getAllWorkspaces();
+      return this.workspaceService.getAllData();
     } catch (error: any) {
       throw new Error(error);
     }
@@ -22,7 +28,7 @@ export class WorkspaceResolver {
   ): Promise<Workspace> {
     try {
       const { id } = args;
-      return this.workspaceService.getWorkspaceById(id);
+      return this.workspaceService.getDataById(id);
     } catch (error) {
       throw new Error(error);
     }
@@ -49,11 +55,11 @@ export class WorkspaceResolver {
 
   @Mutation(() => AppResponse)
   async updateWorkspace(
-     @Args('updateWorkspaceArgs') args: UpdateWorkspaceArgs
+    @Args('updateWorkspaceArgs') args: UpdateWorkspaceArgs
   ): Promise<AppResponse> {
     try {
       const { id, ...workspace } = args;
-      await this.workspaceService.updateWorkspace(id, workspace);
+      await this.workspaceService.updateData(id, workspace);
       return {
         message: `Successfully update workspace ${id}`,
         type: ResponseType.Success,
@@ -72,7 +78,7 @@ export class WorkspaceResolver {
   ): Promise<AppResponse> {
     try {
       const { visibility, id } = args;
-      await this.workspaceService.updateWorkspace(id, {
+      await this.workspaceService.updateData(id, {
         visibility,
       });
       return {
@@ -93,7 +99,7 @@ export class WorkspaceResolver {
   ): Promise<AppResponse> {
     try {
       const { id } = args;
-      await this.workspaceService.deleteWorkspace(id);
+      await this.workspaceService.deleteData(id);
       return {
         message: `Successfully delete workspace ${id}`,
         type: ResponseType.Success,
