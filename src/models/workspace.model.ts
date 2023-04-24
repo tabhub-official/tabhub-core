@@ -1,10 +1,12 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import * as moment from 'moment';
 import { AccessVisibility } from './accessibility';
+import { MaxLength, MinLength, IsUUID, ArrayNotEmpty } from 'class-validator';
 
 @ObjectType()
 export class Workspace {
   @Field()
+  @IsUUID('4')
   id: string;
 
   @Field({ nullable: false, defaultValue: moment().unix() })
@@ -13,12 +15,23 @@ export class Workspace {
   @Field({ nullable: false, defaultValue: moment().unix() })
   updated_date: number;
 
+  @MinLength(1)
+  @MinLength(3)
+  @MaxLength(40)
   @Field({ nullable: false })
   name: string;
 
-  @Field({ nullable: true })
+  @MaxLength(500)
+  @Field({ nullable: true, defaultValue: '' })
   description?: string;
 
-  @Field(() => AccessVisibility, {defaultValue: AccessVisibility.Private})
+  @Field(() => AccessVisibility, { defaultValue: AccessVisibility.Private })
   visibility: AccessVisibility;
+
+  @ArrayNotEmpty()
+  @Field(() => [String], { defaultValue: [] })
+  members: string[];
+
+  @Field(() => [String], { defaultValue: [] })
+  repositories: string[];
 }

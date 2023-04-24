@@ -13,18 +13,35 @@ type AppResponse {
   type: ResponseType!
 }
 
+input ChangeWorkspaceVisibilityArgs {
+  id: String!
+  visibility: AccessVisibility!
+}
+
 input CreateNewWorkspaceArgs {
   description: String
   name: String!
   visibility: Float! = 0
 }
 
+input DeleteWorkspaceArgs {
+  id: String!
+}
+
+input GetWorkspaceByIdArgs {
+  id: String!
+}
+
 type Mutation {
+  changeWorkspaceVisibility(changeWorkspaceVisibilityArgs: ChangeWorkspaceVisibilityArgs!): AppResponse!
   createNewWorkspace(createNewWorksapceArgs: CreateNewWorkspaceArgs!): AppResponse!
+  deleteWorksace(deleteWorkspaceArgs: DeleteWorkspaceArgs!): AppResponse!
+  updateWorkspace(updateWorkspaceArgs: UpdateWorkspaceArgs!): AppResponse!
 }
 
 type Query {
   getAllWorkspaces: [Workspace!]!
+  getWorkspaceById(getWorkspaceByIdArgs: GetWorkspaceByIdArgs!): Workspace!
 }
 
 enum ResponseType {
@@ -32,11 +49,24 @@ enum ResponseType {
   Success
 }
 
+input UpdateWorkspaceArgs {
+  created_date: Float = 1682296933
+  description: String = ""
+  id: String
+  members: [String!] = []
+  name: String
+  repositories: [String!] = []
+  updated_date: Float = 1682296933
+  visibility: AccessVisibility = Private
+}
+
 type Workspace {
   created_date: Float!
   description: String
   id: String!
+  members: [String!]!
   name: String!
+  repositories: [String!]!
   updated_date: Float!
   visibility: AccessVisibility!
 }

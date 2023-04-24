@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { GraphQLModule } from '@nestjs/graphql';
-import { WorkspaceResolver, WorkspaceService } from './workspace';
+import { WorkspaceResolver, WorkspaceService } from './modules';
 import { ConfigModule } from '@nestjs/config';
 import { join } from 'path';
 
