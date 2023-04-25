@@ -20,6 +20,10 @@ export class Workspace {
   @Field({ nullable: false })
   name: string;
 
+  @Field()
+  @IsUUID('4')
+  owner: string;
+
   @MaxLength(500)
   @Field({ nullable: true, defaultValue: '' })
   description?: string;
