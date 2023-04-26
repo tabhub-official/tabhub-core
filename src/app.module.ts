@@ -21,7 +21,7 @@ const graphQLConfiguration = GraphQLModule.forRoot<ApolloDriverConfig>({
   sortSchema: true,
   context: context => {
     let req = context.req;
-    const token = req.headers.authorization || "";
+    const token = req.headers.authorization || '';
     console.log(token);
     if (context.connection) {
       req = context.connection.context.req;

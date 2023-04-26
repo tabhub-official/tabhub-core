@@ -2,7 +2,7 @@ import { Field, InputType, ObjectType } from '@nestjs/graphql';
 import { IsUUID } from 'class-validator';
 
 @ObjectType()
-@InputType("RepositoryTabInput")
+@InputType('RepositoryTabInput')
 export class RepositoryTab {
   @IsUUID('4')
   @Field()
