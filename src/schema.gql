@@ -50,13 +50,14 @@ enum ResponseType {
 }
 
 input UpdateWorkspaceArgs {
-  created_date: Float = 1682450941
+  created_date: Float = 1682520714
   description: String = ""
   id: String
   members: [String!] = []
   name: String
+  owner: String
   repositories: [String!] = []
-  updated_date: Float = 1682450941
+  updated_date: Float = 1682520714
   visibility: AccessVisibility = Private
 }
 
@@ -66,6 +67,7 @@ type Workspace {
   id: String!
   members: [String!]!
   name: String!
+  owner: String!
   repositories: [String!]!
   updated_date: Float!
   visibility: AccessVisibility!
