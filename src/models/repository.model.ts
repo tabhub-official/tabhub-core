@@ -1,6 +1,7 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import * as moment from 'moment';
 import { MinLength, MaxLength, IsUUID, IsEmail, ArrayNotEmpty } from 'class-validator';
+import { RepositoryTab } from './repository-tab.model';
 
 @ObjectType()
 export class Repository {
@@ -23,6 +24,7 @@ export class Repository {
   @Field({ nullable: true })
   description?: string;
 
+  @IsUUID('4')
   @IsEmail()
   @Field(() => String, { nullable: false })
   owner: string;
@@ -34,9 +36,13 @@ export class Repository {
   favorites: string[];
 
   @ArrayNotEmpty()
-  @Field(() => [String], { defaultValue: [], description: 'List of repository tab IDs' })
-  tabs: string[];
+  @Field(() => [RepositoryTab], { defaultValue: [], description: 'List of repository tab IDs' })
+  tabs: RepositoryTab[];
 
   @Field(() => [String], { defaultValue: [], description: 'List of repository tabs IDs' })
   pinned: string[];
+
+  @IsUUID('4')
+  @Field(() => String, { nullable: false })
+  workspaceId: string;
 }

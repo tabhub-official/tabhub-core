@@ -14,7 +14,7 @@ export class User {
   @Field({ nullable: false, defaultValue: moment().unix() })
   updated_date: number;
 
-  @MinLength(1)
+  @MinLength(1) r;
   @MaxLength(25)
   @Field({ nullable: false })
   username: string;

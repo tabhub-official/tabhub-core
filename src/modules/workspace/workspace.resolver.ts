@@ -40,7 +40,8 @@ export class WorkspaceResolver {
   ): Promise<AppResponse> {
     try {
       const { name, visibility, description } = args;
-      await this.workspaceService.createNewWorkspace(name, description, visibility);
+      // TODO Requires auth middlware
+      await this.workspaceService.createNewWorkspace(name, description, '', visibility);
       return {
         message: `Successfully create new workspace ${name}`,
         type: ResponseType.Success,

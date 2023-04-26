@@ -10,15 +10,27 @@ export class RepositoryTabService extends BaseCRUDService<RepositoryTab> {
     super(CollectionRegistry.RepositoryTab);
   }
 
-  createNewRepositoryTab = async (url: string, name?: string): Promise<void> => {
+  createManyRepositoryTab = async (
+    tabs: { url: string; name?: string }[]
+  ): Promise<RepositoryTab[]> => {
+    const manyData = [];
+    for (const tab of tabs) {
+      const data = await this.createNewRepositoryTab(tab.url, tab.name);
+      manyData.push(data);
+    }
+    return manyData;
+  };
+
+  createNewRepositoryTab = async (url: string, name?: string): Promise<RepositoryTab> => {
     const _collection = await db.collection(this.collectionRegistry);
-    const newRepositoryTab = uuidV4();
-    const data: Partial<RepositoryTab> = {
-      id: newRepositoryTab,
+    const newRepositoryTabId = uuidV4();
+    const data: RepositoryTab = {
+      id: newRepositoryTabId,
       name,
       url,
       pinned: [],
     };
-    await _collection.doc(newRepositoryTab).create(data);
+    await _collection.doc(newRepositoryTabId).create(data);
+    return data;
   };
 }

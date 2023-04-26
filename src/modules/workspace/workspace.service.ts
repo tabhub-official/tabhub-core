@@ -14,6 +14,7 @@ export class WorkspaceService extends BaseCRUDService<Workspace> {
   createNewWorkspace = async (
     name: string,
     description: string,
+    owner: string,
     visibility: AccessVisibility
   ): Promise<void> => {
     const _collection = await db.collection(CollectionRegistry.Workspace);
@@ -23,6 +24,7 @@ export class WorkspaceService extends BaseCRUDService<Workspace> {
       name,
       description,
       visibility: visibility,
+      owner,
     };
     await _collection.doc(workspaceId).create(data);
   };

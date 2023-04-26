@@ -1,7 +1,8 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, InputType, ObjectType } from '@nestjs/graphql';
 import { IsUUID } from 'class-validator';
 
 @ObjectType()
+@InputType("RepositoryTabInput")
 export class RepositoryTab {
   @IsUUID('4')
   @Field()
@@ -15,4 +16,7 @@ export class RepositoryTab {
 
   @Field(() => [String], { defaultValue: [], description: 'List of repository tabs IDs' })
   pinned: string[];
+
+  @Field(() => String, { nullable: true })
+  repositoryId?: string;
 }

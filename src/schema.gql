@@ -18,13 +18,42 @@ input ChangeWorkspaceVisibilityArgs {
   visibility: AccessVisibility!
 }
 
+input CreateNewRepositoryArgs {
+  description: String!
+  name: String!
+  tabs: [RepositoryTabAsInput!]!
+  workspaceId: String!
+}
+
+input CreateNewUserArgs {
+  email: String!
+  full_name: String!
+  username: String!
+}
+
 input CreateNewWorkspaceArgs {
   description: String
   name: String!
   visibility: Float! = 0
 }
 
+input DeleteRepositoryArgs {
+  id: String!
+}
+
+input DeleteUserArgs {
+  id: String!
+}
+
 input DeleteWorkspaceArgs {
+  id: String!
+}
+
+input GetRepositoryByIdArgs {
+  id: String!
+}
+
+input GetUserByIdArgs {
   id: String!
 }
 
@@ -34,14 +63,70 @@ input GetWorkspaceByIdArgs {
 
 type Mutation {
   changeWorkspaceVisibility(changeWorkspaceVisibilityArgs: ChangeWorkspaceVisibilityArgs!): AppResponse!
+  createNewRepository(createRepositoryArgs: CreateNewRepositoryArgs!): AppResponse!
+  createNewUser(createNewUserArgs: CreateNewUserArgs!): AppResponse!
   createNewWorkspace(createNewWorksapceArgs: CreateNewWorkspaceArgs!): AppResponse!
+  deleteRepository(deleteRepositoryArgs: DeleteRepositoryArgs!): AppResponse!
+  deleteUser(deleteUserArgs: DeleteUserArgs!): AppResponse!
   deleteWorksace(deleteWorkspaceArgs: DeleteWorkspaceArgs!): AppResponse!
+  updateRepository(updateRepositoryArgs: UpdateRepositoryArgs!): AppResponse!
+  updateUser(updateUserArgs: UpdateUserArgs!): AppResponse!
   updateWorkspace(updateWorkspaceArgs: UpdateWorkspaceArgs!): AppResponse!
 }
 
 type Query {
+  getAllRepositories: [Repository!]!
+  getAllUsers: [Workspace!]!
   getAllWorkspaces: [Workspace!]!
+  getRepositoryById(getRepositoryById: GetRepositoryByIdArgs!): Repository!
+  getUserById(getUserByIdArgs: GetUserByIdArgs!): Workspace!
   getWorkspaceById(getWorkspaceByIdArgs: GetWorkspaceByIdArgs!): Workspace!
+}
+
+type Repository {
+  """List of user IDs"""
+  contributors: [String!]!
+  created_date: Float!
+  description: String
+
+  """List of user IDs"""
+  favorites: [String!]!
+  id: String!
+  name: String!
+  owner: String!
+
+  """List of repository tabs IDs"""
+  pinned: [String!]!
+
+  """List of repository tab IDs"""
+  tabs: [RepositoryTab!]!
+  updated_date: Float!
+  workspaceId: String!
+}
+
+type RepositoryTab {
+  id: String!
+  name: String
+
+  """List of repository tabs IDs"""
+  pinned: [String!]!
+  repositoryId: String
+  url: String!
+}
+
+input RepositoryTabAsInput {
+  name: String
+  url: String!
+}
+
+input RepositoryTabInput {
+  id: String!
+  name: String
+
+  """List of repository tabs IDs"""
+  pinned: [String!]! = []
+  repositoryId: String
+  url: String!
 }
 
 enum ResponseType {
@@ -49,15 +134,63 @@ enum ResponseType {
   Success
 }
 
+input UpdateRepositoryArgs {
+  """List of user IDs"""
+  contributors: [String!] = []
+  created_date: Float = 1682534016
+  description: String
+
+  """List of user IDs"""
+  favorites: [String!] = []
+  id: String
+  name: String
+  owner: String
+
+  """List of repository tabs IDs"""
+  pinned: [String!] = []
+
+  """List of repository tab IDs"""
+  tabs: [RepositoryTabInput!] = []
+  updated_date: Float = 1682534016
+  workspaceId: String
+}
+
+input UpdateUserArgs {
+  created_date: Float = 1682534016
+  email: String
+
+  """List of user IDs"""
+  followers: [String!] = []
+
+  """List of user IDs"""
+  following: [String!] = []
+  full_name: String
+  id: String
+
+  """List of repositories IDs"""
+  pinned_repositories: [String!] = []
+
+  """List of repository tabs IDs"""
+  pinned_tabs: [String!] = []
+
+  """ID of selected workspace"""
+  selected_workspace: String
+  updated_date: Float = 1682534016
+  username: String
+
+  """List of workspace IDs"""
+  workspaces: [String!] = []
+}
+
 input UpdateWorkspaceArgs {
-  created_date: Float = 1682520714
+  created_date: Float = 1682534016
   description: String = ""
   id: String
   members: [String!] = []
   name: String
   owner: String
   repositories: [String!] = []
-  updated_date: Float = 1682520714
+  updated_date: Float = 1682534016
   visibility: AccessVisibility = Private
 }
 

@@ -24,6 +24,12 @@ export abstract class BaseCRUDService<T> {
     return workspace as T;
   }
 
+  async existData(id: string): Promise<boolean> {
+    const _collection = await db.collection(this.collectionRegistry).doc(id);
+    const data = await _collection.get();
+    return data.exists;
+  }
+
   async deleteData(id: string): Promise<void> {
     const _collection = await db.collection(this.collectionRegistry).doc(id);
     await _collection.delete({
