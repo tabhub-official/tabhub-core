@@ -14,19 +14,30 @@ import {
 import { ConfigModule } from '@nestjs/config';
 import { join } from 'path';
 import { RepositoryResolver } from './modules/repository/repository.resolver';
+import { auth } from './config/firebase-config';
 
 const graphQLConfiguration = GraphQLModule.forRoot<ApolloDriverConfig>({
   driver: ApolloDriver,
   autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
   sortSchema: true,
-  context: context => {
+  context: async context => {
     let req = context.req;
-    const token = req.headers.authorization || '';
-    console.log(token);
     if (context.connection) {
       req = context.connection.context.req;
     }
-    return { req };
+    try {
+      const regex = /Bearer (.+)/i;
+      const idToken = req.headers['authorization'].match(regex)?.[1];
+      const token = await auth.verifyIdToken(idToken);
+      req.user = {
+        email: token.email,
+        phone: token.phone_number,
+        picture: token.picture,
+      };
+      return { req };
+    } catch (error) {
+      return { req };
+    }
   },
 });
 

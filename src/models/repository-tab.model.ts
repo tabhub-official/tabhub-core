@@ -12,7 +12,13 @@ export class RepositoryTab {
   url: string;
 
   @Field(() => String, { nullable: true })
-  name?: string;
+  customName?: string;
+
+  @Field(() => String, { nullable: false })
+  title: string;
+
+  @Field(() => String, { nullable: false })
+  favIconUrl: string;
 
   @Field(() => [String], { defaultValue: [], description: 'List of repository tabs IDs' })
   pinned: string[];

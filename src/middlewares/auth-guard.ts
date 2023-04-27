@@ -1,14 +1,23 @@
-import { ExecutionContext, Injectable } from '@nestjs/common';
-import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host';
-import { GqlExecutionContext } from '@nestjs/graphql';
+import { Injectable, ExecutionContext } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { Observable } from 'rxjs';
+import { GqlExecutionContext } from '@nestjs/graphql';
+import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host';
+import { AuthenticationError } from 'apollo-server-core';
 
 @Injectable()
-export class AuthGuardMiddlware extends AuthGuard('jwt') {
-  canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
+export class GqlAuthGuard extends AuthGuard('jwt') {
+  canActivate(context: ExecutionContext) {
     const ctx = GqlExecutionContext.create(context);
     const { req } = ctx.getContext();
+    console.log(req);
+
     return super.canActivate(new ExecutionContextHost([req]));
+  }
+
+  handleRequest(err: any, user: any) {
+    if (err || !user) {
+      throw err || new AuthenticationError('GqlAuthGuard');
+    }
+    return user;
   }
 }

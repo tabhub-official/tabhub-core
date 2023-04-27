@@ -9,6 +9,12 @@ export class RepositoryTabAsInput {
 
   @Field(() => String, { nullable: true })
   name?: string;
+
+  @Field(() => String, { nullable: true })
+  favIconUrl?: string;
+
+  @Field(() => String, { nullable: true })
+  title?: string;
 }
 
 @InputType()

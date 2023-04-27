@@ -27,6 +27,10 @@ export class User {
   @Field({ nullable: false })
   email: string;
 
+  @IsEmail()
+  @Field({ defaultValue: 'UNKNOWN' })
+  provider: string;
+
   @Field(() => [String], { defaultValue: [], description: 'List of user IDs' })
   followers: string[];
 

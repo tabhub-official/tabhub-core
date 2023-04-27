@@ -2,6 +2,7 @@ import { Field, ObjectType } from '@nestjs/graphql';
 import * as moment from 'moment';
 import { MinLength, MaxLength, IsUUID, IsEmail, ArrayNotEmpty } from 'class-validator';
 import { RepositoryTab } from './repository-tab.model';
+import { AccessVisibility } from './accessibility';
 
 @ObjectType()
 export class Repository {
@@ -34,6 +35,9 @@ export class Repository {
 
   @Field(() => [String], { defaultValue: [], description: 'List of user IDs' })
   favorites: string[];
+
+  @Field(() => AccessVisibility, { defaultValue: AccessVisibility.Private })
+  visibility: AccessVisibility;
 
   @ArrayNotEmpty()
   @Field(() => [RepositoryTab], { defaultValue: [], description: 'List of repository tab IDs' })

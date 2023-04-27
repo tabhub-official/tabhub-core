@@ -3,6 +3,7 @@ import { CollectionRegistry, db } from 'src/config/firebase-config';
 import { RepositoryTab } from 'src/models';
 import { v4 as uuidV4 } from 'uuid';
 import { BaseCRUDService } from '../_base/baseCRUD.service';
+import { RepositoryTabAsInput } from 'src/dto';
 
 @Injectable()
 export class RepositoryTabService extends BaseCRUDService<RepositoryTab> {
@@ -10,23 +11,28 @@ export class RepositoryTabService extends BaseCRUDService<RepositoryTab> {
     super(CollectionRegistry.RepositoryTab);
   }
 
-  createManyRepositoryTab = async (
-    tabs: { url: string; name?: string }[]
-  ): Promise<RepositoryTab[]> => {
+  createManyRepositoryTab = async (tabs: RepositoryTabAsInput[]): Promise<RepositoryTab[]> => {
     const manyData = [];
     for (const tab of tabs) {
-      const data = await this.createNewRepositoryTab(tab.url, tab.name);
+      const data = await this.createNewRepositoryTab(tab.url, tab.title, tab.favIconUrl, tab.name);
       manyData.push(data);
     }
     return manyData;
   };
 
-  createNewRepositoryTab = async (url: string, name?: string): Promise<RepositoryTab> => {
+  createNewRepositoryTab = async (
+    url: string,
+    title: string,
+    favIconUrl: string,
+    customName?: string
+  ): Promise<RepositoryTab> => {
     const _collection = await db.collection(this.collectionRegistry);
     const newRepositoryTabId = uuidV4();
     const data: RepositoryTab = {
       id: newRepositoryTabId,
-      name,
+      title,
+      favIconUrl,
+      customName,
       url,
       pinned: [],
     };

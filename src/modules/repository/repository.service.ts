@@ -4,6 +4,7 @@ import { Repository } from 'src/models';
 import { v4 as uuidV4 } from 'uuid';
 import { BaseCRUDService } from '../_base/baseCRUD.service';
 import { RepositoryTabService } from '../repository-tab';
+import { RepositoryTabAsInput } from 'src/dto';
 
 @Injectable()
 export class RepositoryService extends BaseCRUDService<Repository> {
@@ -13,7 +14,7 @@ export class RepositoryService extends BaseCRUDService<Repository> {
 
   createNewRepository = async (
     name: string,
-    tabs: { url: string; name?: string }[],
+    tabs: RepositoryTabAsInput[],
     owner: string,
     workspaceId: string,
     description?: string

@@ -1,13 +1,21 @@
-import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
+import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql';
 import { UserService } from './user.service';
-import { AppResponse, ResponseType, User, Workspace } from 'src/models';
+import { AppResponse, ResponseType, User } from 'src/models';
 import { CreateNewUserArgs, DeleteUserArgs, GetUserByIdArgs, UpdateUserArgs } from 'src/dto';
+import { createParamDecorator } from '@nestjs/common';
+
+export type CurrentUserType = {
+  email: string;
+  phone?: string;
+  picture?: string;
+};
+export const CurrentUser = createParamDecorator((_, req) => req.user);
 
 @Resolver(() => User)
 export class UserResolver {
   constructor(private userService: UserService) {}
 
-  @Query(() => [Workspace])
+  @Query(() => [User])
   async getAllUsers() {
     try {
       return this.userService.getAllData();
@@ -16,8 +24,8 @@ export class UserResolver {
     }
   }
 
-  @Query(() => Workspace)
-  async getUserById(@Args('getUserByIdArgs') args: GetUserByIdArgs): Promise<User> {
+  @Query(() => User, { nullable: true })
+  async getUserById(@Args('getUserByIdArgs') args: GetUserByIdArgs): Promise<User | undefined> {
     try {
       const { id } = args;
       return this.userService.getDataById(id);
@@ -26,13 +34,25 @@ export class UserResolver {
     }
   }
 
+  @Query(() => User, { nullable: true })
+  async getCurrentUser(@Context('req') req): Promise<User | undefined> {
+    const user = req.user;
+    try {
+      if (!user) return undefined;
+      const currentUser = await this.userService.getUserByEmail(user.email);
+      return currentUser;
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
   @Mutation(() => AppResponse)
   async createNewUser(@Args('createNewUserArgs') args: CreateNewUserArgs): Promise<AppResponse> {
     try {
-      const { email, username, full_name } = args;
-      await this.userService.createNewUser(username, full_name, email);
+      const { email, username, full_name, provider } = args;
+      await this.userService.createNewUser(username, provider, full_name, email);
       return {
-        message: `Successfully create new workspace ${name}`,
+        message: `Successfully create new user ${email}`,
         type: ResponseType.Success,
       };
     } catch (error: any) {

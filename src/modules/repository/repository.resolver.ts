@@ -7,8 +7,6 @@ import {
   GetRepositoryByIdArgs,
   UpdateRepositoryArgs,
 } from 'src/dto';
-import { AuthGuardMiddlware } from 'src/middlewares';
-import { UseGuards } from '@nestjs/common';
 
 @Resolver(() => Repository)
 export class RepositoryResolver {
@@ -36,7 +34,6 @@ export class RepositoryResolver {
   }
 
   @Mutation(() => AppResponse)
-  @UseGuards(AuthGuardMiddlware)
   async createNewRepository(
     @Args('createRepositoryArgs') args: CreateNewRepositoryArgs
   ): Promise<AppResponse> {

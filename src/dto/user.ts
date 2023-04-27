@@ -10,12 +10,15 @@ export class CreateNewUserArgs {
   username: string;
 
   @MaxLength(100)
-  @Field({ nullable: false })
+  @Field({ nullable: true })
   full_name?: string;
 
   @IsEmail()
   @Field({ nullable: false })
   email: string;
+
+  @Field({ defaultValue: 'UNKNOWN' })
+  provider: string;
 }
 
 @InputType()
