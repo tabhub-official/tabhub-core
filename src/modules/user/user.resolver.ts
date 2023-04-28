@@ -39,7 +39,7 @@ export class UserResolver {
     const user = req.user;
     try {
       if (!user) return undefined;
-      const currentUser = await this.userService.getUserByEmail(user.email);
+      const currentUser = await this.userService.getDataById(user.id);
       return currentUser;
     } catch (error) {
       throw new Error(error);
@@ -49,8 +49,8 @@ export class UserResolver {
   @Mutation(() => AppResponse)
   async createNewUser(@Args('createNewUserArgs') args: CreateNewUserArgs): Promise<AppResponse> {
     try {
-      const { email, username, full_name, provider } = args;
-      await this.userService.createNewUser(username, provider, full_name, email);
+      const { uid, email, username, full_name, provider, profile_image } = args;
+      await this.userService.createNewUser(uid, username, profile_image, email, provider, full_name);
       return {
         message: `Successfully create new user ${email}`,
         type: ResponseType.Success,

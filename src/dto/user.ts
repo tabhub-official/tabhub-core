@@ -5,6 +5,12 @@ import { User } from 'src/models';
 @InputType()
 export class CreateNewUserArgs {
   @Field()
+  uid: string;
+
+  @Field()
+  profile_image: string;
+
+  @Field()
   @MinLength(1)
   @MaxLength(25)
   username: string;

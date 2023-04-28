@@ -14,7 +14,10 @@ export class User {
   @Field({ nullable: false, defaultValue: moment().unix() })
   updated_date: number;
 
-  @MinLength(1) r;
+  @Field({ nullable: true })
+  profile_image: string;
+
+  @MinLength(1)
   @MaxLength(25)
   @Field({ nullable: false })
   username: string;

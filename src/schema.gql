@@ -28,7 +28,9 @@ input CreateNewRepositoryArgs {
 input CreateNewUserArgs {
   email: String!
   full_name: String
+  profile_image: String!
   provider: String! = "UNKNOWN"
+  uid: String!
   username: String!
 }
 
@@ -146,7 +148,7 @@ enum ResponseType {
 input UpdateRepositoryArgs {
   """List of user IDs"""
   contributors: [String!] = []
-  created_date: Float = 1682633281
+  created_date: Float = 1682658756
   description: String
 
   """List of user IDs"""
@@ -160,13 +162,13 @@ input UpdateRepositoryArgs {
 
   """List of repository tab IDs"""
   tabs: [RepositoryTabInput!] = []
-  updated_date: Float = 1682633281
+  updated_date: Float = 1682658756
   visibility: AccessVisibility = Private
   workspaceId: String
 }
 
 input UpdateUserArgs {
-  created_date: Float = 1682633281
+  created_date: Float = 1682658756
   email: String
 
   """List of user IDs"""
@@ -182,11 +184,12 @@ input UpdateUserArgs {
 
   """List of repository tabs IDs"""
   pinned_tabs: [String!] = []
+  profile_image: String
   provider: String = "UNKNOWN"
 
   """ID of selected workspace"""
   selected_workspace: String
-  updated_date: Float = 1682633281
+  updated_date: Float = 1682658756
   username: String
 
   """List of workspace IDs"""
@@ -194,14 +197,14 @@ input UpdateUserArgs {
 }
 
 input UpdateWorkspaceArgs {
-  created_date: Float = 1682633281
+  created_date: Float = 1682658756
   description: String = ""
   id: String
   members: [String!] = []
   name: String
   owner: String
   repositories: [String!] = []
-  updated_date: Float = 1682633281
+  updated_date: Float = 1682658756
   visibility: AccessVisibility = Private
 }
 
@@ -222,6 +225,7 @@ type User {
 
   """List of repository tabs IDs"""
   pinned_tabs: [String!]!
+  profile_image: String
   provider: String!
 
   """ID of selected workspace"""
