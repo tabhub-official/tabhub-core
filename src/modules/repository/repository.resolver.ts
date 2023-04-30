@@ -1,4 +1,4 @@
-import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
+import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql';
 import { RepositoryService } from './repository.service';
 import { AppResponse, Repository, ResponseType } from 'src/models';
 import {
@@ -7,6 +7,7 @@ import {
   GetRepositoryByIdArgs,
   UpdateRepositoryArgs,
 } from 'src/dto';
+import { getAuthUser } from 'src/utils';
 
 @Resolver(() => Repository)
 export class RepositoryResolver {
@@ -35,11 +36,12 @@ export class RepositoryResolver {
 
   @Mutation(() => AppResponse)
   async createNewRepository(
+    @Context('req') req,
     @Args('createRepositoryArgs') args: CreateNewRepositoryArgs
   ): Promise<AppResponse> {
     try {
+      getAuthUser(req);
       const { name, tabs, workspaceId, description } = args;
-      // TODO Requires auth middlware
       await this.repositoryService.createNewRepository(name, tabs, '', description, workspaceId);
       return {
         message: `Successfully create new repository ${name}`,
@@ -55,9 +57,12 @@ export class RepositoryResolver {
 
   @Mutation(() => AppResponse)
   async updateRepository(
+    @Context('req') req,
     @Args('updateRepositoryArgs') args: UpdateRepositoryArgs
   ): Promise<AppResponse> {
     try {
+      const authUser = getAuthUser(req);
+      // TODO requires checking owner
       const { id, ...repository } = args;
       await this.repositoryService.updateData(id, repository);
       return {
@@ -74,9 +79,12 @@ export class RepositoryResolver {
 
   @Mutation(() => AppResponse)
   async deleteRepository(
+    @Context('req') req,
     @Args('deleteRepositoryArgs') args: DeleteRepositoryArgs
   ): Promise<AppResponse> {
     try {
+      const authUser = getAuthUser(req);
+      // TODO requires checking owner
       const { id } = args;
       await this.repositoryService.deleteData(id);
       return {

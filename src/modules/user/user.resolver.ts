@@ -1,8 +1,9 @@
 import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql';
 import { UserService } from './user.service';
 import { AppResponse, ResponseType, User } from 'src/models';
-import { CreateNewUserArgs, DeleteUserArgs, GetUserByIdArgs, UpdateUserArgs } from 'src/dto';
+import { CreateNewUserArgs, GetUserByIdArgs, UpdateUserArgs } from 'src/dto';
 import { createParamDecorator } from '@nestjs/common';
+import { getAuthUser } from 'src/utils/auth';
 
 export type CurrentUserType = {
   email: string;
@@ -36,10 +37,9 @@ export class UserResolver {
 
   @Query(() => User, { nullable: true })
   async getCurrentUser(@Context('req') req): Promise<User | undefined> {
-    const user = req.user;
+    const authUser = getAuthUser(req);
     try {
-      if (!user) return undefined;
-      const currentUser = await this.userService.getDataById(user.id);
+      const currentUser = await this.userService.getDataById(authUser.id);
       return currentUser;
     } catch (error) {
       throw new Error(error);
@@ -50,7 +50,14 @@ export class UserResolver {
   async createNewUser(@Args('createNewUserArgs') args: CreateNewUserArgs): Promise<AppResponse> {
     try {
       const { uid, email, username, full_name, provider, profile_image } = args;
-      await this.userService.createNewUser(uid, username, profile_image, email, provider, full_name);
+      await this.userService.createNewUser(
+        uid,
+        username,
+        profile_image,
+        email,
+        provider,
+        full_name
+      );
       return {
         message: `Successfully create new user ${email}`,
         type: ResponseType.Success,
@@ -64,12 +71,16 @@ export class UserResolver {
   }
 
   @Mutation(() => AppResponse)
-  async updateUser(@Args('updateUserArgs') args: UpdateUserArgs): Promise<AppResponse> {
+  async updateUser(
+    @Context('req') req,
+    @Args('updateUserArgs') args: UpdateUserArgs
+  ): Promise<AppResponse> {
+    const authUser = getAuthUser(req);
     try {
-      const { id, ...workspace } = args;
-      await this.userService.updateData(id, workspace);
+      const { ...workspace } = args;
+      await this.userService.updateData(authUser.id, workspace);
       return {
-        message: `Successfully update workspace ${id}`,
+        message: `Successfully update workspace ${authUser.id}`,
         type: ResponseType.Success,
       };
     } catch (error: any) {
@@ -81,12 +92,12 @@ export class UserResolver {
   }
 
   @Mutation(() => AppResponse)
-  async deleteUser(@Args('deleteUserArgs') args: DeleteUserArgs): Promise<AppResponse> {
+  async deleteUser(@Context('req') req): Promise<AppResponse> {
+    const authUser = getAuthUser(req);
     try {
-      const { id } = args;
-      await this.userService.deleteData(id);
+      await this.userService.deleteData(authUser.id);
       return {
-        message: `Successfully delete workspace ${id}`,
+        message: `Successfully delete workspace ${authUser.id}`,
         type: ResponseType.Success,
       };
     } catch (error: any) {

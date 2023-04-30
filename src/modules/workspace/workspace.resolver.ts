@@ -1,4 +1,4 @@
-import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
+import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql';
 import { WorkspaceService } from './workspace.service';
 import { AppResponse, ResponseType, Workspace } from 'src/models';
 import {
@@ -8,6 +8,7 @@ import {
   GetWorkspaceByIdArgs,
   UpdateWorkspaceArgs,
 } from 'src/dto/workspace';
+import { getAuthUser } from 'src/utils';
 
 @Resolver(() => Workspace)
 export class WorkspaceResolver {
@@ -16,6 +17,16 @@ export class WorkspaceResolver {
   @Query(() => [Workspace])
   async getAllWorkspaces() {
     try {
+      return this.workspaceService.getAllData();
+    } catch (error: any) {
+      throw new Error(error);
+    }
+  }
+
+  @Query(() => [Workspace])
+  async getMyWorkspaces(@Context("req") req) {
+    try {
+      const authUser = getAuthUser(req);
       return this.workspaceService.getAllData();
     } catch (error: any) {
       throw new Error(error);
@@ -36,12 +47,13 @@ export class WorkspaceResolver {
 
   @Mutation(() => AppResponse)
   async createNewWorkspace(
+    @Context("req") req,
     @Args('createNewWorksapceArgs') args: CreateNewWorkspaceArgs
   ): Promise<AppResponse> {
     try {
+      const authUser = getAuthUser(req);
       const { name, visibility, description } = args;
-      // TODO Requires auth middlware
-      await this.workspaceService.createNewWorkspace(name, description, '', visibility);
+      await this.workspaceService.createNewWorkspace(authUser.id, name, description, '', visibility);
       return {
         message: `Successfully create new workspace ${name}`,
         type: ResponseType.Success,

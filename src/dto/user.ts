@@ -1,4 +1,4 @@
-import { Field, InputType, PartialType } from '@nestjs/graphql';
+import { Field, InputType, OmitType, PartialType } from '@nestjs/graphql';
 import { IsEmail, IsUUID, MaxLength, MinLength } from 'class-validator';
 import { User } from 'src/models';
 
@@ -28,14 +28,7 @@ export class CreateNewUserArgs {
 }
 
 @InputType()
-export class UpdateUserArgs extends PartialType(User, InputType) {}
-
-@InputType()
-export class DeleteUserArgs {
-  @Field()
-  @IsUUID()
-  id: string;
-}
+export class UpdateUserArgs extends PartialType(OmitType(User, ['id']), InputType) {}
 
 @InputType()
 export class GetUserByIdArgs {
