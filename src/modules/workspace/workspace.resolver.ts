@@ -27,13 +27,13 @@ export class WorkspaceResolver {
   async getMyWorkspaces(@Context("req") req) {
     try {
       const authUser = getAuthUser(req);
-      return this.workspaceService.getAllData();
+      return this.workspaceService.getUserWorkspaces(authUser.id);
     } catch (error: any) {
       throw new Error(error);
     }
   }
 
-  @Query(() => Workspace)
+  @Query(() => Workspace, {nullable: true})
   async getWorkspaceById(
     @Args('getWorkspaceByIdArgs') args: GetWorkspaceByIdArgs
   ): Promise<Workspace> {
@@ -53,7 +53,7 @@ export class WorkspaceResolver {
     try {
       const authUser = getAuthUser(req);
       const { name, visibility, description } = args;
-      await this.workspaceService.createNewWorkspace(authUser.id, name, description, '', visibility);
+      await this.workspaceService.createNewWorkspace(authUser.id, name, description, authUser.id, visibility);
       return {
         message: `Successfully create new workspace ${name}`,
         type: ResponseType.Success,
