@@ -10,6 +10,15 @@ export class UserService extends BaseCRUDService<User> {
     super(CollectionRegistry.User);
   }
 
+  async removeWorkspace(workspaceId: string, userId: string) {
+    const user = await this.getDataById(userId);
+    if (user) {
+      await this.updateData(userId, {
+        workspaces: user.workspaces.filter(workspace => workspace !== workspaceId),
+      });
+    }
+  }
+
   async getUserByEmail(email: string): Promise<User | undefined> {
     const _collection = await db.collection(this.collectionRegistry);
     const data = _collection.where('email', '==', email);

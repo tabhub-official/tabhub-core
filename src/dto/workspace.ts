@@ -1,6 +1,7 @@
-import { Field, InputType, PartialType } from '@nestjs/graphql';
+import { Field, InputType } from '@nestjs/graphql';
 import { IsUUID, MaxLength, MinLength } from 'class-validator';
-import { AccessVisibility, Workspace } from 'src/models';
+import * as moment from 'moment';
+import { AccessVisibility } from 'src/models';
 
 @InputType()
 export class CreateNewWorkspaceArgs {
@@ -25,10 +26,32 @@ export class ChangeWorkspaceVisibilityArgs {
 
   @Field(() => AccessVisibility)
   visibility: AccessVisibility;
+
+  @Field({ nullable: false, defaultValue: moment().unix() })
+  updated_date: number;
 }
 
 @InputType()
-export class UpdateWorkspaceArgs extends PartialType(Workspace, InputType) {}
+export class UpdateWorkspaceArgs {
+  @Field()
+  @IsUUID('4')
+  id: string;
+
+  @Field(() => AccessVisibility)
+  visibility: AccessVisibility;
+
+  @MinLength(1)
+  @MaxLength(40)
+  @Field({ nullable: false })
+  name: string;
+
+  @MaxLength(500)
+  @Field({ nullable: true, defaultValue: '' })
+  description?: string;
+
+  @Field({ nullable: false, defaultValue: moment().unix() })
+  updated_date: number;
+}
 
 @InputType()
 export class DeleteWorkspaceArgs {
@@ -38,8 +61,39 @@ export class DeleteWorkspaceArgs {
 }
 
 @InputType()
+export class AddNewMemberArgs {
+  @Field()
+  @IsUUID()
+  id: string;
+
+  @Field()
+  @IsUUID()
+  member_email: string;
+
+  @Field({ nullable: false, defaultValue: moment().unix() })
+  updated_date: number;
+}
+
+@InputType()
+export class RemoveMemberArgs {
+  @Field()
+  @IsUUID()
+  id: string;
+
+  @Field()
+  @IsUUID()
+  member_email: string;
+
+  @Field({ nullable: false, defaultValue: moment().unix() })
+  updated_date: number;
+}
+
+@InputType()
 export class GetWorkspaceByIdArgs {
   @Field()
   @IsUUID()
   id: string;
+
+  @Field({ nullable: false, defaultValue: moment().unix() })
+  updated_date: number;
 }

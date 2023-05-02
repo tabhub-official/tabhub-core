@@ -7,7 +7,12 @@ export abstract class BaseCRUDService<T> {
   }
   async updateData(id: string, updatedData: Partial<T>): Promise<void> {
     const _collection = await db.collection(this.collectionRegistry).doc(id);
-    await _collection.update(updatedData);
+    const _snapshot = await _collection.get();
+    const oldData = _snapshot.data();
+    await _collection.update({
+      ...oldData,
+      ...updatedData,
+    });
   }
 
   async getAllData(): Promise<T[]> {

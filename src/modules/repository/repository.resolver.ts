@@ -64,7 +64,7 @@ export class RepositoryResolver {
       const authUser = getAuthUser(req);
       const { id, ...repository } = args;
       const _repository = await this.repositoryService.getDataById(id);
-      if (_repository.owner !== authUser.id)
+      if (_repository.owner !== authUser.id) throw new Error("Not repository owner");
         await this.repositoryService.updateData(id, repository);
       return {
         message: `Successfully update repository ${id}`,
@@ -87,7 +87,8 @@ export class RepositoryResolver {
       const authUser = getAuthUser(req);
       const { id } = args;
       const _repository = await this.repositoryService.getDataById(id);
-      if (_repository.owner !== authUser.id) await this.repositoryService.deleteData(id);
+      if (_repository.owner !== authUser.id) throw new Error('Not repository owner');
+       await this.repositoryService.deleteData(id);
       return {
         message: `Successfully delete repository ${id}`,
         type: ResponseType.Success,
