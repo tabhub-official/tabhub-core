@@ -62,9 +62,10 @@ export class RepositoryResolver {
   ): Promise<AppResponse> {
     try {
       const authUser = getAuthUser(req);
-      // TODO requires checking owner
       const { id, ...repository } = args;
-      await this.repositoryService.updateData(id, repository);
+      const _repository = await this.repositoryService.getDataById(id);
+      if (_repository.owner !== authUser.id)
+        await this.repositoryService.updateData(id, repository);
       return {
         message: `Successfully update repository ${id}`,
         type: ResponseType.Success,
@@ -84,9 +85,9 @@ export class RepositoryResolver {
   ): Promise<AppResponse> {
     try {
       const authUser = getAuthUser(req);
-      // TODO requires checking owner
       const { id } = args;
-      await this.repositoryService.deleteData(id);
+      const _repository = await this.repositoryService.getDataById(id);
+      if (_repository.owner !== authUser.id) await this.repositoryService.deleteData(id);
       return {
         message: `Successfully delete repository ${id}`,
         type: ResponseType.Success,

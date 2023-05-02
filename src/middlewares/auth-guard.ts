@@ -9,8 +9,6 @@ export class GqlAuthGuard extends AuthGuard('jwt') {
   canActivate(context: ExecutionContext) {
     const ctx = GqlExecutionContext.create(context);
     const { req } = ctx.getContext();
-    console.log(req);
-
     return super.canActivate(new ExecutionContextHost([req]));
   }
 
@@ -21,3 +19,10 @@ export class GqlAuthGuard extends AuthGuard('jwt') {
     return user;
   }
 }
+
+export type AuthUser = {
+  id: string;
+  email: string;
+  phone: string;
+  picture: string;
+};
