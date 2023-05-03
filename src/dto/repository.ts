@@ -1,6 +1,6 @@
 import { Field, InputType, PartialType } from '@nestjs/graphql';
 import { ArrayNotEmpty, IsUUID, MaxLength, MinLength } from 'class-validator';
-import { Repository } from 'src/models';
+import { AccessVisibility, Repository } from 'src/models';
 
 @InputType()
 export class RepositoryTabAsInput {
@@ -35,6 +35,9 @@ export class CreateNewRepositoryArgs {
   @IsUUID('4')
   @Field(() => String, { nullable: false })
   workspaceId: string;
+
+  @Field(() => AccessVisibility, { defaultValue: AccessVisibility.Private })
+  visibility: AccessVisibility;
 }
 
 @InputType()

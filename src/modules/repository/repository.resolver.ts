@@ -12,30 +12,22 @@ import { WorkspaceService } from '../workspace';
 
 @Resolver(() => Repository)
 export class RepositoryResolver {
-  constructor(private repositoryService: RepositoryService, private workspaceService: WorkspaceService) {}
+  constructor(
+    private repositoryService: RepositoryService,
+    private workspaceService: WorkspaceService
+  ) {}
 
   @Query(() => [Repository])
   async getWorkspaceRepositories(
-    @Args('getRepositoryById') args: GetRepositoryByIdArgs
-  ) {
-    try {
-      const {id: workspaceId} = args;
-      return this.repositoryService.getWorkspacePublicRepositories(workspaceId);
-    } catch (error: any) {
-      throw new Error(error);
-    }
-  }
-
-  @Query(() => [Repository])
-  async getMyWorkspaceRepositories(
-    @Context("req") req,
+    @Context('req') req,
     @Args('getRepositoryById') args: GetRepositoryByIdArgs
   ) {
     try {
       const authUser = getAuthUser(req);
-      const {id: workspaceId} = args;
+      const { id: workspaceId } = args;
       const workspace = await this.workspaceService.getDataById(workspaceId);
-      if (!workspace.members.some(member => member === authUser.id)) throw new Error("Not workspace member");
+      if (!workspace.members.some(member => member === authUser.id))
+        throw new Error('Not workspace member');
       return this.repositoryService.getWorkspaceRepositories(workspaceId);
     } catch (error: any) {
       throw new Error(error);
@@ -70,12 +62,13 @@ export class RepositoryResolver {
   ): Promise<AppResponse> {
     try {
       const authUser = getAuthUser(req);
-      const { name, tabs, workspaceId, description } = args;
+      const { name, tabs, workspaceId, description, visibility } = args;
 
       const workspace = await this.workspaceService.getDataById(workspaceId);
       if (!workspace.members.some(member => member === authUser.id))
+        throw new Error('Not workspace member');
 
-        await this.repositoryService.createNewRepository(name, tabs, '', description, workspaceId);
+      await this.repositoryService.createNewRepository(name, tabs, authUser.id, workspaceId, visibility, description);
       return {
         message: `Successfully create new repository ${name}`,
         type: ResponseType.Success,
@@ -100,7 +93,8 @@ export class RepositoryResolver {
       // if (_repository.owner !== authUser.id) throw new Error('Not repository owner');
 
       const workspace = await this.workspaceService.getDataById(_repository.workspaceId);
-       if (!workspace.members.some(member => member === authUser.id))
+      if (!workspace.members.some(member => member === authUser.id))
+        throw new Error('Not workspace member');
 
       await this.repositoryService.updateData(id, repository);
       return {
@@ -127,10 +121,9 @@ export class RepositoryResolver {
       const _repository = await this.repositoryService.getDataById(id);
       // if (_repository.owner !== authUser.id) throw new Error('Not repository owner');
 
-       const workspace = await this.workspaceService.getDataById(_repository.workspaceId);
-       if (!workspace.members.some(member => member === authUser.id))
-
-      throw new Error('Not workspace member');
+      const workspace = await this.workspaceService.getDataById(_repository.workspaceId);
+      if (!workspace.members.some(member => member === authUser.id))
+        throw new Error('Not workspace member');
       await this.repositoryService.deleteData(id);
       return {
         message: `Successfully delete repository ${id}`,

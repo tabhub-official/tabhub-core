@@ -38,6 +38,7 @@ export class RepositoryService extends BaseCRUDService<Repository> {
     tabs: RepositoryTabAsInput[],
     owner: string,
     workspaceId: string,
+    visibility: AccessVisibility,
     description?: string
   ): Promise<void> => {
     const _collection = await db.collection(this.collectionRegistry);
@@ -50,6 +51,7 @@ export class RepositoryService extends BaseCRUDService<Repository> {
       description,
       owner,
       workspaceId,
+      visibility
     };
     await _collection.doc(newRepositoryId).create(data);
   };
