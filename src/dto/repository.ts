@@ -41,6 +41,18 @@ export class CreateNewRepositoryArgs {
 }
 
 @InputType()
+export class RemoveTabsFromRepositoryArgs {
+  @Field()
+  @IsUUID('4')
+  id: string;
+
+  @ArrayNotEmpty()
+  @Field(() => [String])
+  tabs: string[];
+}
+
+
+@InputType()
 export class UpdateRepositoryArgs extends PartialType(Repository, InputType) {}
 
 @InputType()

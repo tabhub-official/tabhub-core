@@ -5,16 +5,19 @@ import {
   CreateNewRepositoryArgs,
   DeleteRepositoryArgs,
   GetRepositoryByIdArgs,
+  RemoveTabsFromRepositoryArgs,
   UpdateRepositoryArgs,
 } from 'src/dto';
 import { getAuthUser } from 'src/utils';
 import { WorkspaceService } from '../workspace';
+import { RepositoryTabService } from '../repository-tab';
 
 @Resolver(() => Repository)
 export class RepositoryResolver {
   constructor(
     private repositoryService: RepositoryService,
-    private workspaceService: WorkspaceService
+    private workspaceService: WorkspaceService,
+    private repositoryTabService: RepositoryTabService
   ) {}
 
   @Query(() => [Repository])
@@ -60,6 +63,7 @@ export class RepositoryResolver {
     @Context('req') req,
     @Args('createRepositoryArgs') args: CreateNewRepositoryArgs
   ): Promise<AppResponse> {
+    /** Upsert repository */
     try {
       const authUser = getAuthUser(req);
       const { name, tabs, workspaceId, description, visibility } = args;
@@ -68,7 +72,67 @@ export class RepositoryResolver {
       if (!workspace.members.some(member => member === authUser.id))
         throw new Error('Not workspace member');
 
-      await this.repositoryService.createNewRepository(name, tabs, authUser.id, workspaceId, visibility, description);
+      const existingRepository = await this.repositoryService.getRepositoryByName(
+        workspaceId,
+        name
+      );
+      if (existingRepository) {
+        /** Add tabs to existing repository if existed */
+        const repositoryTabs = await this.repositoryTabService.createManyRepositoryTab(tabs);
+        await this.repositoryService.updateData(existingRepository.id, {
+          tabs: existingRepository.tabs.concat(repositoryTabs),
+          description,
+          visibility,
+        });
+        return {
+          message: `Successfully create new repository ${name}`,
+          type: ResponseType.Success,
+        };
+      } else {
+        /** Create new repository if not exist */
+        await this.repositoryService.createNewRepository(
+          name,
+          tabs,
+          authUser.id,
+          workspaceId,
+          visibility,
+          description
+        );
+        return {
+          message: `Successfully update repository ${name}`,
+          type: ResponseType.Success,
+        };
+      }
+    } catch (error: any) {
+      return {
+        message: error,
+        type: ResponseType.Error,
+      };
+    }
+  }
+
+  @Mutation(() => AppResponse)
+  async removeTabsFromRepository(
+    @Context('req') req,
+    @Args('removeTabsFromRepositoryArgs') args: RemoveTabsFromRepositoryArgs
+  ): Promise<AppResponse> {
+    /** Upsert repository */
+    try {
+      const authUser = getAuthUser(req);
+      const { id, tabs } = args;
+
+      const existingRepository = await this.repositoryService.getDataById(id);
+
+      const workspace = await this.workspaceService.getDataById(existingRepository.workspaceId);
+      if (!workspace.members.some(member => member === authUser.id))
+        throw new Error('Not workspace member');
+
+      /** Add tabs to existing repository if existed */
+      await this.repositoryService.updateData(existingRepository.id, {
+        tabs: existingRepository.tabs.filter(
+          tab => !tabs.some(removedTab => removedTab === tab.id)
+        ),
+      });
       return {
         message: `Successfully create new repository ${name}`,
         type: ResponseType.Success,
