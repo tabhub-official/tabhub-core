@@ -12,10 +12,12 @@ import {
 } from 'src/dto/workspace';
 import { getAuthUser } from 'src/utils';
 import { UserService } from '../user';
+import { RepositoryService } from '../repository';
+import { RepositoryTabService } from '../repository-tab';
 
 @Resolver(() => Workspace)
 export class WorkspaceResolver {
-  constructor(private workspaceService: WorkspaceService, private userService: UserService) {}
+  constructor(private workspaceService: WorkspaceService, private userService: UserService, private repositoryService: RepositoryService, private repositoryTabService: RepositoryTabService) {}
 
   @Query(() => [Workspace])
   async getAllWorkspaces() {
@@ -206,6 +208,14 @@ export class WorkspaceResolver {
       if (_workspace.owner !== authUser.id) throw new Error('Not workspace owner');
       for (const member of _workspace.members) {
         await this.userService.removeWorkspace(id, member);
+      }
+      const workspaceRepositories = await this.repositoryService.getWorkspaceRepositories(id);
+      /** Cascading delete workspace -> repositories -> repository tabs */
+      for (const repository of workspaceRepositories) {
+        await this.repositoryService.deleteData(repository.id);
+        for (const tab of repository.tabs) {
+          await this.repositoryTabService.deleteData(tab.id);
+        }
       }
       await this.workspaceService.deleteData(id);
       return {
