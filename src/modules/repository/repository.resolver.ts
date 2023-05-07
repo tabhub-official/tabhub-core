@@ -5,6 +5,7 @@ import {
   CreateNewRepositoryArgs,
   DeleteRepositoryArgs,
   GetRepositoryByIdArgs,
+  GetRepositoryByNameArgs,
   RemoveTabsFromRepositoryArgs,
   UpdateRepositoryArgs,
 } from 'src/dto';
@@ -42,6 +43,18 @@ export class RepositoryResolver {
     try {
       return this.repositoryService.getAllPublicRepositories();
     } catch (error: any) {
+      throw new Error(error);
+    }
+  }
+
+  @Query(() => Repository)
+  async getRepositoryByName(
+    @Args('getRepositoryBName') args: GetRepositoryByNameArgs
+  ): Promise<Repository> {
+    try {
+      const { name, workspaceId } = args;
+      return this.repositoryService.getRepositoryByName(workspaceId, name);
+    } catch (error) {
       throw new Error(error);
     }
   }

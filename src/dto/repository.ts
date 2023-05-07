@@ -51,7 +51,6 @@ export class RemoveTabsFromRepositoryArgs {
   tabs: string[];
 }
 
-
 @InputType()
 export class UpdateRepositoryArgs extends PartialType(Repository, InputType) {}
 
@@ -67,4 +66,14 @@ export class GetRepositoryByIdArgs {
   @Field()
   @IsUUID('4')
   id: string;
+}
+
+@InputType()
+export class GetRepositoryByNameArgs {
+  @Field()
+  @IsUUID('4')
+  workspaceId: string;
+
+  @Field()
+  name: string;
 }

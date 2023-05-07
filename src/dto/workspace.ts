@@ -67,7 +67,6 @@ export class AddNewMemberArgs {
   id: string;
 
   @Field()
-  @IsUUID()
   member_email: string;
 
   @Field({ nullable: false, defaultValue: moment().unix() })
@@ -81,7 +80,6 @@ export class RemoveMemberArgs {
   id: string;
 
   @Field()
-  @IsUUID()
   member_email: string;
 
   @Field({ nullable: false, defaultValue: moment().unix() })
@@ -89,11 +87,18 @@ export class RemoveMemberArgs {
 }
 
 @InputType()
+export class GetWorkspaceByNameArgs {
+  @Field()
+  @IsUUID()
+  userId: string;
+
+  @Field()
+  workspace_name: string;
+}
+
+@InputType()
 export class GetWorkspaceByIdArgs {
   @Field()
   @IsUUID()
   id: string;
-
-  @Field({ nullable: false, defaultValue: moment().unix() })
-  updated_date: number;
 }

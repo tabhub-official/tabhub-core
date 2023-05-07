@@ -7,6 +7,7 @@ import {
   CreateNewWorkspaceArgs,
   DeleteWorkspaceArgs,
   GetWorkspaceByIdArgs,
+  GetWorkspaceByNameArgs,
   RemoveMemberArgs,
   UpdateWorkspaceArgs,
 } from 'src/dto/workspace';
@@ -17,7 +18,12 @@ import { RepositoryTabService } from '../repository-tab';
 
 @Resolver(() => Workspace)
 export class WorkspaceResolver {
-  constructor(private workspaceService: WorkspaceService, private userService: UserService, private repositoryService: RepositoryService, private repositoryTabService: RepositoryTabService) {}
+  constructor(
+    private workspaceService: WorkspaceService,
+    private userService: UserService,
+    private repositoryService: RepositoryService,
+    private repositoryTabService: RepositoryTabService
+  ) {}
 
   @Query(() => [Workspace])
   async getAllWorkspaces() {
@@ -45,6 +51,18 @@ export class WorkspaceResolver {
     try {
       const { id } = args;
       return this.workspaceService.getDataById(id);
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  @Query(() => Workspace, { nullable: true })
+  async getWorkspaceByName(
+    @Args('getWorkspaceByNameArgs') args: GetWorkspaceByNameArgs
+  ): Promise<Workspace> {
+    try {
+      const { userId, workspace_name } = args;
+      return this.workspaceService.getUserWorkspaceByName(userId, workspace_name);
     } catch (error) {
       throw new Error(error);
     }
