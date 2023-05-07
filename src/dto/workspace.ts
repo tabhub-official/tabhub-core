@@ -87,6 +87,16 @@ export class RemoveMemberArgs {
 }
 
 @InputType()
+export class SelectQuickAccessWorkspaceArgs {
+  @Field({ nullable: true })
+  @IsUUID()
+  id?: string;
+
+  @Field({ nullable: false, defaultValue: moment().unix() })
+  updated_date: number;
+}
+
+@InputType()
 export class GetWorkspaceByNameArgs {
   @Field()
   @IsUUID()

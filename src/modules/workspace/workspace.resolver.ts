@@ -1,6 +1,6 @@
 import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql';
 import { WorkspaceService } from './workspace.service';
-import { AppResponse, ResponseType, Workspace } from 'src/models';
+import { AccessVisibility, AppResponse, ResponseType, Workspace } from 'src/models';
 import {
   AddNewMemberArgs,
   ChangeWorkspaceVisibilityArgs,
@@ -9,6 +9,7 @@ import {
   GetWorkspaceByIdArgs,
   GetWorkspaceByNameArgs,
   RemoveMemberArgs,
+  SelectQuickAccessWorkspaceArgs,
   UpdateWorkspaceArgs,
 } from 'src/dto/workspace';
 import { getAuthUser } from 'src/utils';
@@ -142,6 +143,42 @@ export class WorkspaceResolver {
       });
       return {
         message: `Successfully update workspace ${id}`,
+        type: ResponseType.Success,
+      };
+    } catch (error: any) {
+      return {
+        message: error,
+        type: ResponseType.Error,
+      };
+    }
+  }
+
+  @Mutation(() => AppResponse)
+  async selectQuickAccessWorkspace(
+    @Context('req') req,
+    @Args('selectQuickAccessWorkspaceArgs') args: SelectQuickAccessWorkspaceArgs
+  ): Promise<AppResponse> {
+    try {
+      const authUser = getAuthUser(req);
+      const { id, updated_date } = args;
+      /** Undefined id is suppposed to be local workspace */
+      if (id) {
+        const workspace = await this.workspaceService.getDataById(id);
+        /** User can only select the workspace as quick access if they are member of the private workspace */
+        /** For public workspace, everyone can select it as quick access */
+        if (
+          workspace.visibility === AccessVisibility.Private &&
+          !workspace.members.includes(authUser.id)
+        ) {
+          throw new Error("User don't have access to the workspace");
+        }
+      }
+      await this.userService.updateData(authUser.id, {
+        selected_workspace: id,
+        updated_date,
+      });
+      return {
+        message: `Successfully select workspace ${id} as quick access`,
         type: ResponseType.Success,
       };
     } catch (error: any) {
