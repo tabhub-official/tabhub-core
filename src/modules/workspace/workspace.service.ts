@@ -11,6 +11,11 @@ export class WorkspaceService extends BaseCRUDService<Workspace> {
     super(CollectionRegistry.Workspace);
   }
 
+  async isWorkspaceMember(workspaceId: string, userId: string) {
+    const workspace = await this.getDataById(workspaceId);
+    return workspace.members.some(member => member === userId);
+  }
+
   getUserWorkspaceByName = async (userId: string, name: string): Promise<Workspace | undefined> => {
     const _collection = await db.collection(CollectionRegistry.Workspace);
     const query = await _collection

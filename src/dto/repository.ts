@@ -62,6 +62,13 @@ export class DeleteRepositoryArgs {
 }
 
 @InputType()
+export class PinRepositoryArgs {
+  @Field()
+  @IsUUID('4')
+  id: string;
+}
+
+@InputType()
 export class GetRepositoryByIdArgs {
   @Field()
   @IsUUID('4')

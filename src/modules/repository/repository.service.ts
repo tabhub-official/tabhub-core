@@ -12,6 +12,10 @@ export class RepositoryService extends BaseCRUDService<Repository> {
     super(CollectionRegistry.Repository);
   }
 
+  hasUserPinned = (_repository: Repository, userId: string): boolean => {
+    return (_repository.pinned || []).some(userWhoPin => userWhoPin == userId);
+  };
+
   getAllPublicRepositories = async (): Promise<Repository[]> => {
     const _collection = await db.collection(this.collectionRegistry);
     const publicData = await _collection.where('visibility', '==', AccessVisibility.Public).get();
@@ -65,6 +69,9 @@ export class RepositoryService extends BaseCRUDService<Repository> {
       owner,
       workspaceId,
       visibility,
+      pinned: [],
+      contributors: [],
+      favorites: [],
     };
     await _collection.doc(newRepositoryId).create(data);
   };

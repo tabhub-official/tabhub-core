@@ -1,11 +1,12 @@
 import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql';
 import { RepositoryService } from './repository.service';
-import { AppResponse, Repository, ResponseType } from 'src/models';
+import { AccessVisibility, AppResponse, Repository, ResponseType } from 'src/models';
 import {
   CreateNewRepositoryArgs,
   DeleteRepositoryArgs,
   GetRepositoryByIdArgs,
   GetRepositoryByNameArgs,
+  PinRepositoryArgs,
   RemoveTabsFromRepositoryArgs,
   UpdateRepositoryArgs,
 } from 'src/dto';
@@ -29,9 +30,8 @@ export class RepositoryResolver {
     try {
       const authUser = getAuthUser(req);
       const { id: workspaceId } = args;
-      const workspace = await this.workspaceService.getDataById(workspaceId);
-      if (!workspace.members.some(member => member === authUser.id))
-        throw new Error('Not workspace member');
+      const isMember = await this.workspaceService.isWorkspaceMember(workspaceId, authUser.id);
+      if (!isMember) throw new Error('Not workspace member');
       return this.repositoryService.getWorkspaceRepositories(workspaceId);
     } catch (error: any) {
       throw new Error(error);
@@ -81,9 +81,8 @@ export class RepositoryResolver {
       const authUser = getAuthUser(req);
       const { name, tabs, workspaceId, description, visibility } = args;
 
-      const workspace = await this.workspaceService.getDataById(workspaceId);
-      if (!workspace.members.some(member => member === authUser.id))
-        throw new Error('Not workspace member');
+      const isMember = await this.workspaceService.isWorkspaceMember(workspaceId, authUser.id);
+      if (!isMember) throw new Error('Not workspace member');
 
       const existingRepository = await this.repositoryService.getRepositoryByName(
         workspaceId,
@@ -136,9 +135,11 @@ export class RepositoryResolver {
 
       const existingRepository = await this.repositoryService.getDataById(id);
 
-      const workspace = await this.workspaceService.getDataById(existingRepository.workspaceId);
-      if (!workspace.members.some(member => member === authUser.id))
-        throw new Error('Not workspace member');
+      const isMember = await this.workspaceService.isWorkspaceMember(
+        existingRepository.workspaceId,
+        authUser.id
+      );
+      if (!isMember) throw new Error('Not workspace member');
 
       /** Add tabs to existing repository if existed */
       await this.repositoryService.updateData(existingRepository.id, {
@@ -169,9 +170,11 @@ export class RepositoryResolver {
       const _repository = await this.repositoryService.getDataById(id);
       // if (_repository.owner !== authUser.id) throw new Error('Not repository owner');
 
-      const workspace = await this.workspaceService.getDataById(_repository.workspaceId);
-      if (!workspace.members.some(member => member === authUser.id))
-        throw new Error('Not workspace member');
+      const isMember = await this.workspaceService.isWorkspaceMember(
+        _repository.workspaceId,
+        authUser.id
+      );
+      if (!isMember) throw new Error('Not workspace member');
 
       await this.repositoryService.updateData(id, repository);
       return {
@@ -204,6 +207,70 @@ export class RepositoryResolver {
       await this.repositoryService.deleteData(id);
       return {
         message: `Successfully delete repository ${id}`,
+        type: ResponseType.Success,
+      };
+    } catch (error: any) {
+      return {
+        message: error,
+        type: ResponseType.Error,
+      };
+    }
+  }
+
+  @Mutation(() => AppResponse)
+  async pinRepository(@Context('req') req, @Args('pinRepositoryArgs') args: PinRepositoryArgs) {
+    try {
+      const authUser = getAuthUser(req);
+      const { id } = args;
+
+      const _repository = await this.repositoryService.getDataById(id);
+      if (_repository.visibility === AccessVisibility.Private) {
+        const isMember = await this.workspaceService.isWorkspaceMember(
+          _repository.workspaceId,
+          authUser.id
+        );
+        if (!isMember) throw new Error('Not workspace member');
+      }
+
+      if (!this.repositoryService.hasUserPinned(_repository, authUser.id)) {
+        await this.repositoryService.updateData(id, {
+          pinned: _repository.pinned.concat(authUser.id),
+        });
+      }
+      return {
+        message: `Successfully pin repository ${id}`,
+        type: ResponseType.Success,
+      };
+    } catch (error: any) {
+      return {
+        message: error,
+        type: ResponseType.Error,
+      };
+    }
+  }
+
+  @Mutation(() => AppResponse)
+  async unpinRepository(@Context('req') req, @Args('unpinRepositoryArgs') args: PinRepositoryArgs) {
+    try {
+      const authUser = getAuthUser(req);
+      const { id } = args;
+
+      const _repository = await this.repositoryService.getDataById(id);
+      if (_repository.visibility === AccessVisibility.Private) {
+        const isMember = await this.workspaceService.isWorkspaceMember(
+          _repository.workspaceId,
+          authUser.id
+        );
+        if (!isMember) throw new Error('Not workspace member');
+      }
+
+      if (this.repositoryService.hasUserPinned(_repository, authUser.id)) {
+        await this.repositoryService.updateData(id, {
+          pinned: _repository.pinned.filter(userWhoPin => userWhoPin !== authUser.id),
+        });
+      }
+      return {
+        message: `Successfully unpin repository ${id}`,
         type: ResponseType.Success,
       };
     } catch (error: any) {
