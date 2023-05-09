@@ -138,7 +138,6 @@ export class WorkspaceResolver {
 
       await this.workspaceService.updateData(id, {
         ..._workspace,
-        updated_date: workspace.updated_date,
         members: _workspace.members.concat([user.id]),
       });
       return {
@@ -209,7 +208,6 @@ export class WorkspaceResolver {
 
       await this.workspaceService.updateData(id, {
         ..._workspace,
-        updated_date: workspace.updated_date,
         members: _workspace.members.filter(member => member !== user.id),
       });
       return {

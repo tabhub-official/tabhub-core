@@ -2,24 +2,28 @@ import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql';
 import { RepositoryService } from './repository.service';
 import { AccessVisibility, AppResponse, Repository, ResponseType } from 'src/models';
 import {
+  AddContributorArgs,
   CreateNewRepositoryArgs,
   DeleteRepositoryArgs,
   GetRepositoryByIdArgs,
   GetRepositoryByNameArgs,
   PinRepositoryArgs,
+  RemoveContributorArgs,
   RemoveTabsFromRepositoryArgs,
   UpdateRepositoryArgs,
 } from 'src/dto';
 import { getAuthUser } from 'src/utils';
 import { WorkspaceService } from '../workspace';
 import { RepositoryTabService } from '../repository-tab';
+import { UserService } from '../user';
 
 @Resolver(() => Repository)
 export class RepositoryResolver {
   constructor(
     private repositoryService: RepositoryService,
     private workspaceService: WorkspaceService,
-    private repositoryTabService: RepositoryTabService
+    private repositoryTabService: RepositoryTabService,
+    private userService: UserService
   ) {}
 
   @Query(() => [Repository])
@@ -81,6 +85,7 @@ export class RepositoryResolver {
       const authUser = getAuthUser(req);
       const { name, tabs, workspaceId, description, visibility } = args;
 
+      /** Must be a workspace member to create a repository */
       const isMember = await this.workspaceService.isWorkspaceMember(workspaceId, authUser.id);
       if (!isMember) throw new Error('Not workspace member');
 
@@ -149,6 +154,88 @@ export class RepositoryResolver {
       });
       return {
         message: `Successfully create new repository ${name}`,
+        type: ResponseType.Success,
+      };
+    } catch (error: any) {
+      return {
+        message: error,
+        type: ResponseType.Error,
+      };
+    }
+  }
+
+  @Mutation(() => AppResponse)
+  async addRepositoryContributor(
+    @Context('req') req,
+    @Args('addRepositoryContributorArgs') args: AddContributorArgs
+  ): Promise<AppResponse> {
+    try {
+      const { id, ...workspace } = args;
+      const authUser = getAuthUser(req);
+      const _repository = await this.repositoryService.getDataById(id);
+
+      const isWorkspaceMember = await this.workspaceService.isWorkspaceMember(
+        _repository.workspaceId,
+        authUser.id
+      );
+      if (!isWorkspaceMember) throw new Error('Not workspace member');
+
+      const isRepositoryContributor = await this.repositoryService.isRepositoryContributor(
+        id,
+        authUser.id
+      );
+      const user = await this.userService.getUserByEmail(workspace.member_email);
+      if (!user) throw new Error('Contributor email is not valid');
+
+      if (isRepositoryContributor) throw new Error('Contributor is added already');
+
+      await this.repositoryService.updateData(id, {
+        ..._repository,
+        contributors: _repository.contributors.concat([user.id]),
+      });
+      return {
+        message: `Successfully update repository ${id}`,
+        type: ResponseType.Success,
+      };
+    } catch (error: any) {
+      return {
+        message: error,
+        type: ResponseType.Error,
+      };
+    }
+  }
+
+  @Mutation(() => AppResponse)
+  async removeRepositoryContributor(
+    @Context('req') req,
+    @Args('removeRepositoryContributorArgs') args: RemoveContributorArgs
+  ): Promise<AppResponse> {
+    try {
+      const { id, ...workspace } = args;
+      const authUser = getAuthUser(req);
+      const _repository = await this.repositoryService.getDataById(id);
+
+      const isWorkspaceMember = await this.workspaceService.isWorkspaceMember(
+        _repository.workspaceId,
+        authUser.id
+      );
+      if (!isWorkspaceMember) throw new Error('Not workspace member');
+
+      const isRepositoryContributor = await this.repositoryService.isRepositoryContributor(
+        id,
+        authUser.id
+      );
+      const user = await this.userService.getUserByEmail(workspace.member_email);
+      if (!user) throw new Error('Contributor email is not valid');
+
+      if (!isRepositoryContributor) throw new Error('Not a repository contributor');
+
+      await this.repositoryService.updateData(id, {
+        ..._repository,
+        contributors: _repository.contributors.filter(contributor => contributor !== user.id),
+      });
+      return {
+        message: `Successfully update repository ${id}`,
         type: ResponseType.Success,
       };
     } catch (error: any) {

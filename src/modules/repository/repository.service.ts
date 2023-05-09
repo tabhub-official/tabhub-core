@@ -5,11 +5,20 @@ import { v4 as uuidV4 } from 'uuid';
 import { BaseCRUDService } from '../_base/baseCRUD.service';
 import { RepositoryTabService } from '../repository-tab';
 import { RepositoryTabAsInput } from 'src/dto';
+import { WorkspaceService } from '../workspace';
 
 @Injectable()
 export class RepositoryService extends BaseCRUDService<Repository> {
-  constructor(private readonly repositoryTabService: RepositoryTabService) {
+  constructor(
+    private readonly repositoryTabService: RepositoryTabService,
+    private readonly workspaceService: WorkspaceService
+  ) {
     super(CollectionRegistry.Repository);
+  }
+
+  async isRepositoryContributor(repositoryId: string, userId: string) {
+    const workspace = await this.getDataById(repositoryId);
+    return workspace.contributors.some(contributor => contributor === userId);
   }
 
   hasUserPinned = (_repository: Repository, userId: string): boolean => {
@@ -59,6 +68,7 @@ export class RepositoryService extends BaseCRUDService<Repository> {
     description?: string
   ): Promise<void> => {
     const _collection = await db.collection(this.collectionRegistry);
+    const workspace = await this.workspaceService.getDataById(workspaceId);
     const newRepositoryId = uuidV4();
     const repositoryTabs = await this.repositoryTabService.createManyRepositoryTab(tabs);
     const data: Partial<Repository> = {
@@ -70,7 +80,7 @@ export class RepositoryService extends BaseCRUDService<Repository> {
       workspaceId,
       visibility,
       pinned: [],
-      contributors: [],
+      contributors: workspace.members,
       favorites: [],
     };
     await _collection.doc(newRepositoryId).create(data);

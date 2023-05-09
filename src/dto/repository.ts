@@ -1,5 +1,6 @@
 import { Field, InputType, PartialType } from '@nestjs/graphql';
 import { ArrayNotEmpty, IsUUID, MaxLength, MinLength } from 'class-validator';
+import * as moment from 'moment';
 import { AccessVisibility, Repository } from 'src/models';
 
 @InputType()
@@ -49,6 +50,32 @@ export class RemoveTabsFromRepositoryArgs {
   @ArrayNotEmpty()
   @Field(() => [String])
   tabs: string[];
+}
+
+@InputType()
+export class AddContributorArgs {
+  @Field()
+  @IsUUID()
+  id: string;
+
+  @Field()
+  member_email: string;
+
+  @Field({ nullable: false, defaultValue: moment().unix() })
+  updated_date: number;
+}
+
+@InputType()
+export class RemoveContributorArgs {
+  @Field()
+  @IsUUID()
+  id: string;
+
+  @Field()
+  member_email: string;
+
+  @Field({ nullable: false, defaultValue: moment().unix() })
+  updated_date: number;
 }
 
 @InputType()
