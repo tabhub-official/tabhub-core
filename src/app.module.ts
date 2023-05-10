@@ -49,9 +49,9 @@ const generalConfiguration = ConfigModule.forRoot({
 
 const resolvers = [WorkspaceResolver, RepositoryResolver, UserResolver];
 const services = [
-  WorkspaceService,
   RepositoryService,
   RepositoryTabService,
+  WorkspaceService,
   UserService,
   AppService,
 ];

@@ -106,6 +106,7 @@ export class RepositoryResolver {
           type: ResponseType.Success,
         };
       } else {
+        const workspace = await this.workspaceService.getDataById(workspaceId);
         /** Create new repository if not exist */
         await this.repositoryService.createNewRepository(
           name,
@@ -113,6 +114,7 @@ export class RepositoryResolver {
           authUser.id,
           workspaceId,
           visibility,
+          workspace.members,
           description
         );
         return {
