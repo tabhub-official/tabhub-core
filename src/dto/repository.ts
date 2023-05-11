@@ -103,6 +103,20 @@ export class GetRepositoryByIdArgs {
 }
 
 @InputType()
+export class GetUserRepositoriesArgs {
+  @Field()
+  @IsUUID('4')
+  userId: string;
+}
+
+@InputType()
+export class GetWorkspaceRepositoriesArgs {
+  @Field()
+  @IsUUID('4')
+  workspaceId: string;
+}
+
+@InputType()
 export class GetRepositoryByNameArgs {
   @Field()
   @IsUUID('4')

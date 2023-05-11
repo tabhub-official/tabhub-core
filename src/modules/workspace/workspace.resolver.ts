@@ -6,13 +6,14 @@ import {
   ChangeWorkspaceVisibilityArgs,
   CreateNewWorkspaceArgs,
   DeleteWorkspaceArgs,
+  GetUserWorkspacesArgs,
   GetWorkspaceByIdArgs,
   GetWorkspaceByNameArgs,
   RemoveMemberArgs,
   SelectQuickAccessWorkspaceArgs,
   UpdateWorkspaceArgs,
 } from 'src/dto/workspace';
-import { getAuthUser } from 'src/utils';
+import { getAuthUser, getUnsafeAuthUser } from 'src/utils';
 import { UserService } from '../user';
 import { RepositoryService } from '../repository';
 import { RepositoryTabService } from '../repository-tab';
@@ -29,7 +30,7 @@ export class WorkspaceResolver {
   @Query(() => [Workspace])
   async getAllWorkspaces() {
     try {
-      return this.workspaceService.getAllData();
+      return this.workspaceService.getPublicWorkspaces();
     } catch (error: any) {
       throw new Error(error);
     }
@@ -39,7 +40,17 @@ export class WorkspaceResolver {
   async getMyWorkspaces(@Context('req') req) {
     try {
       const authUser = getAuthUser(req);
-      return this.workspaceService.getUserWorkspaces(authUser.id);
+      return this.workspaceService.getAuthUserWorkspaces(authUser.id);
+    } catch (error: any) {
+      throw new Error(error);
+    }
+  }
+
+  @Query(() => [Workspace])
+  async getUserWorkspaces(@Args('getUserWorkspacesArgs') args: GetUserWorkspacesArgs) {
+    try {
+      const { userId } = args;
+      return this.workspaceService.getUserPublicWorkspaces(userId);
     } catch (error: any) {
       throw new Error(error);
     }
@@ -47,11 +58,13 @@ export class WorkspaceResolver {
 
   @Query(() => Workspace, { nullable: true })
   async getWorkspaceById(
+    @Context('req') req,
     @Args('getWorkspaceByIdArgs') args: GetWorkspaceByIdArgs
   ): Promise<Workspace> {
     try {
       const { id } = args;
-      return this.workspaceService.getDataById(id);
+      const authUser = getUnsafeAuthUser(req);
+      return this.workspaceService.getAuthWorkspaceById(authUser?.id, id);
     } catch (error) {
       throw new Error(error);
     }
@@ -59,11 +72,13 @@ export class WorkspaceResolver {
 
   @Query(() => Workspace, { nullable: true })
   async getWorkspaceByName(
+    @Context('req') req,
     @Args('getWorkspaceByNameArgs') args: GetWorkspaceByNameArgs
   ): Promise<Workspace> {
     try {
       const { userId, workspace_name } = args;
-      return this.workspaceService.getUserWorkspaceByName(userId, workspace_name);
+      const authUser = getUnsafeAuthUser(req);
+      return this.workspaceService.getAuthUserWorkspaceByName(authUser?.id, userId, workspace_name);
     } catch (error) {
       throw new Error(error);
     }

@@ -13,22 +13,71 @@ export class WorkspaceService extends BaseCRUDService<Workspace> {
 
   async isWorkspaceMember(workspaceId: string, userId: string) {
     const workspace = await this.getDataById(workspaceId);
-    return workspace.members.some(member => member === userId);
+    if (!workspace) return false;
+    return (workspace.members || []).some(member => member === userId);
   }
 
-  getUserWorkspaceByName = async (userId: string, name: string): Promise<Workspace | undefined> => {
-    const _collection = await db.collection(CollectionRegistry.Workspace);
+  private userCanViewWorkspace(userId: string, foundWorkspace: Workspace) {
+    const isMember = userId && foundWorkspace.members.some(member => member === userId);
+    const isPrivate = foundWorkspace.visibility === AccessVisibility.Private;
+    return !isPrivate || isMember;
+  }
+
+  /** Method: Get Workspace By Id */
+  getAuthWorkspaceById = async (
+    authUserId: string | undefined,
+    id: string
+  ): Promise<Workspace | undefined> => {
+    const _collection = await db.collection(this.collectionRegistry);
+    const query = await _collection.where('id', '==', id).get();
+    if (query.empty) return undefined;
+    const foundWorkspace = query.docs.map<Workspace>(doc => doc.data() as Workspace)[0];
+
+    if (this.userCanViewWorkspace(authUserId, foundWorkspace)) {
+      return foundWorkspace;
+    }
+    return undefined;
+  };
+
+  getAuthUserWorkspaceByName = async (
+    authUserId: string | undefined,
+    userId: string,
+    name: string
+  ): Promise<Workspace | undefined> => {
+    const _collection = await db.collection(this.collectionRegistry);
     const query = await _collection
       .where('members', 'array-contains', userId)
       .where('name', '==', name)
       .get();
     if (query.empty) return undefined;
-    return query.docs.map<Workspace>(doc => doc.data() as Workspace)[0];
+    const foundWorkspace = query.docs.map<Workspace>(doc => doc.data() as Workspace)[0];
+
+    if (this.userCanViewWorkspace(authUserId, foundWorkspace)) {
+      return foundWorkspace;
+    }
+    return undefined;
   };
 
-  getUserWorkspaces = async (userId: string): Promise<Workspace[]> => {
-    const _collection = await db.collection(CollectionRegistry.Workspace);
+  /** Method: Get Workspaces */
+  getPublicWorkspaces = async (): Promise<Workspace[]> => {
+    const _collection = await db.collection(this.collectionRegistry);
+    const query = await _collection.where('visibility', '==', AccessVisibility.Public).get();
+    return query.docs.map<Workspace>(doc => doc.data() as Workspace) || [];
+  };
+
+  /** Method: Get User Workspaces */
+  getAuthUserWorkspaces = async (userId: string): Promise<Workspace[]> => {
+    const _collection = await db.collection(this.collectionRegistry);
     const query = await _collection.where('members', 'array-contains', userId).get();
+    return query.docs.map<Workspace>(doc => doc.data() as Workspace) || [];
+  };
+
+  getUserPublicWorkspaces = async (userId: string): Promise<Workspace[]> => {
+    const _collection = await db.collection(this.collectionRegistry);
+    const query = await _collection
+      .where('members', 'array-contains', userId)
+      .where('visibility', '==', AccessVisibility.Public)
+      .get();
     return query.docs.map<Workspace>(doc => doc.data() as Workspace) || [];
   };
 

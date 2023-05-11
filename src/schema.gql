@@ -11,13 +11,13 @@ enum AccessVisibility {
 input AddContributorArgs {
   id: String!
   member_email: String!
-  updated_date: Float! = 1683699445
+  updated_date: Float! = 1683791850
 }
 
 input AddNewMemberArgs {
   id: String!
   member_email: String!
-  updated_date: Float! = 1683699445
+  updated_date: Float! = 1683791850
 }
 
 type AppResponse {
@@ -27,7 +27,7 @@ type AppResponse {
 
 input ChangeWorkspaceVisibilityArgs {
   id: String!
-  updated_date: Float! = 1683699445
+  updated_date: Float! = 1683791850
   visibility: AccessVisibility!
 }
 
@@ -75,6 +75,14 @@ input GetUserByIdArgs {
   id: String!
 }
 
+input GetUserRepositoriesArgs {
+  userId: String!
+}
+
+input GetUserWorkspacesArgs {
+  userId: String!
+}
+
 input GetWorkspaceByIdArgs {
   id: String!
 }
@@ -82,6 +90,10 @@ input GetWorkspaceByIdArgs {
 input GetWorkspaceByNameArgs {
   userId: String!
   workspace_name: String!
+}
+
+input GetWorkspaceRepositoriesArgs {
+  workspaceId: String!
 }
 
 type Mutation {
@@ -115,24 +127,26 @@ type Query {
   getAllWorkspaces: [Workspace!]!
   getCurrentUser: User
   getMyWorkspaces: [Workspace!]!
-  getRepositoryById(getRepositoryById: GetRepositoryByIdArgs!): Repository!
-  getRepositoryByName(getRepositoryBName: GetRepositoryByNameArgs!): Repository!
+  getRepositoryById(getRepositoryByIdArgs: GetRepositoryByIdArgs!): Repository!
+  getRepositoryByName(getRepositoryByNameArgs: GetRepositoryByNameArgs!): Repository!
   getUserById(getUserByIdArgs: GetUserByIdArgs!): User
+  getUserRepositories(getUserRepositoriesArgs: GetUserRepositoriesArgs!): [Repository!]!
+  getUserWorkspaces(getUserWorkspacesArgs: GetUserWorkspacesArgs!): [Workspace!]!
   getWorkspaceById(getWorkspaceByIdArgs: GetWorkspaceByIdArgs!): Workspace
   getWorkspaceByName(getWorkspaceByNameArgs: GetWorkspaceByNameArgs!): Workspace
-  getWorkspaceRepositories(getRepositoryById: GetRepositoryByIdArgs!): [Repository!]!
+  getWorkspaceRepositories(getWorkspaceRepositoriesArgs: GetWorkspaceRepositoriesArgs!): [Repository!]!
 }
 
 input RemoveContributorArgs {
   id: String!
   member_email: String!
-  updated_date: Float! = 1683699445
+  updated_date: Float! = 1683791850
 }
 
 input RemoveMemberArgs {
   id: String!
   member_email: String!
-  updated_date: Float! = 1683699445
+  updated_date: Float! = 1683791850
 }
 
 input RemoveTabsFromRepositoryArgs {
@@ -200,13 +214,13 @@ enum ResponseType {
 
 input SelectQuickAccessWorkspaceArgs {
   id: String
-  updated_date: Float! = 1683699445
+  updated_date: Float! = 1683791850
 }
 
 input UpdateRepositoryArgs {
   """List of user IDs"""
   contributors: [String!] = []
-  created_date: Float = 1683699445
+  created_date: Float = 1683791850
   description: String
 
   """List of user IDs"""
@@ -220,13 +234,13 @@ input UpdateRepositoryArgs {
 
   """List of repository tab IDs"""
   tabs: [RepositoryTabInput!] = []
-  updated_date: Float = 1683699445
+  updated_date: Float = 1683791850
   visibility: AccessVisibility = Private
   workspaceId: String
 }
 
 input UpdateUserArgs {
-  created_date: Float = 1683699445
+  created_date: Float = 1683791850
   email: String
 
   """List of user IDs"""
@@ -246,7 +260,7 @@ input UpdateUserArgs {
 
   """ID of selected workspace"""
   selected_workspace: String
-  updated_date: Float = 1683699445
+  updated_date: Float = 1683791850
   username: String
 
   """List of workspace IDs"""
@@ -257,7 +271,7 @@ input UpdateWorkspaceArgs {
   description: String = ""
   id: String!
   name: String!
-  updated_date: Float! = 1683699445
+  updated_date: Float! = 1683791850
   visibility: AccessVisibility!
 }
 

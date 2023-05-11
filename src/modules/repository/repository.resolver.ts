@@ -7,12 +7,14 @@ import {
   DeleteRepositoryArgs,
   GetRepositoryByIdArgs,
   GetRepositoryByNameArgs,
+  GetUserRepositoriesArgs,
+  GetWorkspaceRepositoriesArgs,
   PinRepositoryArgs,
   RemoveContributorArgs,
   RemoveTabsFromRepositoryArgs,
   UpdateRepositoryArgs,
 } from 'src/dto';
-import { getAuthUser } from 'src/utils';
+import { getAuthUser, getUnsafeAuthUser } from 'src/utils';
 import { WorkspaceService } from '../workspace';
 import { RepositoryTabService } from '../repository-tab';
 import { UserService } from '../user';
@@ -27,16 +29,35 @@ export class RepositoryResolver {
   ) {}
 
   @Query(() => [Repository])
-  async getWorkspaceRepositories(
+  async getUserRepositories(
     @Context('req') req,
-    @Args('getRepositoryById') args: GetRepositoryByIdArgs
+    @Args('getUserRepositoriesArgs') args: GetUserRepositoriesArgs
   ) {
     try {
-      const authUser = getAuthUser(req);
-      const { id: workspaceId } = args;
-      const isMember = await this.workspaceService.isWorkspaceMember(workspaceId, authUser.id);
-      if (!isMember) throw new Error('Not workspace member');
-      return this.repositoryService.getWorkspaceRepositories(workspaceId);
+      const { userId } = args;
+      const authUser = getUnsafeAuthUser(req);
+      if (authUser && authUser.id === userId) {
+        return this.repositoryService.getAuthUserRepositories(userId);
+      }
+      return this.repositoryService.getUserRepositories(userId);
+    } catch (error: any) {
+      throw new Error(error);
+    }
+  }
+
+  @Query(() => [Repository])
+  async getWorkspaceRepositories(
+    @Context('req') req,
+    @Args('getWorkspaceRepositoriesArgs') args: GetWorkspaceRepositoriesArgs
+  ) {
+    try {
+      const authUser = getUnsafeAuthUser(req);
+      const { workspaceId: workspaceId } = args;
+      if (authUser) {
+        const isMember = await this.workspaceService.isWorkspaceMember(workspaceId, authUser.id);
+        if (isMember) return this.repositoryService.getWorkspaceRepositories(workspaceId);
+      }
+      return this.repositoryService.getWorkspacePublicRepositories(workspaceId);
     } catch (error: any) {
       throw new Error(error);
     }
@@ -53,7 +74,7 @@ export class RepositoryResolver {
 
   @Query(() => Repository)
   async getRepositoryByName(
-    @Args('getRepositoryBName') args: GetRepositoryByNameArgs
+    @Args('getRepositoryByNameArgs') args: GetRepositoryByNameArgs
   ): Promise<Repository> {
     try {
       const { name, workspaceId } = args;
@@ -65,7 +86,7 @@ export class RepositoryResolver {
 
   @Query(() => Repository)
   async getRepositoryById(
-    @Args('getRepositoryById') args: GetRepositoryByIdArgs
+    @Args('getRepositoryByIdArgs') args: GetRepositoryByIdArgs
   ): Promise<Repository> {
     try {
       const { id } = args;

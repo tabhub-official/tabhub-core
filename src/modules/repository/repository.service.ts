@@ -28,9 +28,33 @@ export class RepositoryService extends BaseCRUDService<Repository> {
     return publicData.docs.map<Repository>(doc => doc.data() as Repository);
   };
 
+  getUserRepositories = async (userId: string): Promise<Repository[]> => {
+    const _collection = await db.collection(this.collectionRegistry);
+    const publicData = await _collection
+      .where('contributors', 'array-contains', userId)
+      .where('visibility', '==', AccessVisibility.Public)
+      .get();
+    return publicData.docs.map<Repository>(doc => doc.data() as Repository);
+  };
+
+  getAuthUserRepositories = async (userId: string): Promise<Repository[]> => {
+    const _collection = await db.collection(this.collectionRegistry);
+    const publicData = await _collection.where('contributors', 'array-contains', userId).get();
+    return publicData.docs.map<Repository>(doc => doc.data() as Repository);
+  };
+
   getWorkspaceRepositories = async (workspaceId: string): Promise<Repository[]> => {
     const _collection = await db.collection(this.collectionRegistry);
     const publicData = await _collection.where('workspaceId', '==', workspaceId).get();
+    return publicData.docs.map<Repository>(doc => doc.data() as Repository);
+  };
+
+  getWorkspacePublicRepositories = async (workspaceId: string): Promise<Repository[]> => {
+    const _collection = await db.collection(this.collectionRegistry);
+    const publicData = await _collection
+      .where('workspaceId', '==', workspaceId)
+      .where('visibility', '==', AccessVisibility.Public)
+      .get();
     return publicData.docs.map<Repository>(doc => doc.data() as Repository);
   };
 
@@ -45,15 +69,6 @@ export class RepositoryService extends BaseCRUDService<Repository> {
       .get();
     if (publicData.empty) return undefined;
     return publicData.docs.map<Repository>(doc => doc.data() as Repository)[0];
-  };
-
-  getWorkspacePublicRepositories = async (workspaceId: string): Promise<Repository[]> => {
-    const _collection = await db.collection(this.collectionRegistry);
-    const publicData = await _collection
-      .where('visibility', '==', AccessVisibility.Public)
-      .where('workspaceId', '==', workspaceId)
-      .get();
-    return publicData.docs.map<Repository>(doc => doc.data() as Repository);
   };
 
   createNewRepository = async (

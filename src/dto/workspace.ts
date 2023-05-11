@@ -112,3 +112,10 @@ export class GetWorkspaceByIdArgs {
   @IsUUID()
   id: string;
 }
+
+@InputType()
+export class GetUserWorkspacesArgs {
+  @Field()
+  @IsUUID()
+  userId: string;
+}
