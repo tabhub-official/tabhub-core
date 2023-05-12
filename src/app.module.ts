@@ -1,8 +1,12 @@
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { GraphQLModule } from '@nestjs/graphql';
+import { join } from 'path';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { GraphQLModule } from '@nestjs/graphql';
+import { auth } from './config/firebase-config';
 import {
   RepositoryService,
   RepositoryTabService,
@@ -11,10 +15,7 @@ import {
   WorkspaceResolver,
   WorkspaceService,
 } from './modules';
-import { ConfigModule } from '@nestjs/config';
-import { join } from 'path';
 import { RepositoryResolver } from './modules/repository/repository.resolver';
-import { auth } from './config/firebase-config';
 
 const graphQLConfiguration = GraphQLModule.forRoot<ApolloDriverConfig>({
   driver: ApolloDriver,

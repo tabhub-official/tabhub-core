@@ -1,6 +1,4 @@
 import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql';
-import { RepositoryService } from './repository.service';
-import { AccessVisibility, AppResponse, Repository, ResponseType } from 'src/models';
 import {
   AddContributorArgs,
   CreateNewRepositoryArgs,
@@ -14,10 +12,13 @@ import {
   RemoveTabsFromRepositoryArgs,
   UpdateRepositoryArgs,
 } from 'src/dto';
+import { AccessVisibility, AppResponse, Repository, ResponseType } from 'src/models';
 import { getAuthUser, getUnsafeAuthUser } from 'src/utils';
-import { WorkspaceService } from '../workspace';
+
 import { RepositoryTabService } from '../repository-tab';
 import { UserService } from '../user';
+import { WorkspaceService } from '../workspace';
+import { RepositoryService } from './repository.service';
 
 @Resolver(() => Repository)
 export class RepositoryResolver {

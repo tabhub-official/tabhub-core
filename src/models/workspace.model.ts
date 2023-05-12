@@ -1,7 +1,8 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import * as moment from 'moment';
-import { AccessVisibility } from './accessibility';
 import { MaxLength, MinLength, IsUUID, ArrayNotEmpty } from 'class-validator';
+import * as moment from 'moment';
+
+import { AccessVisibility } from './accessibility';
 
 @ObjectType()
 export class Workspace {

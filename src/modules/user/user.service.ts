@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import * as moment from 'moment';
 import { CollectionRegistry, db } from 'src/config/firebase-config';
 import { User } from 'src/models';
+
 import { BaseCRUDService } from '../_base/baseCRUD.service';
-import * as moment from 'moment';
 
 @Injectable()
 export class UserService extends BaseCRUDService<User> {

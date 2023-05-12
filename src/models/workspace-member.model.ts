@@ -1,6 +1,7 @@
 import { Field, Int, ObjectType, PartialType } from '@nestjs/graphql';
-import { User } from './user.model';
 import * as moment from 'moment';
+
+import { User } from './user.model';
 
 @ObjectType()
 export class WorkspaceMember extends PartialType(User) {

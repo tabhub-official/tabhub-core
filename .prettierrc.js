@@ -18,4 +18,8 @@ module.exports = {
   trailingComma: 'es5',
   useTabs: false,
   vueIndentScriptAndStyle: false,
+  importOrderParserPlugins: ['typescript', 'decorators-legacy'],
+  importOrder: ['^react(.*)', 'antd/(.*)', '<THIRD_PARTY_MODULES>', '@/(.*)', '^[./]'],
+  importOrderSeparation: true,
+  endOfLine: 'auto',
 };

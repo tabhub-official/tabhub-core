@@ -1,6 +1,4 @@
 import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql';
-import { WorkspaceService } from './workspace.service';
-import { AccessVisibility, AppResponse, ResponseType, Workspace } from 'src/models';
 import {
   AddNewMemberArgs,
   ChangeWorkspaceVisibilityArgs,
@@ -13,10 +11,13 @@ import {
   SelectQuickAccessWorkspaceArgs,
   UpdateWorkspaceArgs,
 } from 'src/dto/workspace';
+import { AccessVisibility, AppResponse, ResponseType, Workspace } from 'src/models';
 import { getAuthUser, getUnsafeAuthUser } from 'src/utils';
-import { UserService } from '../user';
+
 import { RepositoryService } from '../repository';
 import { RepositoryTabService } from '../repository-tab';
+import { UserService } from '../user';
+import { WorkspaceService } from './workspace.service';
 
 @Resolver(() => Workspace)
 export class WorkspaceResolver {

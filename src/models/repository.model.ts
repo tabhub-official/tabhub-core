@@ -1,8 +1,9 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import * as moment from 'moment';
 import { MinLength, MaxLength, IsUUID, IsEmail, ArrayNotEmpty } from 'class-validator';
-import { RepositoryTab } from './repository-tab.model';
+import * as moment from 'moment';
+
 import { AccessVisibility } from './accessibility';
+import { RepositoryTab } from './repository-tab.model';
 
 @ObjectType()
 export class Repository {

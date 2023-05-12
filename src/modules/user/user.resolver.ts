@@ -1,9 +1,10 @@
-import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql';
-import { UserService } from './user.service';
-import { AppResponse, ResponseType, User } from 'src/models';
-import { CreateNewUserArgs, GetUserByIdArgs, UpdateUserArgs } from 'src/dto';
 import { createParamDecorator } from '@nestjs/common';
+import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql';
+import { CreateNewUserArgs, GetUserByIdArgs, UpdateUserArgs } from 'src/dto';
+import { AppResponse, ResponseType, User } from 'src/models';
 import { getAuthUser } from 'src/utils/auth';
+
+import { UserService } from './user.service';
 
 export type CurrentUserType = {
   email: string;

@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import * as moment from 'moment';
 import { CollectionRegistry, db } from 'src/config/firebase-config';
 import { AccessVisibility, Workspace } from 'src/models';
 import { v4 as uuidV4 } from 'uuid';
+
 import { BaseCRUDService } from '../_base/baseCRUD.service';
-import * as moment from 'moment';
 
 @Injectable()
 export class WorkspaceService extends BaseCRUDService<Workspace> {

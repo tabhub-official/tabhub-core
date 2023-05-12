@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { CollectionRegistry, db } from 'src/config/firebase-config';
+import { RepositoryTabAsInput } from 'src/dto';
 import { RepositoryTab } from 'src/models';
 import { v4 as uuidV4 } from 'uuid';
+
 import { BaseCRUDService } from '../_base/baseCRUD.service';
-import { RepositoryTabAsInput } from 'src/dto';
 
 @Injectable()
 export class RepositoryTabService extends BaseCRUDService<RepositoryTab> {
