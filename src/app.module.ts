@@ -28,13 +28,15 @@ const graphQLConfiguration = GraphQLModule.forRoot<ApolloDriverConfig>({
     try {
       const regex = /Bearer (.+)/i;
       const idToken = req.headers['authorization'].match(regex)?.[1];
-      const token = await auth.verifyIdToken(idToken);
-      req.user = {
-        id: token.uid,
-        email: token.email,
-        phone: token.phone_number,
-        picture: token.picture,
-      };
+      if (idToken) {
+        const token = await auth.verifyIdToken(idToken);
+        req.user = {
+          id: token.uid,
+          email: token.email,
+          phone: token.phone_number,
+          picture: token.picture,
+        };
+      }
       return { req };
     } catch (error) {
       console.log(error);

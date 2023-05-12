@@ -66,7 +66,15 @@ export class RepositoryResolver {
   @Query(() => [Repository])
   async getAllPublicRepositories() {
     try {
-      return this.repositoryService.getAllPublicRepositories();
+      let repositories = [];
+      const workspaces = await this.workspaceService.getPublicWorkspaces();
+      for (const workspace of workspaces) {
+        const workspaceRepositories = await this.repositoryService.getWorkspaceRepositories(
+          workspace.id
+        );
+        repositories = repositories.concat(workspaceRepositories);
+      }
+      return repositories;
     } catch (error: any) {
       throw new Error(error);
     }
