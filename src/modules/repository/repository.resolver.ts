@@ -10,6 +10,7 @@ import {
   PinRepositoryArgs,
   RemoveContributorArgs,
   RemoveTabsFromRepositoryArgs,
+  SetRepositoryTabsArgs,
   UpdateRepositoryArgs,
 } from 'src/dto';
 import { AccessVisibility, AppResponse, Repository, ResponseType } from 'src/models';
@@ -105,6 +106,30 @@ export class RepositoryResolver {
     }
   }
 
+  @Mutation(() => AppResponse, { nullable: true })
+  async setRepositoryTabs(
+    @Context('req') req,
+    @Args('setRepositoryTabsArgs') args: SetRepositoryTabsArgs
+  ): Promise<AppResponse> {
+    try {
+      const authUser = getAuthUser(req);
+      const { id: repositoryId, tabs } = args;
+      const isContributor = await this.repositoryService.isRepositoryContributor(
+        repositoryId,
+        authUser.id
+      );
+      if (!isContributor) throw new Error('No editting permission');
+      await this.repositoryService.updateData(repositoryId, {
+        tabs: tabs,
+      });
+    } catch (error) {
+      return {
+        message: error,
+        type: ResponseType.Error,
+      };
+    }
+  }
+
   @Mutation(() => AppResponse)
   async createNewRepository(
     @Context('req') req,
@@ -176,7 +201,8 @@ export class RepositoryResolver {
         existingRepository.workspaceId,
         authUser.id
       );
-      if (!isMember) throw new Error('Not workspace member');
+      const isContributor = await this.repositoryService.isRepositoryContributor(id, authUser.id);
+      if (!isMember || !isContributor) throw new Error('No editting permission');
 
       /** Add tabs to existing repository if existed */
       await this.repositoryService.updateData(existingRepository.id, {
@@ -185,7 +211,7 @@ export class RepositoryResolver {
         ),
       });
       return {
-        message: `Successfully create new repository ${name}`,
+        message: `Successfully remove tabs from repository`,
         type: ResponseType.Success,
       };
     } catch (error: any) {
@@ -293,7 +319,8 @@ export class RepositoryResolver {
         _repository.workspaceId,
         authUser.id
       );
-      if (!isMember) throw new Error('Not workspace member');
+      const isContributor = await this.repositoryService.isRepositoryContributor(id, authUser.id);
+      if (!isMember || !isContributor) throw new Error('No editting permission');
 
       await this.repositoryService.updateData(id, repository);
       return {
