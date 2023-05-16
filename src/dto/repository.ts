@@ -110,6 +110,20 @@ export class PinRepositoryArgs {
 }
 
 @InputType()
+export class ToggleLikeRepositoryArgs {
+  @Field()
+  @IsUUID('4')
+  id: string;
+}
+
+@InputType()
+export class UnlikeRepositoryArgs {
+  @Field()
+  @IsUUID('4')
+  id: string;
+}
+
+@InputType()
 export class GetRepositoryByIdArgs {
   @Field()
   @IsUUID('4')

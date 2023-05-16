@@ -7,6 +7,7 @@ import {
   GetRepositoryByNameArgs,
   GetUserRepositoriesArgs,
   GetWorkspaceRepositoriesArgs,
+  ToggleLikeRepositoryArgs,
   PinRepositoryArgs,
   RemoveContributorArgs,
   RemoveTabsFromRepositoryArgs,
@@ -420,6 +421,33 @@ export class RepositoryResolver {
         type: ResponseType.Success,
       };
     } catch (error: any) {
+      return {
+        message: error,
+        type: ResponseType.Error,
+      };
+    }
+  }
+
+  @Mutation(() => AppResponse)
+  async toggleLikeRepository(
+    @Context('req') req,
+    @Args('toggleLikeRepositoryArgs') args: ToggleLikeRepositoryArgs
+  ) {
+    try {
+      const authUser = getAuthUser(req);
+      const { id } = args;
+      const repository = await this.repositoryService.getDataById(id);
+      const liked = repository.favorites.some(userId => userId === authUser.id);
+      await this.repositoryService.updateData(id, {
+        favorites: liked
+          ? repository.favorites.filter(userId => userId !== authUser.id)
+          : repository.favorites.concat([authUser.id]),
+      });
+      return {
+        message: 'Successfully toggle repository favorite',
+        type: ResponseType.Success,
+      };
+    } catch (error) {
       return {
         message: error,
         type: ResponseType.Error,
