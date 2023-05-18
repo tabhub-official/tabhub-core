@@ -1,9 +1,10 @@
 import { createParamDecorator } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql';
-import { CreateNewUserArgs, GetUserByIdArgs, UpdateUserArgs } from 'src/dto';
+import { CreateNewUserArgs, GetUserByIdArgs, SmartTabGroupingArgs, UpdateUserArgs } from 'src/dto';
 import { AppResponse, ResponseType, User } from 'src/models';
 import { getAuthUser } from 'src/utils/auth';
 
+import { OpenAIService } from '../openai';
 import { UserService } from './user.service';
 
 export type CurrentUserType = {
@@ -15,7 +16,7 @@ export const CurrentUser = createParamDecorator((_, req) => req.user);
 
 @Resolver(() => User)
 export class UserResolver {
-  constructor(private userService: UserService) {}
+  constructor(private userService: UserService, private openaiService: OpenAIService) {}
 
   @Query(() => [User])
   async getAllUsers() {
@@ -76,8 +77,8 @@ export class UserResolver {
     @Context('req') req,
     @Args('updateUserArgs') args: UpdateUserArgs
   ): Promise<AppResponse> {
-    const authUser = getAuthUser(req);
     try {
+      const authUser = getAuthUser(req);
       const { ...workspace } = args;
       await this.userService.updateData(authUser.id, workspace);
       return {
@@ -94,9 +95,30 @@ export class UserResolver {
 
   @Mutation(() => AppResponse)
   async deleteUser(@Context('req') req): Promise<AppResponse> {
-    const authUser = getAuthUser(req);
     try {
+      const authUser = getAuthUser(req);
       await this.userService.deleteData(authUser.id);
+      return {
+        message: `Successfully delete workspace ${authUser.id}`,
+        type: ResponseType.Success,
+      };
+    } catch (error: any) {
+      return {
+        message: error,
+        type: ResponseType.Error,
+      };
+    }
+  }
+
+  /** Doing magic below here */
+  @Mutation(() => AppResponse)
+  async smartTabGrouping(
+    @Context('req') req,
+    @Args('smartTabGroupingArgs') args: SmartTabGroupingArgs
+  ) {
+    try {
+      const authUser = getAuthUser(req);
+      console.log(args);
       return {
         message: `Successfully delete workspace ${authUser.id}`,
         type: ResponseType.Success,
