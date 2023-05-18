@@ -77,9 +77,9 @@ export class WorkspaceResolver {
     @Args('getWorkspaceByNameArgs') args: GetWorkspaceByNameArgs
   ): Promise<Workspace> {
     try {
-      const { userId, workspace_name } = args;
+      const { workspace_name } = args;
       const authUser = getUnsafeAuthUser(req);
-      return this.workspaceService.getAuthUserWorkspaceByName(authUser?.id, userId, workspace_name);
+      return this.workspaceService.getAuthUserWorkspaceByName(authUser?.id, workspace_name);
     } catch (error) {
       throw new Error(error);
     }

@@ -99,10 +99,6 @@ export class SelectQuickAccessWorkspaceArgs {
 @InputType()
 export class GetWorkspaceByNameArgs {
   @Field()
-  @IsUUID()
-  userId: string;
-
-  @Field()
   workspace_name: string;
 }
 

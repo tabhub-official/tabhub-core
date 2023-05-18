@@ -42,14 +42,10 @@ export class WorkspaceService extends BaseCRUDService<Workspace> {
 
   getAuthUserWorkspaceByName = async (
     authUserId: string | undefined,
-    userId: string,
     name: string
   ): Promise<Workspace | undefined> => {
     const _collection = await db.collection(this.collectionRegistry);
-    const query = await _collection
-      .where('members', 'array-contains', userId)
-      .where('name', '==', name)
-      .get();
+    const query = await _collection.where('name', '==', name).get();
     if (query.empty) return undefined;
     const foundWorkspace = query.docs.map<Workspace>(doc => doc.data() as Workspace)[0];
 
