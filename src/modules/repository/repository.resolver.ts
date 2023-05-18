@@ -369,8 +369,14 @@ export class RepositoryResolver {
     try {
       const authUser = getAuthUser(req);
       const { id } = args;
+      const userId = authUser.id;
+
+      /** Find current user */
+      const currentUser = await this.userService.getDataById(userId);
+      if (!currentUser) throw new Error('No user found');
 
       const _repository = await this.repositoryService.getDataById(id);
+      /** Check permission of user if the repository is private */
       if (_repository.visibility === AccessVisibility.Private) {
         const isMember = await this.workspaceService.isWorkspaceMember(
           _repository.workspaceId,
@@ -380,8 +386,13 @@ export class RepositoryResolver {
       }
 
       if (!this.repositoryService.hasUserPinned(_repository, authUser.id)) {
+        /** Add user id to the list of pinned in repository */
         await this.repositoryService.updateData(id, {
           pinned: _repository.pinned.concat(authUser.id),
+        });
+        /** Add repository id to the list of pinned in user */
+        await this.userService.updateData(authUser.id, {
+          pinned_repositories: currentUser.pinned_repositories.concat(id),
         });
       }
       return {
@@ -401,7 +412,13 @@ export class RepositoryResolver {
     try {
       const authUser = getAuthUser(req);
       const { id } = args;
+      const userId = authUser.id;
 
+      /** Find current user */
+      const currentUser = await this.userService.getDataById(userId);
+      if (!currentUser) throw new Error('No user found');
+
+      /** Check permission of user if the repository is private */
       const _repository = await this.repositoryService.getDataById(id);
       if (_repository.visibility === AccessVisibility.Private) {
         const isMember = await this.workspaceService.isWorkspaceMember(
@@ -412,8 +429,15 @@ export class RepositoryResolver {
       }
 
       if (this.repositoryService.hasUserPinned(_repository, authUser.id)) {
+        /** Remove user id from the list of pinned in repository */
         await this.repositoryService.updateData(id, {
           pinned: _repository.pinned.filter(userWhoPin => userWhoPin !== authUser.id),
+        });
+        /** Remove repository id from the list of pinned in user */
+        await this.userService.updateData(authUser.id, {
+          pinned_repositories: currentUser.pinned_repositories.filter(
+            repositoryId => repositoryId !== id
+          ),
         });
       }
       return {

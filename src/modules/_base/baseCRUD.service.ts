@@ -22,7 +22,7 @@ export abstract class BaseCRUDService<T> {
     return users as T[];
   }
 
-  async getDataById(id: string): Promise<T> {
+  async getDataById(id: string): Promise<T | undefined> {
     const _collection = await db.collection(this.collectionRegistry).doc(id);
     const _snapshot = await _collection.get();
     const workspace = _snapshot.data();

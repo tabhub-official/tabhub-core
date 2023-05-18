@@ -36,6 +36,8 @@ export class RepositoryTabService extends BaseCRUDService<RepositoryTab> {
       customName,
       url,
       pinned: [],
+      labels: [],
+      description: '',
     };
     await _collection.doc(newRepositoryTabId).create(data);
     return data;

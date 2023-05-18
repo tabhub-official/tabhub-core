@@ -15,6 +15,7 @@ import {
   WorkspaceResolver,
   WorkspaceService,
 } from './modules';
+import { RepositoryTabResolver } from './modules/repository-tab/repository-tab.resolver';
 import { RepositoryResolver } from './modules/repository/repository.resolver';
 
 const graphQLConfiguration = GraphQLModule.forRoot<ApolloDriverConfig>({
@@ -50,7 +51,7 @@ const generalConfiguration = ConfigModule.forRoot({
   envFilePath: '.env',
 });
 
-const resolvers = [WorkspaceResolver, RepositoryResolver, UserResolver];
+const resolvers = [WorkspaceResolver, RepositoryResolver, RepositoryTabResolver, UserResolver];
 const services = [
   RepositoryService,
   RepositoryTabService,

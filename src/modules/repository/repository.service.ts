@@ -82,6 +82,11 @@ export class RepositoryService extends BaseCRUDService<Repository> {
     contributors: string[],
     description?: string
   ): Promise<void> => {
+    if (description?.length > 255) throw new Error('Exceed limit of description length');
+    if (contributors.length > 60) throw new Error('Exceed limit of contributors length');
+    if (tabs.length > 500) throw new Error('Exceed limit of tabs length');
+    if (name.length > 100) throw new Error('Exceed limit of name length');
+
     const _collection = await db.collection(this.collectionRegistry);
     const newRepositoryId = uuidV4();
     const repositoryTabs = await this.repositoryTabService.createManyRepositoryTab(tabs);
