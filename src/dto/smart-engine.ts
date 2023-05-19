@@ -1,4 +1,4 @@
-import { Field, InputType } from '@nestjs/graphql';
+import { Field, InputType, ObjectType } from '@nestjs/graphql';
 import { ArrayNotEmpty } from 'class-validator';
 
 import { RepositoryTabAsInput } from './repository';
@@ -8,4 +8,17 @@ export class SmartTabGroupingArgs {
   @ArrayNotEmpty()
   @Field(() => [RepositoryTabAsInput])
   tabs: RepositoryTabAsInput[];
+
+  @ArrayNotEmpty()
+  @Field(() => [String])
+  groups: string[];
+}
+
+@ObjectType()
+export class TabWithCategory {
+  @Field(() => String)
+  url: string;
+
+  @Field(() => String)
+  category: string;
 }

@@ -15,6 +15,7 @@ import {
   WorkspaceResolver,
   WorkspaceService,
 } from './modules';
+import { OpenAIService } from './modules/openai';
 import { RepositoryTabResolver } from './modules/repository-tab/repository-tab.resolver';
 import { RepositoryResolver } from './modules/repository/repository.resolver';
 
@@ -57,6 +58,7 @@ const services = [
   RepositoryTabService,
   WorkspaceService,
   UserService,
+  OpenAIService,
   AppService,
 ];
 

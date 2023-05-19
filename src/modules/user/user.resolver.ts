@@ -1,6 +1,12 @@
 import { createParamDecorator } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql';
-import { CreateNewUserArgs, GetUserByIdArgs, SmartTabGroupingArgs, UpdateUserArgs } from 'src/dto';
+import {
+  CreateNewUserArgs,
+  GetUserByIdArgs,
+  SmartTabGroupingArgs,
+  TabWithCategory,
+  UpdateUserArgs,
+} from 'src/dto';
 import { AppResponse, ResponseType, User } from 'src/models';
 import { getAuthUser } from 'src/utils/auth';
 
@@ -111,23 +117,40 @@ export class UserResolver {
   }
 
   /** Doing magic below here */
-  @Mutation(() => AppResponse)
+  @Mutation(() => [TabWithCategory])
   async smartTabGrouping(
-    @Context('req') req,
     @Args('smartTabGroupingArgs') args: SmartTabGroupingArgs
-  ) {
+  ): Promise<TabWithCategory[]> {
     try {
-      const authUser = getAuthUser(req);
-      console.log(args);
-      return {
-        message: `Successfully delete workspace ${authUser.id}`,
-        type: ResponseType.Success,
-      };
+      const { tabs, groups } = args;
+      const prompt = `
+        Act as a tab manager, categorize these browser tabs into groups following the JSON:\n
+        { url: string, category: string }\n
+        The provided list of browser tabs is: ${JSON.stringify(tabs)}\n
+        ${
+          groups.length > 0
+            ? `The provided list of recommneded groups is: ${JSON.stringify(groups)}\n
+        If browser tab can't be assigned to any group recommended in the provided list of groups, categorize it on your own.`
+            : ``
+        }
+        Please respond the array of object directly. Don't say anything else. 
+      `;
+      const response = await this.openaiService.makeRawCompletion('system', prompt);
+      const content = response.choices[0].message.content;
+      console.log(content);
+      let output: { url: string; category: string }[] = [];
+      try {
+        output = JSON.parse(content);
+      } catch (error) {
+        output = [];
+      }
+      return output.map(item => ({
+        category: item.category.toUpperCase(),
+        url: item.url,
+      }));
     } catch (error: any) {
-      return {
-        message: error,
-        type: ResponseType.Error,
-      };
+      console.log(error);
+      return [];
     }
   }
 }

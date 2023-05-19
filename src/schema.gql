@@ -11,13 +11,13 @@ enum AccessVisibility {
 input AddContributorArgs {
   id: String!
   member_email: String!
-  updated_date: Float! = 1684410803
+  updated_date: Float! = 1684456638
 }
 
 input AddNewMemberArgs {
   id: String!
   member_email: String!
-  updated_date: Float! = 1684410803
+  updated_date: Float! = 1684456638
 }
 
 type AppResponse {
@@ -27,7 +27,7 @@ type AppResponse {
 
 input ChangeWorkspaceVisibilityArgs {
   id: String!
-  updated_date: Float! = 1684410803
+  updated_date: Float! = 1684456638
   visibility: AccessVisibility!
 }
 
@@ -128,6 +128,7 @@ type Mutation {
   removeWorkspaceMember(removeWorkspaceMemberArgs: RemoveMemberArgs!): AppResponse!
   selectQuickAccessWorkspace(selectQuickAccessWorkspaceArgs: SelectQuickAccessWorkspaceArgs!): AppResponse!
   setRepositoryTabs(setRepositoryTabsArgs: SetRepositoryTabsArgs!): AppResponse
+  smartTabGrouping(smartTabGroupingArgs: SmartTabGroupingArgs!): [TabWithCategory!]!
   toggleLikeRepository(toggleLikeRepositoryArgs: ToggleLikeRepositoryArgs!): AppResponse!
   unpinRepository(unpinRepositoryArgs: PinRepositoryArgs!): AppResponse!
   unpinRepositoryTab(unpinRepositoryTabArgs: UnpinRepositoryTabArgs!): AppResponse!
@@ -163,13 +164,13 @@ type Query {
 input RemoveContributorArgs {
   id: String!
   member_email: String!
-  updated_date: Float! = 1684410803
+  updated_date: Float! = 1684456638
 }
 
 input RemoveMemberArgs {
   id: String!
   member_email: String!
-  updated_date: Float! = 1684410803
+  updated_date: Float! = 1684456638
 }
 
 input RemoveTabsFromRepositoryArgs {
@@ -245,12 +246,22 @@ enum ResponseType {
 
 input SelectQuickAccessWorkspaceArgs {
   id: String
-  updated_date: Float! = 1684410803
+  updated_date: Float! = 1684456638
 }
 
 input SetRepositoryTabsArgs {
   id: String!
   tabs: [FullRepositoryTabAsInput!]!
+}
+
+input SmartTabGroupingArgs {
+  groups: [String!]!
+  tabs: [RepositoryTabAsInput!]!
+}
+
+type TabWithCategory {
+  category: String!
+  url: String!
 }
 
 input ToggleLikeRepositoryArgs {
@@ -264,7 +275,7 @@ input UnpinRepositoryTabArgs {
 input UpdateRepositoryArgs {
   """List of user IDs"""
   contributors: [String!] = []
-  created_date: Float = 1684410803
+  created_date: Float = 1684456638
   description: String
 
   """List of user IDs"""
@@ -278,13 +289,13 @@ input UpdateRepositoryArgs {
 
   """List of repository tab IDs"""
   tabs: [RepositoryTabInput!] = []
-  updated_date: Float = 1684410803
+  updated_date: Float = 1684456638
   visibility: AccessVisibility = Private
   workspaceId: String
 }
 
 input UpdateUserArgs {
-  created_date: Float = 1684410803
+  created_date: Float = 1684456638
   email: String
 
   """List of user IDs"""
@@ -304,7 +315,7 @@ input UpdateUserArgs {
 
   """ID of selected workspace"""
   selected_workspace: String
-  updated_date: Float = 1684410803
+  updated_date: Float = 1684456638
   username: String
 
   """List of workspace IDs"""
@@ -315,7 +326,7 @@ input UpdateWorkspaceArgs {
   description: String = ""
   id: String!
   name: String!
-  updated_date: Float! = 1684410803
+  updated_date: Float! = 1684456638
   visibility: AccessVisibility!
 }
 

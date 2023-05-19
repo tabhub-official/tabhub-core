@@ -17,13 +17,13 @@ export class OpenAIService {
     this.openAI = new OpenAIApi(configuration);
   }
 
-  async makeRawCompletion(prompt: string): Promise<any | undefined> {
+  async makeRawCompletion(role: string, prompt: string): Promise<any | undefined> {
     try {
       const completionConfig = {
         model: this.modelName,
         messages: [
           {
-            role: 'assistant',
+            role,
             content: prompt,
           },
         ],
