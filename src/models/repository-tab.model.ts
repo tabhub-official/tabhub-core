@@ -31,4 +31,8 @@ export class RepositoryTab {
 
   @Field(() => String, { nullable: true })
   repositoryId?: string;
+
+  /** Null means root directory */
+  @Field(() => String, { nullable: true })
+  parentDirectory?: string;
 }
