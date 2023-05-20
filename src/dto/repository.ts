@@ -1,7 +1,7 @@
 import { Field, InputType, PartialType } from '@nestjs/graphql';
 import { ArrayNotEmpty, IsUUID, MaxLength, MinLength } from 'class-validator';
 import * as moment from 'moment';
-import { AccessVisibility, Repository, RepositoryTab } from 'src/models';
+import { AccessVisibility, Directory, Repository, RepositoryTab } from 'src/models';
 
 @InputType()
 export class RepositoryTabAsInput {
@@ -16,10 +16,24 @@ export class RepositoryTabAsInput {
 
   @Field(() => String, { nullable: true })
   title?: string;
+
+  @Field({ nullable: true })
+  parentDirectory?: string;
 }
 
 @InputType()
 export class FullRepositoryTabAsInput extends RepositoryTab {}
+
+@InputType()
+export class SetRepositoryDirectoriesArgs {
+  @Field()
+  @IsUUID('4')
+  id: string;
+
+  @ArrayNotEmpty()
+  @Field(() => [Directory])
+  directories: Directory[];
+}
 
 @InputType()
 export class CreateNewRepositoryArgs {
@@ -35,6 +49,10 @@ export class CreateNewRepositoryArgs {
   @ArrayNotEmpty()
   @Field(() => [RepositoryTabAsInput])
   tabs: RepositoryTabAsInput[];
+
+  @ArrayNotEmpty()
+  @Field(() => [Directory])
+  directories: Directory[];
 
   @IsUUID('4')
   @Field(() => String, { nullable: false })
@@ -53,6 +71,10 @@ export class SetRepositoryTabsArgs {
   @ArrayNotEmpty()
   @Field(() => [FullRepositoryTabAsInput])
   tabs: FullRepositoryTabAsInput[];
+
+  @ArrayNotEmpty()
+  @Field(() => [Directory])
+  directories: Directory[];
 }
 
 @InputType()

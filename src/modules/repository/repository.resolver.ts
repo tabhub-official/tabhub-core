@@ -13,6 +13,7 @@ import {
   RemoveTabsFromRepositoryArgs,
   SetRepositoryTabsArgs,
   UpdateRepositoryArgs,
+  SetRepositoryDirectoriesArgs,
 } from 'src/dto';
 import { AccessVisibility, AppResponse, Repository, ResponseType } from 'src/models';
 import { getAuthUser, getUnsafeAuthUser } from 'src/utils';
@@ -132,6 +133,39 @@ export class RepositoryResolver {
   }
 
   @Mutation(() => AppResponse)
+  async setRepositoryDirectories(
+    @Context('req') req,
+    @Args('setRepositoryDirectoriesArgs') args: SetRepositoryDirectoriesArgs
+  ): Promise<AppResponse> {
+    try {
+      const authUser = getAuthUser(req);
+      const { id, directories } = args;
+
+      const existingRepository = await this.repositoryService.getDataById(id);
+      /** Must be a workspace member to create a repository */
+      const isMember = await this.workspaceService.isWorkspaceMember(
+        existingRepository.workspaceId,
+        authUser.id
+      );
+      const isContributor = await this.repositoryService.isRepositoryContributor(id, authUser.id);
+      if (!isMember || !isContributor) throw new Error('No editting permission');
+
+      await this.repositoryService.updateData(id, {
+        directories,
+      });
+      return {
+        message: `Successfully update directories for repository`,
+        type: ResponseType.Success,
+      };
+    } catch (error) {
+      return {
+        message: error,
+        type: ResponseType.Error,
+      };
+    }
+  }
+
+  @Mutation(() => AppResponse)
   async createNewRepository(
     @Context('req') req,
     @Args('createRepositoryArgs') args: CreateNewRepositoryArgs
@@ -158,7 +192,7 @@ export class RepositoryResolver {
           visibility,
         });
         return {
-          message: `Successfully create new repository ${name}`,
+          message: `Successfully update repository ${name}`,
           type: ResponseType.Success,
         };
       } else {
@@ -174,7 +208,7 @@ export class RepositoryResolver {
           description
         );
         return {
-          message: `Successfully update repository ${name}`,
+          message: `Successfully create new repository ${name}`,
           type: ResponseType.Success,
         };
       }

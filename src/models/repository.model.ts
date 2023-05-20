@@ -3,6 +3,7 @@ import { MinLength, MaxLength, IsUUID, IsEmail, ArrayNotEmpty } from 'class-vali
 import * as moment from 'moment';
 
 import { AccessVisibility } from './accessibility';
+import { Directory } from './directory.model';
 import { RepositoryTab } from './repository-tab.model';
 
 @ObjectType()
@@ -40,9 +41,14 @@ export class Repository {
   @Field(() => AccessVisibility, { defaultValue: AccessVisibility.Private })
   visibility: AccessVisibility;
 
+  /** About directory and tab: Store list of directories, the order of query must from the directory first then tabs */
   @ArrayNotEmpty()
   @Field(() => [RepositoryTab], { defaultValue: [], description: 'List of repository tab IDs' })
   tabs: RepositoryTab[];
+
+  @ArrayNotEmpty()
+  @Field(() => [Directory], { defaultValue: [], description: 'List of directory IDs' })
+  directories: Directory[];
 
   @Field(() => [String], { defaultValue: [], description: 'List of repository tabs IDs' })
   pinned: string[];

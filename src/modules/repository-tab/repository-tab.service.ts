@@ -25,6 +25,7 @@ export class RepositoryTabService extends BaseCRUDService<RepositoryTab> {
     url: string,
     title: string,
     favIconUrl: string,
+    parentDirectory?: string,
     customName?: string
   ): Promise<RepositoryTab> => {
     const _collection = await db.collection(this.collectionRegistry);
@@ -37,6 +38,7 @@ export class RepositoryTabService extends BaseCRUDService<RepositoryTab> {
       url,
       pinned: [],
       labels: [],
+      parentDirectory,
       description: '',
     };
     await _collection.doc(newRepositoryTabId).create(data);
