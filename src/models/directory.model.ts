@@ -9,6 +9,9 @@ export class Directory {
   id: string;
 
   @Field(() => String)
+  color: string;
+
+  @Field(() => String)
   name: string;
 
   /** Nullable means root directory */

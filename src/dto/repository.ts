@@ -1,6 +1,5 @@
 import { Field, InputType, PartialType } from '@nestjs/graphql';
 import { ArrayNotEmpty, IsUUID, MaxLength, MinLength } from 'class-validator';
-import * as moment from 'moment';
 import { AccessVisibility, Directory, Repository, RepositoryTab } from 'src/models';
 
 @InputType()
@@ -9,7 +8,7 @@ export class RepositoryTabAsInput {
   url: string;
 
   @Field(() => String, { nullable: true })
-  name?: string;
+  customName?: string;
 
   @Field(() => String, { nullable: true })
   favIconUrl?: string;
@@ -96,9 +95,6 @@ export class AddContributorArgs {
 
   @Field()
   member_email: string;
-
-  @Field({ nullable: false, defaultValue: moment().unix() })
-  updated_date: number;
 }
 
 @InputType()
@@ -109,9 +105,6 @@ export class RemoveContributorArgs {
 
   @Field()
   member_email: string;
-
-  @Field({ nullable: false, defaultValue: moment().unix() })
-  updated_date: number;
 }
 
 @InputType()

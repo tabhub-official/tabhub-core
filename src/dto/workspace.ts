@@ -68,9 +68,6 @@ export class AddNewMemberArgs {
 
   @Field()
   member_email: string;
-
-  @Field({ nullable: false, defaultValue: moment().unix() })
-  updated_date: number;
 }
 
 @InputType()
@@ -81,9 +78,6 @@ export class RemoveMemberArgs {
 
   @Field()
   member_email: string;
-
-  @Field({ nullable: false, defaultValue: moment().unix() })
-  updated_date: number;
 }
 
 @InputType()

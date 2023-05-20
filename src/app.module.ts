@@ -8,6 +8,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { auth } from './config/firebase-config';
 import {
+  DirectoryService,
   RepositoryService,
   RepositoryTabService,
   UserResolver,
@@ -55,6 +56,7 @@ const generalConfiguration = ConfigModule.forRoot({
 const resolvers = [WorkspaceResolver, RepositoryResolver, RepositoryTabResolver, UserResolver];
 const services = [
   RepositoryService,
+  DirectoryService,
   RepositoryTabService,
   WorkspaceService,
   UserService,

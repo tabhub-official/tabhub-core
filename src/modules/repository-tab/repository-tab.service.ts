@@ -15,7 +15,13 @@ export class RepositoryTabService extends BaseCRUDService<RepositoryTab> {
   createManyRepositoryTab = async (tabs: RepositoryTabAsInput[]): Promise<RepositoryTab[]> => {
     const manyData = [];
     for (const tab of tabs) {
-      const data = await this.createNewRepositoryTab(tab.url, tab.title, tab.favIconUrl, tab.name);
+      const data = await this.createNewRepositoryTab(
+        tab.url,
+        tab.title,
+        tab.favIconUrl,
+        tab.parentDirectory,
+        tab.customName
+      );
       manyData.push(data);
     }
     return manyData;

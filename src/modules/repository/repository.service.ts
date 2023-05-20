@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CollectionRegistry, db } from 'src/config/firebase-config';
 import { RepositoryTabAsInput } from 'src/dto';
-import { AccessVisibility, Repository } from 'src/models';
+import { AccessVisibility, Directory, Repository } from 'src/models';
 import { v4 as uuidV4 } from 'uuid';
 
 import { BaseCRUDService } from '../_base/baseCRUD.service';
@@ -80,6 +80,7 @@ export class RepositoryService extends BaseCRUDService<Repository> {
     workspaceId: string,
     visibility: AccessVisibility,
     contributors: string[],
+    directories: Directory[] = [],
     description?: string
   ): Promise<void> => {
     if (description?.length > 255) throw new Error('Exceed limit of description length');
@@ -98,6 +99,7 @@ export class RepositoryService extends BaseCRUDService<Repository> {
       owner,
       workspaceId,
       visibility,
+      directories,
       pinned: [],
       contributors,
       favorites: [],

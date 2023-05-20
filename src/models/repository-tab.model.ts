@@ -29,6 +29,9 @@ export class RepositoryTab {
   @Field(() => [String], { defaultValue: [], description: 'List of labels' })
   labels: string[];
 
+  @Field(() => String, { nullable: true })
+  repositoryId?: string;
+
   /** Null means root directory */
   @Field(() => String, { nullable: true })
   parentDirectory?: string;

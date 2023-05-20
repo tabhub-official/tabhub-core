@@ -1,4 +1,5 @@
 import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql';
+import * as moment from 'moment';
 import {
   AddNewMemberArgs,
   ChangeWorkspaceVisibilityArgs,
@@ -141,12 +142,12 @@ export class WorkspaceResolver {
     @Args('addWorkspaceMemberArgs') args: AddNewMemberArgs
   ): Promise<AppResponse> {
     try {
-      const { id, ...workspace } = args;
+      const { id, member_email } = args;
       const authUser = getAuthUser(req);
       const _workspace = await this.workspaceService.getDataById(id);
       if (_workspace.owner !== authUser.id) throw new Error('Not workspace owner');
 
-      const user = await this.userService.getUserByEmail(workspace.member_email);
+      const user = await this.userService.getUserByEmail(member_email);
       if (!user) throw new Error('Member email is not valid');
 
       if (_workspace.members.some(member => member === user.id))
@@ -154,6 +155,7 @@ export class WorkspaceResolver {
 
       await this.workspaceService.updateData(id, {
         ..._workspace,
+        updated_date: moment().unix(),
         members: _workspace.members.concat([user.id]),
       });
       return {
@@ -210,13 +212,13 @@ export class WorkspaceResolver {
     @Args('removeWorkspaceMemberArgs') args: RemoveMemberArgs
   ): Promise<AppResponse> {
     try {
-      const { id, ...workspace } = args;
+      const { id, member_email } = args;
       const authUser = getAuthUser(req);
 
       const _workspace = await this.workspaceService.getDataById(id);
       if (_workspace.owner !== authUser.id) throw new Error('Not workspace owner');
 
-      const user = await this.userService.getUserByEmail(workspace.member_email);
+      const user = await this.userService.getUserByEmail(member_email);
       if (!user) throw new Error('Member email is not valid');
 
       if (!_workspace.members.some(member => member === user.id))
@@ -224,6 +226,7 @@ export class WorkspaceResolver {
 
       await this.workspaceService.updateData(id, {
         ..._workspace,
+        updated_date: moment().unix(),
         members: _workspace.members.filter(member => member !== user.id),
       });
       return {

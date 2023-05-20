@@ -1,4 +1,5 @@
 import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql';
+import * as moment from 'moment';
 import {
   AddContributorArgs,
   CreateNewRepositoryArgs,
@@ -13,7 +14,6 @@ import {
   RemoveTabsFromRepositoryArgs,
   SetRepositoryTabsArgs,
   UpdateRepositoryArgs,
-  SetRepositoryDirectoriesArgs,
 } from 'src/dto';
 import { AccessVisibility, AppResponse, Repository, ResponseType } from 'src/models';
 import { getAuthUser, getUnsafeAuthUser } from 'src/utils';
@@ -115,48 +115,23 @@ export class RepositoryResolver {
   ): Promise<AppResponse> {
     try {
       const authUser = getAuthUser(req);
-      const { id: repositoryId, tabs } = args;
-      const isContributor = await this.repositoryService.isRepositoryContributor(
-        repositoryId,
-        authUser.id
-      );
-      if (!isContributor) throw new Error('No editting permission');
-      await this.repositoryService.updateData(repositoryId, {
-        tabs: tabs,
-      });
-    } catch (error) {
-      return {
-        message: error,
-        type: ResponseType.Error,
-      };
-    }
-  }
-
-  @Mutation(() => AppResponse)
-  async setRepositoryDirectories(
-    @Context('req') req,
-    @Args('setRepositoryDirectoriesArgs') args: SetRepositoryDirectoriesArgs
-  ): Promise<AppResponse> {
-    try {
-      const authUser = getAuthUser(req);
-      const { id, directories } = args;
-
-      const existingRepository = await this.repositoryService.getDataById(id);
+      const { id: repositoryId, tabs, directories } = args;
+      const existingRepository = await this.repositoryService.getDataById(repositoryId);
       /** Must be a workspace member to create a repository */
       const isMember = await this.workspaceService.isWorkspaceMember(
         existingRepository.workspaceId,
         authUser.id
       );
-      const isContributor = await this.repositoryService.isRepositoryContributor(id, authUser.id);
+      const isContributor = await this.repositoryService.isRepositoryContributor(
+        repositoryId,
+        authUser.id
+      );
       if (!isMember || !isContributor) throw new Error('No editting permission');
 
-      await this.repositoryService.updateData(id, {
+      await this.repositoryService.updateData(repositoryId, {
+        tabs: tabs,
         directories,
       });
-      return {
-        message: `Successfully update directories for repository`,
-        type: ResponseType.Success,
-      };
     } catch (error) {
       return {
         message: error,
@@ -173,7 +148,7 @@ export class RepositoryResolver {
     /** Upsert repository */
     try {
       const authUser = getAuthUser(req);
-      const { name, tabs, workspaceId, description, visibility } = args;
+      const { name, tabs, workspaceId, description, visibility, directories } = args;
 
       /** Must be a workspace member to create a repository */
       const isMember = await this.workspaceService.isWorkspaceMember(workspaceId, authUser.id);
@@ -205,6 +180,7 @@ export class RepositoryResolver {
           workspaceId,
           visibility,
           workspace.members,
+          directories,
           description
         );
         return {
@@ -263,7 +239,7 @@ export class RepositoryResolver {
     @Args('addRepositoryContributorArgs') args: AddContributorArgs
   ): Promise<AppResponse> {
     try {
-      const { id, ...workspace } = args;
+      const { id, member_email } = args;
       const authUser = getAuthUser(req);
       const _repository = await this.repositoryService.getDataById(id);
 
@@ -273,17 +249,15 @@ export class RepositoryResolver {
       );
       if (!isWorkspaceMember) throw new Error('Not workspace member');
 
-      const isRepositoryContributor = await this.repositoryService.isRepositoryContributor(
-        id,
-        authUser.id
-      );
-      const user = await this.userService.getUserByEmail(workspace.member_email);
+      const user = await this.userService.getUserByEmail(member_email);
       if (!user) throw new Error('Contributor email is not valid');
 
-      if (isRepositoryContributor) throw new Error('Contributor is added already');
+      if (_repository.contributors.some(contributor => contributor === user.id))
+        throw new Error('Contributor is added already');
 
       await this.repositoryService.updateData(id, {
         ..._repository,
+        updated_date: moment().unix(),
         contributors: _repository.contributors.concat([user.id]),
       });
       return {
@@ -304,7 +278,7 @@ export class RepositoryResolver {
     @Args('removeRepositoryContributorArgs') args: RemoveContributorArgs
   ): Promise<AppResponse> {
     try {
-      const { id, ...workspace } = args;
+      const { id, member_email } = args;
       const authUser = getAuthUser(req);
       const _repository = await this.repositoryService.getDataById(id);
 
@@ -314,17 +288,15 @@ export class RepositoryResolver {
       );
       if (!isWorkspaceMember) throw new Error('Not workspace member');
 
-      const isRepositoryContributor = await this.repositoryService.isRepositoryContributor(
-        id,
-        authUser.id
-      );
-      const user = await this.userService.getUserByEmail(workspace.member_email);
+      const user = await this.userService.getUserByEmail(member_email);
       if (!user) throw new Error('Contributor email is not valid');
 
-      if (!isRepositoryContributor) throw new Error('Not a repository contributor');
+      if (!_repository.contributors.some(contributor => contributor === user.id))
+        throw new Error('Contributor is not in repository');
 
       await this.repositoryService.updateData(id, {
         ..._repository,
+        updated_date: moment().unix(),
         contributors: _repository.contributors.filter(contributor => contributor !== user.id),
       });
       return {
@@ -340,15 +312,14 @@ export class RepositoryResolver {
   }
 
   @Mutation(() => AppResponse)
-  async updateRepository(
+  async updateRepositoryInfo(
     @Context('req') req,
-    @Args('updateRepositoryArgs') args: UpdateRepositoryArgs
+    @Args('updateRepositoryInfoArgs') args: UpdateRepositoryArgs
   ): Promise<AppResponse> {
     try {
       const authUser = getAuthUser(req);
-      const { id, ...repository } = args;
+      const { id, name, visibility, description } = args;
       const _repository = await this.repositoryService.getDataById(id);
-      // if (_repository.owner !== authUser.id) throw new Error('Not repository owner');
 
       const isMember = await this.workspaceService.isWorkspaceMember(
         _repository.workspaceId,
@@ -356,8 +327,11 @@ export class RepositoryResolver {
       );
       const isContributor = await this.repositoryService.isRepositoryContributor(id, authUser.id);
       if (!isMember || !isContributor) throw new Error('No editting permission');
-
-      await this.repositoryService.updateData(id, repository);
+      await this.repositoryService.updateData(id, {
+        name,
+        visibility,
+        description,
+      });
       return {
         message: `Successfully update repository ${id}`,
         type: ResponseType.Success,
