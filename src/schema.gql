@@ -25,13 +25,14 @@ type AppResponse {
 
 input ChangeWorkspaceVisibilityArgs {
   id: String!
-  updated_date: Float! = 1684555942
+  updated_date: Float! = 1684817402
   visibility: AccessVisibility!
 }
 
 input CreateNewRepositoryArgs {
   description: String!
   directories: [DirectoryAsInput!]!
+  icon: String!
   name: String!
   tabs: [RepositoryTabAsInput!]!
   visibility: AccessVisibility! = Private
@@ -201,6 +202,7 @@ type Repository {
 
   """List of user IDs"""
   favorites: [String!]!
+  icon: String!
   id: String!
   name: String!
   owner: String!
@@ -264,7 +266,7 @@ enum ResponseType {
 
 input SelectQuickAccessWorkspaceArgs {
   id: String
-  updated_date: Float! = 1684555942
+  updated_date: Float! = 1684817402
 }
 
 input SetRepositoryTabsArgs {
@@ -294,7 +296,7 @@ input UnpinRepositoryTabArgs {
 input UpdateRepositoryArgs {
   """List of user IDs"""
   contributors: [String!] = []
-  created_date: Float = 1684555942
+  created_date: Float = 1684817402
   description: String
 
   """List of directory IDs"""
@@ -302,6 +304,7 @@ input UpdateRepositoryArgs {
 
   """List of user IDs"""
   favorites: [String!] = []
+  icon: String
   id: String
   name: String
   owner: String
@@ -311,13 +314,13 @@ input UpdateRepositoryArgs {
 
   """List of repository tab IDs"""
   tabs: [RepositoryTabInput!] = []
-  updated_date: Float = 1684555942
+  updated_date: Float = 1684817402
   visibility: AccessVisibility = Private
   workspaceId: String
 }
 
 input UpdateUserArgs {
-  created_date: Float = 1684555942
+  created_date: Float = 1684817402
   email: String
 
   """List of user IDs"""
@@ -337,7 +340,7 @@ input UpdateUserArgs {
 
   """ID of selected workspace"""
   selected_workspace: String
-  updated_date: Float = 1684555942
+  updated_date: Float = 1684817402
   username: String
 
   """List of workspace IDs"""
@@ -348,7 +351,7 @@ input UpdateWorkspaceArgs {
   description: String = ""
   id: String!
   name: String!
-  updated_date: Float! = 1684555942
+  updated_date: Float! = 1684817402
   visibility: AccessVisibility!
 }
 

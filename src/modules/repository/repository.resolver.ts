@@ -148,7 +148,7 @@ export class RepositoryResolver {
     /** Upsert repository */
     try {
       const authUser = getAuthUser(req);
-      const { name, tabs, workspaceId, description, visibility, directories } = args;
+      const { name, tabs, workspaceId, description, icon, visibility, directories } = args;
 
       /** Must be a workspace member to create a repository */
       const isMember = await this.workspaceService.isWorkspaceMember(workspaceId, authUser.id);
@@ -174,6 +174,7 @@ export class RepositoryResolver {
         const workspace = await this.workspaceService.getDataById(workspaceId);
         /** Create new repository if not exist */
         await this.repositoryService.createNewRepository(
+          icon,
           name,
           tabs,
           authUser.id,
@@ -318,7 +319,7 @@ export class RepositoryResolver {
   ): Promise<AppResponse> {
     try {
       const authUser = getAuthUser(req);
-      const { id, name, visibility, description } = args;
+      const { id, name, visibility, description, icon } = args;
       const _repository = await this.repositoryService.getDataById(id);
 
       const isMember = await this.workspaceService.isWorkspaceMember(
@@ -331,6 +332,7 @@ export class RepositoryResolver {
         name,
         visibility,
         description,
+        icon,
       });
       return {
         message: `Successfully update repository ${id}`,

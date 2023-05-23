@@ -74,6 +74,7 @@ export class RepositoryService extends BaseCRUDService<Repository> {
   };
 
   createNewRepository = async (
+    icon: string,
     name: string,
     tabs: RepositoryTabAsInput[],
     owner: string,
@@ -93,6 +94,7 @@ export class RepositoryService extends BaseCRUDService<Repository> {
     const repositoryTabs = await this.repositoryTabService.createManyRepositoryTab(tabs);
     const data: Partial<Repository> = {
       id: newRepositoryId,
+      icon,
       name,
       tabs: repositoryTabs,
       description,

@@ -41,6 +41,9 @@ export class CreateNewRepositoryArgs {
   @MaxLength(40)
   name: string;
 
+  @Field(() => String)
+  icon: string;
+
   @MaxLength(200)
   @Field({ nullable: false })
   description?: string;

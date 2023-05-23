@@ -23,6 +23,9 @@ export class Repository {
   @Field(() => String, { nullable: false })
   name: string;
 
+  @Field(() => String, { nullable: false })
+  icon: string;
+
   @MaxLength(200)
   @Field({ nullable: true })
   description?: string;
