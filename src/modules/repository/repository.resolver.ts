@@ -14,8 +14,10 @@ import {
   RemoveTabsFromRepositoryArgs,
   SetRepositoryTabsArgs,
   UpdateRepositoryArgs,
+  UpdateRepositoryAccessArgs,
 } from 'src/dto';
 import { AccessVisibility, AppResponse, Repository, ResponseType } from 'src/models';
+import { FlattenRolePermission, UserRole, throwPermissionChecker } from 'src/models/role.model';
 import { getAuthUser, getUnsafeAuthUser } from 'src/utils';
 
 import { RepositoryTabService } from '../repository-tab';
@@ -31,6 +33,24 @@ export class RepositoryResolver {
     private repositoryTabService: RepositoryTabService,
     private userService: UserService
   ) {}
+
+  async checkRepositoryPermission(
+    repository: Repository,
+    userId: string,
+    permission: FlattenRolePermission[]
+  ) {
+    const isContributor = this.repositoryService.isRepositoryContributor(repository, userId);
+    const workspace = await this.workspaceService.getAuthWorkspaceById(
+      userId,
+      repository.workspaceId
+    );
+    let userRole = await this.workspaceService.findUserRoleInWorkspace(workspace, userId);
+    if (userRole === undefined && isContributor) {
+      userRole = UserRole.RepositoryContributor;
+    }
+    if (!workspace) throw new Error('No workspace found');
+    throwPermissionChecker(userRole, permission);
+  }
 
   @Query(() => [Repository])
   async getUserRepositories(
@@ -57,11 +77,16 @@ export class RepositoryResolver {
     try {
       const authUser = getUnsafeAuthUser(req);
       const { workspaceId: workspaceId } = args;
+      const repositories = await this.repositoryService.getWorkspaceRepositories(workspaceId);
       if (authUser) {
         const isMember = await this.workspaceService.isWorkspaceMember(workspaceId, authUser.id);
-        if (isMember) return this.repositoryService.getWorkspaceRepositories(workspaceId);
+        if (isMember) return repositories;
       }
-      return this.repositoryService.getWorkspacePublicRepositories(workspaceId);
+      return repositories.filter(
+        repository =>
+          repository.visibility === AccessVisibility.Public ||
+          repository.contributors.some(contributor => contributor === authUser.id)
+      );
     } catch (error: any) {
       throw new Error(error);
     }
@@ -86,11 +111,24 @@ export class RepositoryResolver {
 
   @Query(() => Repository)
   async getRepositoryByName(
+    @Context('req') req,
     @Args('getRepositoryByNameArgs') args: GetRepositoryByNameArgs
   ): Promise<Repository> {
     try {
       const { name, workspaceId } = args;
-      return this.repositoryService.getRepositoryByName(workspaceId, name);
+      const authUser = getUnsafeAuthUser(req);
+      /** If repository is private, check the read access */
+      const existingRepository = await this.repositoryService.getRepositoryByName(
+        workspaceId,
+        name
+      );
+      if (existingRepository.visibility === AccessVisibility.Private) {
+        await this.checkRepositoryPermission(existingRepository, authUser.id, [
+          'repository',
+          'read',
+        ]);
+      }
+      return existingRepository;
     } catch (error) {
       throw new Error(error);
     }
@@ -98,10 +136,21 @@ export class RepositoryResolver {
 
   @Query(() => Repository)
   async getRepositoryById(
+    @Context('req') req,
     @Args('getRepositoryByIdArgs') args: GetRepositoryByIdArgs
   ): Promise<Repository> {
     try {
       const { id } = args;
+      const authUser = getUnsafeAuthUser(req);
+
+      /** If repository is private, check the read access */
+      const existingRepository = await this.repositoryService.getDataById(id);
+      if (existingRepository.visibility === AccessVisibility.Private) {
+        await this.checkRepositoryPermission(existingRepository, authUser.id, [
+          'repository',
+          'read',
+        ]);
+      }
       return this.repositoryService.getDataById(id);
     } catch (error) {
       throw new Error(error);
@@ -117,16 +166,14 @@ export class RepositoryResolver {
       const authUser = getAuthUser(req);
       const { id: repositoryId, tabs, directories } = args;
       const existingRepository = await this.repositoryService.getDataById(repositoryId);
-      /** Must be a workspace member to create a repository */
-      const isMember = await this.workspaceService.isWorkspaceMember(
-        existingRepository.workspaceId,
-        authUser.id
-      );
-      const isContributor = await this.repositoryService.isRepositoryContributor(
-        repositoryId,
-        authUser.id
-      );
-      if (!isMember || !isContributor) throw new Error('No editting permission');
+      if (!existingRepository) throw new Error('No repository found');
+
+      /** Handle check permission */
+      await this.checkRepositoryPermission(existingRepository, authUser.id, [
+        'repository',
+        'tabs',
+        'update',
+      ]);
 
       await this.repositoryService.updateData(repositoryId, {
         tabs: tabs,
@@ -208,13 +255,14 @@ export class RepositoryResolver {
       const { id, tabs } = args;
 
       const existingRepository = await this.repositoryService.getDataById(id);
+      if (!existingRepository) throw new Error('No repository found');
 
-      const isMember = await this.workspaceService.isWorkspaceMember(
-        existingRepository.workspaceId,
-        authUser.id
-      );
-      const isContributor = await this.repositoryService.isRepositoryContributor(id, authUser.id);
-      if (!isMember || !isContributor) throw new Error('No editting permission');
+      /** Handle check permission */
+      await this.checkRepositoryPermission(existingRepository, authUser.id, [
+        'repository',
+        'tabs',
+        'delete',
+      ]);
 
       /** Add tabs to existing repository if existed */
       await this.repositoryService.updateData(existingRepository.id, {
@@ -313,6 +361,40 @@ export class RepositoryResolver {
   }
 
   @Mutation(() => AppResponse)
+  async updateRepositoryAccess(
+    @Context('req') req,
+    @Args('updateRepositoryAccessArgs') args: UpdateRepositoryAccessArgs
+  ): Promise<AppResponse> {
+    try {
+      const authUser = getAuthUser(req);
+      const { id, accessPermission, permittedUsers } = args;
+      const existingRepository = await this.repositoryService.getDataById(id);
+      if (!existingRepository) throw new Error('No repository found');
+
+      /** Handle check permission */
+      await this.checkRepositoryPermission(existingRepository, authUser.id, [
+        'repository',
+        'access',
+        'update',
+      ]);
+
+      await this.repositoryService.updateData(id, {
+        accessPermission,
+        permittedUsers,
+      });
+      return {
+        message: `Successfully update repository permission ${id}`,
+        type: ResponseType.Success,
+      };
+    } catch (error: any) {
+      return {
+        message: error,
+        type: ResponseType.Error,
+      };
+    }
+  }
+
+  @Mutation(() => AppResponse)
   async updateRepositoryInfo(
     @Context('req') req,
     @Args('updateRepositoryInfoArgs') args: UpdateRepositoryArgs
@@ -320,14 +402,14 @@ export class RepositoryResolver {
     try {
       const authUser = getAuthUser(req);
       const { id, name, visibility, description, icon } = args;
-      const _repository = await this.repositoryService.getDataById(id);
+      const existingRepository = await this.repositoryService.getDataById(id);
+      if (!existingRepository) throw new Error('No repository found');
+      /** Handle check permission */
+      await this.checkRepositoryPermission(existingRepository, authUser.id, [
+        'repository',
+        'update',
+      ]);
 
-      const isMember = await this.workspaceService.isWorkspaceMember(
-        _repository.workspaceId,
-        authUser.id
-      );
-      const isContributor = await this.repositoryService.isRepositoryContributor(id, authUser.id);
-      if (!isMember || !isContributor) throw new Error('No editting permission');
       await this.repositoryService.updateData(id, {
         name,
         visibility,
@@ -355,12 +437,15 @@ export class RepositoryResolver {
       const authUser = getAuthUser(req);
       const { id } = args;
 
-      const _repository = await this.repositoryService.getDataById(id);
-      // if (_repository.owner !== authUser.id) throw new Error('Not repository owner');
+      const existingRepository = await this.repositoryService.getDataById(id);
+      if (!existingRepository) throw new Error('No repository found');
 
-      const workspace = await this.workspaceService.getDataById(_repository.workspaceId);
-      if (!workspace.members.some(member => member === authUser.id))
-        throw new Error('Not workspace member');
+      /** Handle check permission */
+      await this.checkRepositoryPermission(existingRepository, authUser.id, [
+        'repository',
+        'delete',
+      ]);
+
       await this.repositoryService.deleteData(id);
       return {
         message: `Successfully delete repository ${id}`,
@@ -385,20 +470,22 @@ export class RepositoryResolver {
       const currentUser = await this.userService.getDataById(userId);
       if (!currentUser) throw new Error('No user found');
 
-      const _repository = await this.repositoryService.getDataById(id);
+      const existingRepository = await this.repositoryService.getDataById(id);
+      if (!existingRepository) throw new Error('No repository found');
+
       /** Check permission of user if the repository is private */
-      if (_repository.visibility === AccessVisibility.Private) {
+      if (existingRepository.visibility === AccessVisibility.Private) {
         const isMember = await this.workspaceService.isWorkspaceMember(
-          _repository.workspaceId,
+          existingRepository.workspaceId,
           authUser.id
         );
         if (!isMember) throw new Error('Not workspace member');
       }
 
-      if (!this.repositoryService.hasUserPinned(_repository, authUser.id)) {
+      if (!this.repositoryService.hasUserPinned(existingRepository, authUser.id)) {
         /** Add user id to the list of pinned in repository */
         await this.repositoryService.updateData(id, {
-          pinned: _repository.pinned.concat(authUser.id),
+          pinned: existingRepository.pinned.concat(authUser.id),
         });
         /** Add repository id to the list of pinned in user */
         await this.userService.updateData(authUser.id, {
@@ -429,19 +516,21 @@ export class RepositoryResolver {
       if (!currentUser) throw new Error('No user found');
 
       /** Check permission of user if the repository is private */
-      const _repository = await this.repositoryService.getDataById(id);
-      if (_repository.visibility === AccessVisibility.Private) {
+      const existingRepository = await this.repositoryService.getDataById(id);
+      if (!existingRepository) throw new Error('No repository found');
+
+      if (existingRepository.visibility === AccessVisibility.Private) {
         const isMember = await this.workspaceService.isWorkspaceMember(
-          _repository.workspaceId,
+          existingRepository.workspaceId,
           authUser.id
         );
         if (!isMember) throw new Error('Not workspace member');
       }
 
-      if (this.repositoryService.hasUserPinned(_repository, authUser.id)) {
+      if (this.repositoryService.hasUserPinned(existingRepository, authUser.id)) {
         /** Remove user id from the list of pinned in repository */
         await this.repositoryService.updateData(id, {
-          pinned: _repository.pinned.filter(userWhoPin => userWhoPin !== authUser.id),
+          pinned: existingRepository.pinned.filter(userWhoPin => userWhoPin !== authUser.id),
         });
         /** Remove repository id from the list of pinned in user */
         await this.userService.updateData(authUser.id, {

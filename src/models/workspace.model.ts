@@ -3,6 +3,7 @@ import { MaxLength, MinLength, IsUUID, ArrayNotEmpty } from 'class-validator';
 import * as moment from 'moment';
 
 import { AccessVisibility } from './accessibility';
+import { UserRole } from './role.model';
 
 @ObjectType()
 export class Workspace {
@@ -35,6 +36,9 @@ export class Workspace {
   @ArrayNotEmpty()
   @Field(() => [String], { defaultValue: [] })
   members: string[];
+
+  @Field(() => [UserRole], { defaultValue: [] })
+  roles: UserRole[];
 
   @Field(() => [String], { defaultValue: [] })
   repositories: string[];

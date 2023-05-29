@@ -1,6 +1,12 @@
 import { Field, InputType, PartialType } from '@nestjs/graphql';
 import { ArrayNotEmpty, IsUUID, MaxLength, MinLength } from 'class-validator';
-import { AccessVisibility, Directory, Repository, RepositoryTab } from 'src/models';
+import {
+  AccessPermission,
+  AccessVisibility,
+  Directory,
+  Repository,
+  RepositoryTab,
+} from 'src/models';
 
 @InputType()
 export class RepositoryTabAsInput {
@@ -112,6 +118,21 @@ export class RemoveContributorArgs {
 
 @InputType()
 export class UpdateRepositoryArgs extends PartialType(Repository, InputType) {}
+
+@InputType()
+export class UpdateRepositoryAccessArgs {
+  @Field()
+  @IsUUID()
+  id: string;
+
+  @Field(() => [String], {
+    defaultValue: [],
+  })
+  permittedUsers: string[];
+
+  @Field(() => AccessPermission, { defaultValue: AccessPermission.OnlyPeopleWhoHasAccess })
+  accessPermission: AccessPermission;
+}
 
 @InputType()
 export class DeleteRepositoryArgs {

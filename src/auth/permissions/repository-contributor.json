@@ -1,0 +1,37 @@
+{
+  "workspace": {
+    "read": true,
+    "update": false,
+    "delete": false,
+    "updatePermission": false,
+    "moderator": {
+      "create": false,
+      "delete": false
+    },
+    "member": {
+      "create": false,
+      "delete": false
+    },
+    "transferOwnership": false
+  },
+  "repository": {
+    "create": false,
+    "read": false,
+    "update": false,
+    "delete": false,
+    "tabs": {
+      "create": true,
+      "delete": true,
+      "update": true
+    },
+    "access": {
+      "update": false,
+      "delete": false,
+      "create": false
+    },
+    "contributor": {
+      "create": false,
+      "delete": false
+    }
+  }
+}

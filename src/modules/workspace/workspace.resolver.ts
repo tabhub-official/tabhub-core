@@ -13,6 +13,8 @@ import {
   UpdateWorkspaceArgs,
 } from 'src/dto/workspace';
 import { AccessVisibility, AppResponse, ResponseType, Workspace } from 'src/models';
+import { throwPermissionChecker } from 'src/models/role.model';
+import { UserRole } from 'src/models/role.model';
 import { getAuthUser, getUnsafeAuthUser } from 'src/utils';
 
 import { RepositoryService } from '../repository';
@@ -122,7 +124,11 @@ export class WorkspaceResolver {
       const { id, ...workspace } = args;
       const authUser = getAuthUser(req);
       const _workspace = await this.workspaceService.getDataById(id);
-      if (_workspace.owner !== authUser.id) throw new Error('Not workspace owner');
+
+      /** Check user role permission */
+      const userRole = this.workspaceService.findUserRoleInWorkspace(_workspace, authUser.id);
+      throwPermissionChecker(userRole, ['workspace', 'update']);
+
       await this.workspaceService.updateData(id, workspace);
       return {
         message: `Successfully update workspace ${id}`,
@@ -142,10 +148,14 @@ export class WorkspaceResolver {
     @Args('addWorkspaceMemberArgs') args: AddNewMemberArgs
   ): Promise<AppResponse> {
     try {
-      const { id, member_email } = args;
+      const { id, member_email, role } = args;
       const authUser = getAuthUser(req);
       const _workspace = await this.workspaceService.getDataById(id);
-      if (_workspace.owner !== authUser.id) throw new Error('Not workspace owner');
+
+      /** Check user role permission */
+      const memberRoleStr = role === UserRole.WorkspaceMember ? 'member' : 'moderator';
+      const userRole = this.workspaceService.findUserRoleInWorkspace(_workspace, authUser.id);
+      throwPermissionChecker(userRole, ['workspace', memberRoleStr, 'create']);
 
       const user = await this.userService.getUserByEmail(member_email);
       if (!user) throw new Error('Member email is not valid');
@@ -157,6 +167,7 @@ export class WorkspaceResolver {
         ..._workspace,
         updated_date: moment().unix(),
         members: _workspace.members.concat([user.id]),
+        roles: _workspace.roles.concat([role]),
       });
       return {
         message: `Successfully update workspace ${id}`,
@@ -216,18 +227,32 @@ export class WorkspaceResolver {
       const authUser = getAuthUser(req);
 
       const _workspace = await this.workspaceService.getDataById(id);
-      if (_workspace.owner !== authUser.id) throw new Error('Not workspace owner');
-
-      const user = await this.userService.getUserByEmail(member_email);
-      if (!user) throw new Error('Member email is not valid');
-
-      if (!_workspace.members.some(member => member === user.id))
+      const member = await this.userService.getUserByEmail(member_email);
+      if (!member) throw new Error('Member email is not valid');
+      if (!_workspace.members.some(_member => _member === member.id))
         throw new Error('Not a member of a workspace');
+
+      /** Check user role permission */
+      const memberRole = this.workspaceService.findUserRoleInWorkspace(_workspace, member.id);
+      const memberRoleStr = memberRole === UserRole.WorkspaceMember ? 'member' : 'moderator';
+      const userRole = this.workspaceService.findUserRoleInWorkspace(_workspace, authUser.id);
+      throwPermissionChecker(userRole, ['workspace', memberRoleStr, 'delete']);
+
+      /** Update the list of roles and members */
+      const remainningMembers = [];
+      const remainningRoles = [];
+      for (let indx = 0; indx < _workspace.members.length; indx++) {
+        const [_member, _role] = [_workspace.members[indx], _workspace.roles[indx]];
+        if (_member === member.id) continue;
+        remainningMembers.push(_member);
+        remainningRoles.push(_role);
+      }
 
       await this.workspaceService.updateData(id, {
         ..._workspace,
         updated_date: moment().unix(),
-        members: _workspace.members.filter(member => member !== user.id),
+        members: remainningMembers,
+        roles: remainningRoles,
       });
       return {
         message: `Successfully update workspace ${id}`,
@@ -250,7 +275,11 @@ export class WorkspaceResolver {
       const { visibility, id, updated_date } = args;
       const authUser = getAuthUser(req);
       const _workspace = await this.workspaceService.getDataById(id);
-      if (_workspace.owner !== authUser.id) throw new Error('Not workspace owner');
+
+      /** Check user role permission */
+      const userRole = this.workspaceService.findUserRoleInWorkspace(_workspace, authUser.id);
+      throwPermissionChecker(userRole, ['workspace', 'update']);
+
       await this.workspaceService.updateData(id, {
         ..._workspace,
         updated_date: updated_date,
@@ -277,7 +306,11 @@ export class WorkspaceResolver {
       const { id } = args;
       const authUser = getAuthUser(req);
       const _workspace = await this.workspaceService.getDataById(id);
-      if (_workspace.owner !== authUser.id) throw new Error('Not workspace owner');
+
+      /** Check user role permission */
+      const userRole = this.workspaceService.findUserRoleInWorkspace(_workspace, authUser.id);
+      throwPermissionChecker(userRole, ['workspace', 'delete']);
+
       for (const member of _workspace.members) {
         await this.userService.removeWorkspace(id, member);
       }

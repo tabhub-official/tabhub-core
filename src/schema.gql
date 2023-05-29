@@ -2,6 +2,12 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+"""Permission for repository share mode"""
+enum AccessPermission {
+  EveryoneWithTheLink
+  OnlyPeopleWhoHasAccess
+}
+
 """Visibility used for repository and workspace"""
 enum AccessVisibility {
   Private
@@ -16,6 +22,7 @@ input AddContributorArgs {
 input AddNewMemberArgs {
   id: String!
   member_email: String!
+  role: UserRole!
 }
 
 type AppResponse {
@@ -25,7 +32,7 @@ type AppResponse {
 
 input ChangeWorkspaceVisibilityArgs {
   id: String!
-  updated_date: Float! = 1684817402
+  updated_date: Float! = 1685356690
   visibility: AccessVisibility!
 }
 
@@ -147,6 +154,7 @@ type Mutation {
   toggleLikeRepository(toggleLikeRepositoryArgs: ToggleLikeRepositoryArgs!): AppResponse!
   unpinRepository(unpinRepositoryArgs: PinRepositoryArgs!): AppResponse!
   unpinRepositoryTab(unpinRepositoryTabArgs: UnpinRepositoryTabArgs!): AppResponse!
+  updateRepositoryAccess(updateRepositoryAccessArgs: UpdateRepositoryAccessArgs!): AppResponse!
   updateRepositoryInfo(updateRepositoryInfoArgs: UpdateRepositoryArgs!): AppResponse!
   updateUser(updateUserArgs: UpdateUserArgs!): AppResponse!
   updateWorkspace(updateWorkspaceArgs: UpdateWorkspaceArgs!): AppResponse!
@@ -192,6 +200,8 @@ input RemoveTabsFromRepositoryArgs {
 }
 
 type Repository {
+  accessPermission: AccessPermission!
+
   """List of user IDs"""
   contributors: [String!]!
   created_date: Float!
@@ -206,6 +216,9 @@ type Repository {
   id: String!
   name: String!
   owner: String!
+
+  """List of user IDs who can access the repository shared mode"""
+  permittedUsers: [String!]!
 
   """List of repository tabs IDs"""
   pinned: [String!]!
@@ -266,7 +279,7 @@ enum ResponseType {
 
 input SelectQuickAccessWorkspaceArgs {
   id: String
-  updated_date: Float! = 1684817402
+  updated_date: Float! = 1685356690
 }
 
 input SetRepositoryTabsArgs {
@@ -293,10 +306,18 @@ input UnpinRepositoryTabArgs {
   tabId: String!
 }
 
+input UpdateRepositoryAccessArgs {
+  accessPermission: AccessPermission! = OnlyPeopleWhoHasAccess
+  id: String!
+  permittedUsers: [String!]! = []
+}
+
 input UpdateRepositoryArgs {
+  accessPermission: AccessPermission = OnlyPeopleWhoHasAccess
+
   """List of user IDs"""
   contributors: [String!] = []
-  created_date: Float = 1684817402
+  created_date: Float = 1685356690
   description: String
 
   """List of directory IDs"""
@@ -309,18 +330,21 @@ input UpdateRepositoryArgs {
   name: String
   owner: String
 
+  """List of user IDs who can access the repository shared mode"""
+  permittedUsers: [String!] = []
+
   """List of repository tabs IDs"""
   pinned: [String!] = []
 
   """List of repository tab IDs"""
   tabs: [RepositoryTabInput!] = []
-  updated_date: Float = 1684817402
+  updated_date: Float = 1685356690
   visibility: AccessVisibility = Private
   workspaceId: String
 }
 
 input UpdateUserArgs {
-  created_date: Float = 1684817402
+  created_date: Float = 1685356690
   email: String
 
   """List of user IDs"""
@@ -340,7 +364,7 @@ input UpdateUserArgs {
 
   """ID of selected workspace"""
   selected_workspace: String
-  updated_date: Float = 1684817402
+  updated_date: Float = 1685356690
   username: String
 
   """List of workspace IDs"""
@@ -351,7 +375,7 @@ input UpdateWorkspaceArgs {
   description: String = ""
   id: String!
   name: String!
-  updated_date: Float! = 1684817402
+  updated_date: Float! = 1685356690
   visibility: AccessVisibility!
 }
 
@@ -384,6 +408,14 @@ type User {
   workspaces: [String!]!
 }
 
+"""Type of user roles in the system"""
+enum UserRole {
+  RepositoryContributor
+  WorkspaceMember
+  WorkspaceModerator
+  WorkspaceOwner
+}
+
 type Workspace {
   created_date: Float!
   description: String
@@ -392,6 +424,7 @@ type Workspace {
   name: String!
   owner: String!
   repositories: [String!]!
+  roles: [UserRole!]!
   updated_date: Float!
   visibility: AccessVisibility!
 }

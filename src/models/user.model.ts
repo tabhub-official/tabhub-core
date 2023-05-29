@@ -3,6 +3,17 @@ import { MinLength, MaxLength, IsUUID, IsEmail } from 'class-validator';
 import * as moment from 'moment';
 
 @ObjectType()
+export class UserWhoHasAccess {
+  @Field(() => String)
+  @IsUUID('4')
+  id: string;
+
+  /** public | contributor */
+  @Field(() => String)
+  type: string;
+}
+
+@ObjectType()
 export class User {
   @Field()
   @IsUUID('4')

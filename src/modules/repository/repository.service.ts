@@ -1,7 +1,14 @@
 import { Injectable } from '@nestjs/common';
+import * as moment from 'moment';
 import { CollectionRegistry, db } from 'src/config/firebase-config';
 import { RepositoryTabAsInput } from 'src/dto';
-import { AccessVisibility, Directory, Repository } from 'src/models';
+import {
+  AccessPermission,
+  AccessVisibility,
+  Directory,
+  Repository,
+  UserWhoHasAccess,
+} from 'src/models';
 import { v4 as uuidV4 } from 'uuid';
 
 import { BaseCRUDService } from '../_base/baseCRUD.service';
@@ -15,9 +22,8 @@ export class RepositoryService extends BaseCRUDService<Repository> {
     super(CollectionRegistry.Repository);
   }
 
-  async isRepositoryContributor(repositoryId: string, userId: string) {
-    const workspace = await this.getDataById(repositoryId);
-    return workspace.contributors.some(contributor => contributor === userId);
+  async isRepositoryContributor(repository: Repository, userId: string) {
+    return repository.contributors.some(contributor => contributor === userId);
   }
 
   hasUserPinned = (_repository: Repository, userId: string): boolean => {
@@ -73,6 +79,31 @@ export class RepositoryService extends BaseCRUDService<Repository> {
     return publicData.docs.map<Repository>(doc => doc.data() as Repository)[0];
   };
 
+  getRepositoryAsContributorByName = async (
+    workspaceId: string,
+    userId: string
+  ): Promise<Repository | undefined> => {
+    const _collection = await db.collection(this.collectionRegistry);
+    const publicData = await _collection
+      .where('workspaceId', '==', workspaceId)
+      .where('contributors', 'array-contains', userId)
+      .get();
+    if (publicData.empty) return undefined;
+    return publicData.docs.map<Repository>(doc => doc.data() as Repository)[0];
+  };
+
+  getUserWhoHasAccess = async (repository: Repository): Promise<UserWhoHasAccess[]> => {
+    const contributors = repository.contributors.map<UserWhoHasAccess>(contributor => ({
+      type: 'contributor',
+      id: contributor,
+    }));
+    const permittedUsers = repository.permittedUsers.map<UserWhoHasAccess>(user => ({
+      type: 'public',
+      id: user,
+    }));
+    return [...contributors, ...permittedUsers];
+  };
+
   createNewRepository = async (
     icon: string,
     name: string,
@@ -92,7 +123,7 @@ export class RepositoryService extends BaseCRUDService<Repository> {
     const _collection = await db.collection(this.collectionRegistry);
     const newRepositoryId = uuidV4();
     const repositoryTabs = await this.repositoryTabService.createManyRepositoryTab(tabs);
-    const data: Partial<Repository> = {
+    const data: Repository = {
       id: newRepositoryId,
       icon,
       name,
@@ -105,6 +136,10 @@ export class RepositoryService extends BaseCRUDService<Repository> {
       pinned: [],
       contributors,
       favorites: [],
+      permittedUsers: [],
+      accessPermission: AccessPermission.OnlyPeopleWhoHasAccess,
+      created_date: moment().unix(),
+      updated_date: moment().unix(),
     };
     await _collection.doc(newRepositoryId).create(data);
   };

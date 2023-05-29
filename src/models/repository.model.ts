@@ -2,7 +2,7 @@ import { Field, ObjectType } from '@nestjs/graphql';
 import { MinLength, MaxLength, IsUUID, IsEmail, ArrayNotEmpty } from 'class-validator';
 import * as moment from 'moment';
 
-import { AccessVisibility } from './accessibility';
+import { AccessPermission, AccessVisibility } from './accessibility';
 import { Directory } from './directory.model';
 import { RepositoryTab } from './repository-tab.model';
 
@@ -38,11 +38,20 @@ export class Repository {
   @Field(() => [String], { defaultValue: [], description: 'List of user IDs' })
   contributors: string[];
 
-  @Field(() => [String], { defaultValue: [], description: 'List of user IDs' })
-  favorites: string[];
+  @Field(() => [String], {
+    defaultValue: [],
+    description: 'List of user IDs who can access the repository shared mode',
+  })
+  permittedUsers: string[];
 
   @Field(() => AccessVisibility, { defaultValue: AccessVisibility.Private })
   visibility: AccessVisibility;
+
+  @Field(() => [String], { defaultValue: [], description: 'List of user IDs' })
+  favorites: string[];
+
+  @Field(() => AccessPermission, { defaultValue: AccessPermission.OnlyPeopleWhoHasAccess })
+  accessPermission: AccessPermission;
 
   /** About directory and tab: Store list of directories, the order of query must from the directory first then tabs */
   @ArrayNotEmpty()

@@ -2,6 +2,7 @@ import { Field, InputType } from '@nestjs/graphql';
 import { IsUUID, MaxLength, MinLength } from 'class-validator';
 import * as moment from 'moment';
 import { AccessVisibility } from 'src/models';
+import { UserRole } from 'src/models/role.model';
 
 @InputType()
 export class CreateNewWorkspaceArgs {
@@ -68,6 +69,9 @@ export class AddNewMemberArgs {
 
   @Field()
   member_email: string;
+
+  @Field(() => UserRole)
+  role: UserRole;
 }
 
 @InputType()

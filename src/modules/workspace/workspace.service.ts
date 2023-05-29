@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import * as moment from 'moment';
 import { CollectionRegistry, db } from 'src/config/firebase-config';
 import { AccessVisibility, Workspace } from 'src/models';
+import { UserRole, checkPermission } from 'src/models/role.model';
 import { v4 as uuidV4 } from 'uuid';
 
 import { BaseCRUDService } from '../_base/baseCRUD.service';
@@ -12,6 +13,13 @@ export class WorkspaceService extends BaseCRUDService<Workspace> {
     super(CollectionRegistry.Workspace);
   }
 
+  findUserRoleInWorkspace(_workspace: Workspace, userId: string): UserRole | undefined {
+    const userWorkspaceIndx = _workspace.members.findIndex(member => member === userId);
+    if (userWorkspaceIndx === -1) return undefined;
+    const userRole = _workspace.roles[userWorkspaceIndx];
+    return userRole;
+  }
+
   async isWorkspaceMember(workspaceId: string, userId: string) {
     const workspace = await this.getDataById(workspaceId);
     if (!workspace) return false;
@@ -19,9 +27,10 @@ export class WorkspaceService extends BaseCRUDService<Workspace> {
   }
 
   private userCanViewWorkspace(userId: string, foundWorkspace: Workspace) {
-    const isMember = userId && foundWorkspace.members.some(member => member === userId);
+    /** Check user role permission */
+    const userRole = this.findUserRoleInWorkspace(foundWorkspace, userId);
     const isPrivate = foundWorkspace.visibility === AccessVisibility.Private;
-    return !isPrivate || isMember;
+    return !isPrivate || checkPermission(userRole, ['workspace', 'read']);
   }
 
   /** Method: Get Workspace By Id */
@@ -97,6 +106,7 @@ export class WorkspaceService extends BaseCRUDService<Workspace> {
       created_date: moment().unix(),
       updated_date: moment().unix(),
       members: [userId],
+      roles: [UserRole.WorkspaceOwner],
       repositories: [],
     };
     await _collection.doc(workspaceId).create(data);
