@@ -11,6 +11,7 @@ export enum UserRole {
   WorkspaceModerator = 1,
   WorkspaceMember = 2,
   RepositoryContributor = 3,
+  PublicUser = 4,
 }
 
 registerEnumType(UserRole, {
