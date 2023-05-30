@@ -137,7 +137,10 @@ export class RepositoryService extends BaseCRUDService<Repository> {
       contributors,
       favorites: [],
       permittedUsers: [],
-      accessPermission: AccessPermission.OnlyPeopleWhoHasAccess,
+      accessPermission:
+        visibility === AccessVisibility.Public
+          ? AccessPermission.EveryoneWithTheLink
+          : AccessPermission.OnlyPeopleWhoHasAccess,
       created_date: moment().unix(),
       updated_date: moment().unix(),
     };

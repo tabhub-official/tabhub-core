@@ -16,7 +16,7 @@
   },
   "repository": {
     "create": false,
-    "read": false,
+    "read": true,
     "update": false,
     "delete": false,
     "tabs": {
