@@ -36,3 +36,9 @@ export class GetUserByIdArgs {
   @IsUUID()
   id: string;
 }
+
+@InputType()
+export class GetUserByEmailArgs {
+  @Field(() => String)
+  email: string;
+}

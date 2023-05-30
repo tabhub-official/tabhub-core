@@ -2,6 +2,7 @@ import { createParamDecorator } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql';
 import {
   CreateNewUserArgs,
+  GetUserByEmailArgs,
   GetUserByIdArgs,
   SmartTabGroupingArgs,
   TabWithCategory,
@@ -38,6 +39,18 @@ export class UserResolver {
     try {
       const { id } = args;
       return this.userService.getDataById(id);
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  @Query(() => User, { nullable: true })
+  async getUserByEmail(
+    @Args('getUserByEmailArgs') args: GetUserByEmailArgs
+  ): Promise<User | undefined> {
+    try {
+      const { email } = args;
+      return this.userService.getUserByEmail(email);
     } catch (error) {
       throw new Error(error);
     }

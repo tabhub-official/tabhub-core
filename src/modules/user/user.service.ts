@@ -23,9 +23,9 @@ export class UserService extends BaseCRUDService<User> {
   async getUserByEmail(email: string): Promise<User | undefined> {
     const _collection = await db.collection(this.collectionRegistry);
     const data = _collection.where('email', '==', email);
-    const _snapshot = await data.limit(0).get();
+    const _snapshot = await data.get();
     if (_snapshot.empty) return undefined;
-    const user: User = _snapshot.docs[0] as any;
+    const user: User = _snapshot.docs.map<User>(doc => doc.data() as User)[0] as any;
     return user;
   }
 
