@@ -25,6 +25,14 @@ import { UserService } from '../user';
 import { WorkspaceService } from '../workspace';
 import { RepositoryService } from './repository.service';
 
+const isPermitted = (repository: Repository, userId: string): boolean => {
+  return repository.permittedUsers.includes(userId);
+};
+
+const isContributor = (repository: Repository, userId: string): boolean => {
+  return repository.contributors.some(contributor => contributor === userId);
+};
+
 @Resolver(() => Repository)
 export class RepositoryResolver {
   constructor(
@@ -49,6 +57,7 @@ export class RepositoryResolver {
       userRole = UserRole.RepositoryContributor;
     }
     if (!workspace) throw new Error('No workspace found');
+    if (isPermitted(repository, userId)) return;
     throwPermissionChecker(userRole, permission);
   }
 
@@ -61,9 +70,31 @@ export class RepositoryResolver {
       const { userId } = args;
       const authUser = getUnsafeAuthUser(req);
       if (authUser && authUser.id === userId) {
-        return this.repositoryService.getAuthUserRepositories(userId);
+        /** Get all workspace private / public repositories associated with user ID */
+        const workspaces = await this.workspaceService.getAuthUserWorkspaces(userId);
+        const repositories = await Promise.all(
+          workspaces.map(async workspace => {
+            const repository = await this.repositoryService.getWorkspaceRepositories(workspace.id);
+            return repository;
+          })
+        );
+        const contributedRepositories = await this.repositoryService.getAuthUserRepositories(
+          userId
+        );
+        return [...repositories, ...contributedRepositories];
       }
-      return this.repositoryService.getUserRepositories(userId);
+      /** Get all workspace public repositories associated with user ID */
+      const workspaces = await this.workspaceService.getUserPublicWorkspaces(userId);
+      const repositories = await Promise.all(
+        workspaces.map(async workspace => {
+          const repository = await this.repositoryService.getWorkspacePublicRepositories(
+            workspace.id
+          );
+          return repository;
+        })
+      );
+      const contributedRepositories = await this.repositoryService.getAuthUserRepositories(userId);
+      return [...repositories, ...contributedRepositories];
     } catch (error: any) {
       throw new Error(error);
     }
@@ -85,7 +116,8 @@ export class RepositoryResolver {
       return repositories.filter(
         repository =>
           repository.visibility === AccessVisibility.Public ||
-          repository.contributors.some(contributor => contributor === authUser.id)
+          isContributor(repository, authUser.id) ||
+          isPermitted(repository, authUser.id)
       );
     } catch (error: any) {
       throw new Error(error);
@@ -98,7 +130,7 @@ export class RepositoryResolver {
       let repositories = [];
       const workspaces = await this.workspaceService.getPublicWorkspaces();
       for (const workspace of workspaces) {
-        const workspaceRepositories = await this.repositoryService.getWorkspaceRepositories(
+        const workspaceRepositories = await this.repositoryService.getWorkspacePublicRepositories(
           workspace.id
         );
         repositories = repositories.concat(workspaceRepositories);
@@ -218,7 +250,6 @@ export class RepositoryResolver {
           type: ResponseType.Success,
         };
       } else {
-        const workspace = await this.workspaceService.getDataById(workspaceId);
         /** Create new repository if not exist */
         await this.repositoryService.createNewRepository(
           icon,
@@ -227,7 +258,7 @@ export class RepositoryResolver {
           authUser.id,
           workspaceId,
           visibility,
-          workspace.members,
+          [],
           directories,
           description
         );
@@ -475,11 +506,10 @@ export class RepositoryResolver {
 
       /** Check permission of user if the repository is private */
       if (existingRepository.visibility === AccessVisibility.Private) {
-        const isMember = await this.workspaceService.isWorkspaceMember(
-          existingRepository.workspaceId,
-          authUser.id
-        );
-        if (!isMember) throw new Error('Not workspace member');
+        await this.checkRepositoryPermission(existingRepository, authUser.id, [
+          'repository',
+          'read',
+        ]);
       }
 
       if (!this.repositoryService.hasUserPinned(existingRepository, authUser.id)) {
@@ -515,16 +545,15 @@ export class RepositoryResolver {
       const currentUser = await this.userService.getDataById(userId);
       if (!currentUser) throw new Error('No user found');
 
-      /** Check permission of user if the repository is private */
       const existingRepository = await this.repositoryService.getDataById(id);
       if (!existingRepository) throw new Error('No repository found');
 
+      /** Check permission of user if the repository is private */
       if (existingRepository.visibility === AccessVisibility.Private) {
-        const isMember = await this.workspaceService.isWorkspaceMember(
-          existingRepository.workspaceId,
-          authUser.id
-        );
-        if (!isMember) throw new Error('Not workspace member');
+        await this.checkRepositoryPermission(existingRepository, authUser.id, [
+          'repository',
+          'read',
+        ]);
       }
 
       if (this.repositoryService.hasUserPinned(existingRepository, authUser.id)) {
