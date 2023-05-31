@@ -54,6 +54,9 @@ export class User {
   @Field(() => [String], { defaultValue: [], description: 'List of workspace IDs' })
   workspaces: string[];
 
+  @Field(() => [String], { defaultValue: [] })
+  favorites: string[];
+
   @Field(() => [String], { defaultValue: [], description: 'List of repositories IDs' })
   pinned_repositories: string[];
 

@@ -50,6 +50,7 @@ export class UserService extends BaseCRUDService<User> {
       provider,
       full_name: fullName,
       followers: [],
+      favorites: [],
       following: [],
       profile_image: profileImage,
       created_date: moment().unix(),

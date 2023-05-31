@@ -588,12 +588,26 @@ export class RepositoryResolver {
     try {
       const authUser = getAuthUser(req);
       const { id } = args;
+      const userId = authUser.id;
+
+      /** Find current user */
+      const currentUser = await this.userService.getDataById(userId);
+      if (!currentUser) throw new Error('No user found');
+
       const repository = await this.repositoryService.getDataById(id);
       const liked = repository.favorites.some(userId => userId === authUser.id);
+
+      /** Add / Remove repository id from the list of favorites in user */
+      await this.userService.updateData(authUser.id, {
+        favorites: liked
+          ? currentUser.favorites.filter(repositoryId => repositoryId !== id)
+          : currentUser.favorites.concat([repository.id]),
+      });
+      /** Add / Remove user id from the list of favorites in repository */
       await this.repositoryService.updateData(id, {
         favorites: liked
           ? repository.favorites.filter(userId => userId !== authUser.id)
-          : repository.favorites.concat([authUser.id]),
+          : repository.favorites.concat([userId]),
       });
       return {
         message: 'Successfully toggle repository favorite',
