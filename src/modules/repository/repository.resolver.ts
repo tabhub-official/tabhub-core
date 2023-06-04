@@ -600,8 +600,8 @@ export class RepositoryResolver {
       /** Add / Remove repository id from the list of favorites in user */
       await this.userService.updateData(authUser.id, {
         favorites: liked
-          ? currentUser.favorites.filter(repositoryId => repositoryId !== id)
-          : currentUser.favorites.concat([repository.id]),
+          ? (currentUser.favorites || []).filter(repositoryId => repositoryId !== id)
+          : (currentUser.favorites || []).concat([repository.id]),
       });
       /** Add / Remove user id from the list of favorites in repository */
       await this.repositoryService.updateData(id, {
