@@ -1,6 +1,6 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { MinLength, MaxLength, IsUUID, IsEmail, ArrayNotEmpty } from 'class-validator';
-import * as moment from 'moment';
+import moment from 'moment';
 
 import { AccessPermission, AccessVisibility } from './accessibility';
 import { Directory } from './directory.model';

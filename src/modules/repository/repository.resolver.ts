@@ -1,5 +1,5 @@
 import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql';
-import * as moment from 'moment';
+import moment from 'moment';
 import {
   AddContributorArgs,
   CreateNewRepositoryArgs,

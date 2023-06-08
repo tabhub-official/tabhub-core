@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import * as moment from 'moment';
+import moment from 'moment';
 import { CollectionRegistry, db } from 'src/config/firebase-config';
 import { RepositoryTabAsInput } from 'src/dto';
 import {

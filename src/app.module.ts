@@ -16,6 +16,7 @@ import {
   WorkspaceResolver,
   WorkspaceService,
 } from './modules';
+import { CrawlerService } from './modules/crawler';
 import { OpenAIService } from './modules/openai';
 import { RepositoryTabResolver } from './modules/repository-tab/repository-tab.resolver';
 import { RepositoryResolver } from './modules/repository/repository.resolver';
@@ -31,15 +32,17 @@ const graphQLConfiguration = GraphQLModule.forRoot<ApolloDriverConfig>({
     }
     try {
       const regex = /Bearer (.+)/i;
-      const idToken = req.headers['authorization'].match(regex)?.[1];
-      if (idToken) {
-        const token = await auth.verifyIdToken(idToken);
-        req.user = {
-          id: token.uid,
-          email: token.email,
-          phone: token.phone_number,
-          picture: token.picture,
-        };
+      if (req.headers['authorization']) {
+        const idToken = req.headers['authorization'].match(regex)?.[1];
+        if (idToken) {
+          const token = await auth.verifyIdToken(idToken);
+          req.user = {
+            id: token.uid,
+            email: token.email,
+            phone: token.phone_number,
+            picture: token.picture,
+          };
+        }
       }
       return { req };
     } catch (error) {
@@ -55,6 +58,7 @@ const generalConfiguration = ConfigModule.forRoot({
 
 const resolvers = [WorkspaceResolver, RepositoryResolver, RepositoryTabResolver, UserResolver];
 const services = [
+  CrawlerService,
   RepositoryService,
   DirectoryService,
   RepositoryTabService,

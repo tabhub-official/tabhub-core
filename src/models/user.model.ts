@@ -1,6 +1,6 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { MinLength, MaxLength, IsUUID, IsEmail } from 'class-validator';
-import * as moment from 'moment';
+import moment from 'moment';
 
 @ObjectType()
 export class UserWhoHasAccess {

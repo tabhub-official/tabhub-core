@@ -32,7 +32,7 @@ type AppResponse {
 
 input ChangeWorkspaceVisibilityArgs {
   id: String!
-  updated_date: Float! = 1685950244
+  updated_date: Float! = 1686219590
   visibility: AccessVisibility!
 }
 
@@ -187,6 +187,7 @@ type Query {
   getWorkspaceById(getWorkspaceByIdArgs: GetWorkspaceByIdArgs!): Workspace
   getWorkspaceByName(getWorkspaceByNameArgs: GetWorkspaceByNameArgs!): Workspace
   getWorkspaceRepositories(getWorkspaceRepositoriesArgs: GetWorkspaceRepositoriesArgs!): [Repository!]!
+  searchOnWeb(searchTabOnWebArgs: SearchTabOnWebArgs!): [RepositoryTab!]!
 }
 
 input RemoveContributorArgs {
@@ -282,9 +283,15 @@ enum ResponseType {
   Success
 }
 
+input SearchTabOnWebArgs {
+  limit: Float!
+  offset: Float!
+  websiteUrl: String!
+}
+
 input SelectQuickAccessWorkspaceArgs {
   id: String
-  updated_date: Float! = 1685950244
+  updated_date: Float! = 1686219590
 }
 
 input SetRepositoryTabsArgs {
@@ -322,7 +329,7 @@ input UpdateRepositoryArgs {
 
   """List of user IDs"""
   contributors: [String!] = []
-  created_date: Float = 1685950244
+  created_date: Float = 1686219590
   description: String
 
   """List of directory IDs"""
@@ -343,13 +350,13 @@ input UpdateRepositoryArgs {
 
   """List of repository tab IDs"""
   tabs: [RepositoryTabInput!] = []
-  updated_date: Float = 1685950244
+  updated_date: Float = 1686219590
   visibility: AccessVisibility = Private
   workspaceId: String
 }
 
 input UpdateUserArgs {
-  created_date: Float = 1685950244
+  created_date: Float = 1686219590
   email: String
   favorites: [String!] = []
 
@@ -370,7 +377,7 @@ input UpdateUserArgs {
 
   """ID of selected workspace"""
   selected_workspace: String
-  updated_date: Float = 1685950244
+  updated_date: Float = 1686219590
   username: String
 
   """List of workspace IDs"""
@@ -381,7 +388,7 @@ input UpdateWorkspaceArgs {
   description: String = ""
   id: String!
   name: String!
-  updated_date: Float! = 1685950244
+  updated_date: Float! = 1686219590
   visibility: AccessVisibility!
 }
 

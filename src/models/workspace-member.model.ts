@@ -1,5 +1,5 @@
 import { Field, Int, ObjectType, PartialType } from '@nestjs/graphql';
-import * as moment from 'moment';
+import moment from 'moment';
 
 import { User } from './user.model';
 
