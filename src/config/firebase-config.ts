@@ -1,10 +1,13 @@
+import 'dotenv/config';
 import * as admin from 'firebase-admin';
-
-import * as adminSdkConfig from './admin-sdk-config.json';
 
 // Initialize firebase admin SDK
 admin.initializeApp({
-  credential: admin.credential.cert(adminSdkConfig as any),
+  credential: admin.credential.cert({
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY,
+    projectId: process.env.FIREBASE_PROJECT_ID,
+  }),
 });
 
 export const db = admin.firestore();
