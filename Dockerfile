@@ -4,6 +4,8 @@
 
 FROM node:18-alpine As development
 
+ENV SERVER_PORT=8080
+
 # Create app directory
 WORKDIR /usr/src/app
 
@@ -26,6 +28,8 @@ USER node
 ###################
 
 FROM node:18-alpine As build
+
+ENV SERVER_PORT=8080
 
 WORKDIR /usr/src/app
 
@@ -52,6 +56,8 @@ USER node
 ###################
 
 FROM node:18-alpine As production
+
+ENV SERVER_PORT=8080
 
 # Copy the bundled code from the build stage to the production image
 COPY --chown=node:node --from=build /usr/src/app/node_modules ./node_modules
