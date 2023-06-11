@@ -1,5 +1,4 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { IsUUID } from 'class-validator';
 
 @InputType()
 export class SearchTabOnWebArgs {
@@ -14,15 +13,7 @@ export class SearchTabOnWebArgs {
 }
 
 @InputType()
-export class PinRepositoryTabArgs {
+export class QueryOpenGraphMetadataArgs {
   @Field()
-  @IsUUID('4')
-  tabId: string;
-}
-
-@InputType()
-export class UnpinRepositoryTabArgs {
-  @Field()
-  @IsUUID('4')
-  tabId: string;
+  websiteUrl: string;
 }

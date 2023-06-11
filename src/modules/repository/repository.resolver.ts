@@ -15,6 +15,8 @@ import {
   SetRepositoryTabsArgs,
   UpdateRepositoryArgs,
   UpdateRepositoryAccessArgs,
+  UnpinRepositoryTabArgs,
+  PinRepositoryTabArgs,
 } from 'src/dto';
 import { AccessVisibility, AppResponse, Repository, ResponseType } from 'src/models';
 import { FlattenRolePermission, UserRole, throwPermissionChecker } from 'src/models/role.model';
@@ -614,6 +616,67 @@ export class RepositoryResolver {
         type: ResponseType.Success,
       };
     } catch (error) {
+      return {
+        message: error,
+        type: ResponseType.Error,
+      };
+    }
+  }
+
+  @Mutation(() => AppResponse)
+  async pinRepositoryTab(
+    @Context('req') req,
+    @Args('pinRepositoryTabArgs') args: PinRepositoryTabArgs
+  ): Promise<AppResponse> {
+    try {
+      const { tabId, repositoryId } = args;
+      const authUser = getAuthUser(req);
+      const userId = authUser.id;
+      /** Find current user */
+      const currentUser = await this.userService.getDataById(userId);
+      if (!currentUser) throw new Error('No user found');
+
+      /** Find pin from repository */
+      const repository = await this.repositoryService.getDataById(repositoryId);
+      const repositoryTab = repository.tabs.find(tab => tab.id === tabId);
+      if (!repositoryTab) throw new Error('No tab found in the provided repository');
+
+      await this.userService.updateData(userId, {
+        pinned_tabs: currentUser.pinned_tabs.concat([repositoryTab]),
+      });
+      return {
+        message: `Successfully pin tab ${tabId}`,
+        type: ResponseType.Success,
+      };
+    } catch (error: any) {
+      return {
+        message: error,
+        type: ResponseType.Error,
+      };
+    }
+  }
+
+  @Mutation(() => AppResponse)
+  async unpinRepositoryTab(
+    @Context('req') req,
+    @Args('unpinRepositoryTabArgs') args: UnpinRepositoryTabArgs
+  ): Promise<AppResponse> {
+    try {
+      const { tabId } = args;
+      const authUser = getAuthUser(req);
+      const userId = authUser.id;
+      /** Find current user */
+      const currentUser = await this.userService.getDataById(userId);
+      if (!currentUser) throw new Error('No user found');
+
+      await this.userService.updateData(userId, {
+        pinned_tabs: currentUser.pinned_tabs.filter(tab => tab.id !== tabId),
+      });
+      return {
+        message: `Successfully unpin tab ${tabId}`,
+        type: ResponseType.Success,
+      };
+    } catch (error: any) {
       return {
         message: error,
         type: ResponseType.Error,

@@ -32,7 +32,7 @@ type AppResponse {
 
 input ChangeWorkspaceVisibilityArgs {
   id: String!
-  updated_date: Float! = 1686238422
+  updated_date: Float! = 1686400553
   visibility: AccessVisibility!
 }
 
@@ -169,6 +169,7 @@ input PinRepositoryArgs {
 }
 
 input PinRepositoryTabArgs {
+  repositoryId: String!
   tabId: String!
 }
 
@@ -187,7 +188,12 @@ type Query {
   getWorkspaceById(getWorkspaceByIdArgs: GetWorkspaceByIdArgs!): Workspace
   getWorkspaceByName(getWorkspaceByNameArgs: GetWorkspaceByNameArgs!): Workspace
   getWorkspaceRepositories(getWorkspaceRepositoriesArgs: GetWorkspaceRepositoriesArgs!): [Repository!]!
+  queryOpenGraphMetadata(queryOpenGraphMetadata: QueryOpenGraphMetadataArgs!): AppResponse!
   searchOnWeb(searchTabOnWebArgs: SearchTabOnWebArgs!): [RepositoryTab!]!
+}
+
+input QueryOpenGraphMetadataArgs {
+  websiteUrl: String!
 }
 
 input RemoveContributorArgs {
@@ -291,7 +297,7 @@ input SearchTabOnWebArgs {
 
 input SelectQuickAccessWorkspaceArgs {
   id: String
-  updated_date: Float! = 1686238422
+  updated_date: Float! = 1686400553
 }
 
 input SetRepositoryTabsArgs {
@@ -329,7 +335,7 @@ input UpdateRepositoryArgs {
 
   """List of user IDs"""
   contributors: [String!] = []
-  created_date: Float = 1686238422
+  created_date: Float
   description: String
 
   """List of directory IDs"""
@@ -350,13 +356,13 @@ input UpdateRepositoryArgs {
 
   """List of repository tab IDs"""
   tabs: [RepositoryTabInput!] = []
-  updated_date: Float = 1686238422
+  updated_date: Float
   visibility: AccessVisibility = Private
   workspaceId: String
 }
 
 input UpdateUserArgs {
-  created_date: Float = 1686238422
+  created_date: Float
   email: String
   favorites: [String!] = []
 
@@ -371,13 +377,13 @@ input UpdateUserArgs {
   pinned_repositories: [String!] = []
 
   """List of repository tabs IDs"""
-  pinned_tabs: [String!] = []
+  pinned_tabs: [RepositoryTabInput!] = []
   profile_image: String
   provider: String = "UNKNOWN"
 
   """ID of selected workspace"""
   selected_workspace: String
-  updated_date: Float = 1686238422
+  updated_date: Float
   username: String
 
   """List of workspace IDs"""
@@ -388,7 +394,7 @@ input UpdateWorkspaceArgs {
   description: String = ""
   id: String!
   name: String!
-  updated_date: Float! = 1686238422
+  updated_date: Float! = 1686400553
   visibility: AccessVisibility!
 }
 
@@ -409,7 +415,7 @@ type User {
   pinned_repositories: [String!]!
 
   """List of repository tabs IDs"""
-  pinned_tabs: [String!]!
+  pinned_tabs: [RepositoryTab!]!
   profile_image: String
   provider: String!
 

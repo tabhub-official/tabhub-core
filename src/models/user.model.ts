@@ -1,6 +1,7 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { MinLength, MaxLength, IsUUID, IsEmail } from 'class-validator';
-import moment from 'moment';
+
+import { RepositoryTab } from './repository-tab.model';
 
 @ObjectType()
 export class UserWhoHasAccess {
@@ -19,10 +20,10 @@ export class User {
   @IsUUID('4')
   id: string;
 
-  @Field({ nullable: false, defaultValue: moment().unix() })
+  @Field({ nullable: false })
   created_date: number;
 
-  @Field({ nullable: false, defaultValue: moment().unix() })
+  @Field({ nullable: false })
   updated_date: number;
 
   @Field({ nullable: true })
@@ -60,8 +61,8 @@ export class User {
   @Field(() => [String], { defaultValue: [], description: 'List of repositories IDs' })
   pinned_repositories: string[];
 
-  @Field(() => [String], { defaultValue: [], description: 'List of repository tabs IDs' })
-  pinned_tabs: string[];
+  @Field(() => [RepositoryTab], { defaultValue: [], description: 'List of repository tabs IDs' })
+  pinned_tabs: RepositoryTab[];
 
   /** If selected_workspace == null => Default set to local workspace */
   @Field({ nullable: true, description: 'ID of selected workspace' })

@@ -122,7 +122,7 @@ export class RepositoryService extends BaseCRUDService<Repository> {
 
     const _collection = await db.collection(this.collectionRegistry);
     const newRepositoryId = uuidV4();
-    const repositoryTabs = await this.repositoryTabService.createManyRepositoryTab(tabs);
+    const repositoryTabs = this.repositoryTabService.createManyRepositoryTab(tabs);
     const data: Repository = {
       id: newRepositoryId,
       icon,

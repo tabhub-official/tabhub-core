@@ -1,6 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { MinLength, MaxLength, IsUUID, IsEmail, ArrayNotEmpty } from 'class-validator';
-import moment from 'moment';
 
 import { AccessPermission, AccessVisibility } from './accessibility';
 import { Directory } from './directory.model';
@@ -12,10 +11,10 @@ export class Repository {
   @IsUUID('4')
   id: string;
 
-  @Field({ nullable: false, defaultValue: moment().unix() })
+  @Field({ nullable: false })
   created_date: number;
 
-  @Field({ nullable: false, defaultValue: moment().unix() })
+  @Field({ nullable: false })
   updated_date: number;
 
   @MinLength(1)

@@ -1,5 +1,4 @@
 import { Field, Int, ObjectType, PartialType } from '@nestjs/graphql';
-import moment from 'moment';
 
 import { User } from './user.model';
 
@@ -12,6 +11,6 @@ export class WorkspaceMember extends PartialType(User) {
   @Field({ defaultValue: false })
   is_owner: boolean;
 
-  @Field({ nullable: false, defaultValue: moment().unix() })
+  @Field({ nullable: false })
   joined_date: number;
 }

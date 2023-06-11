@@ -1,6 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { MaxLength, MinLength, IsUUID, ArrayNotEmpty } from 'class-validator';
-import moment from 'moment';
 
 import { AccessVisibility } from './accessibility';
 import { UserRole } from './role.model';
@@ -11,10 +10,10 @@ export class Workspace {
   @IsUUID('4')
   id: string;
 
-  @Field({ nullable: false, defaultValue: moment().unix() })
+  @Field({ nullable: false })
   created_date: number;
 
-  @Field({ nullable: false, defaultValue: moment().unix() })
+  @Field({ nullable: false })
   updated_date: number;
 
   @MinLength(1)

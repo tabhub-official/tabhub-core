@@ -192,3 +192,21 @@ export class GetRepositoryByNameArgs {
   @Field()
   name: string;
 }
+
+@InputType()
+export class PinRepositoryTabArgs {
+  @Field()
+  @IsUUID('4')
+  tabId: string;
+
+  @Field()
+  @IsUUID('4')
+  repositoryId: string;
+}
+
+@InputType()
+export class UnpinRepositoryTabArgs {
+  @Field()
+  @IsUUID('4')
+  tabId: string;
+}

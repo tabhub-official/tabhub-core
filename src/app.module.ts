@@ -71,6 +71,6 @@ const services = [
 @Module({
   imports: [graphQLConfiguration, generalConfiguration],
   controllers: [AppController],
-  providers: [...resolvers, ...services],
+  providers: [...services, ...resolvers],
 })
 export class AppModule {}
