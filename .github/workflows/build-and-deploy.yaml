@@ -1,0 +1,63 @@
+name: Build and Deploy TabHub to S3
+on:
+  push:
+    branches: [master]
+
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Deploy image to DigitalOcean droplet'
+        required: true
+
+# Full container registry path:
+# registry.digitalocean.com/tabhub-prod/tabhub-server
+env:
+  CONTAINER_REGISTRY: 'registry.digitalocean.com/tabhub-prod'
+  CONTAINER_IMAGE_NAME: 'tabhub-server'
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v2
+
+      - name: Build container image
+        run: docker buildx build --platform linux/amd64 -t $(echo $CONTAINER_REGISTRY)/$(echo $CONTAINER_IMAGE_NAME):$(echo $GITHUB_SHA | head -c7) .
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Log in to DigitalOcean Container Registry with short-lived credentials
+        run: doctl registry login --expiry-seconds 600
+
+      - name: Remove all old images
+        run: if [ ! -z "$(doctl registry repository list | grep "$(echo $CONTAINER_IMAGE_NAME)")" ]; then doctl registry repository delete-manifest $(echo $CONTAINER_IMAGE_NAME) $(doctl registry repository list-tags $(echo $CONTAINER_IMAGE_NAME) | grep -o "sha.*") --force; else echo "No repository"; fi
+
+      - name: Push image to DigitalOcean Container Registry
+        run: docker push $(echo $CONTAINER_REGISTRY)/$(echo $CONTAINER_IMAGE_NAME):$(echo $GITHUB_SHA | head -c7)
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build_and_push
+
+    steps:
+      - name: Deploy to Digital Ocean droplet via SSH action
+        uses: appleboy/ssh-action@v0.1.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSHKEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
+          envs: CONTAINER_IMAGE_NAME,CONTAINER_REGISTRY,{{ secrets.DIGITALOCEAN_ACCESS_TOKEN }},GITHUB_SHA
+          script: |
+            # Login to registry
+            docker login -u ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }} -p ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }} registry.digitalocean.com
+            # Stop running container
+            docker stop $(echo $CONTAINER_IMAGE_NAME)
+            # Remove old container
+            docker rm $(echo $CONTAINER_IMAGE_NAME)
+            # Run a new container from a new image
+            docker run -it --name $(echo $CONTAINER_IMAGE_NAME) --env-file .env -d --restart always $(echo $CONTAINER_REGISTRY)/$(echo $CONTAINER_IMAGE_NAME)

@@ -1,12 +1,14 @@
 import 'dotenv/config';
 import * as admin from 'firebase-admin';
 
+const firebaseSecret = JSON.parse(process.env.FIREBASE_SECRET);
+
 // Initialize firebase admin SDK
 admin.initializeApp({
   credential: admin.credential.cert({
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    privateKey: process.env.FIREBASE_PRIVATE_KEY,
-    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: firebaseSecret.client_email,
+    privateKey: firebaseSecret.private_key.replace(/\n/gm, '\n'),
+    projectId: firebaseSecret.project_id,
   }),
 });
 
