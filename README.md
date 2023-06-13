@@ -46,8 +46,8 @@ SERVER_PORT=8080
 
 ```
 VIRTUAL_PORT=8080
-VIRTUAL_HOST=server.tabhub.io
-LETSENCRYPT_HOST=server.tabhub.io
+VIRTUAL_HOST=api.tabhub.io
+LETSENCRYPT_HOST=api.tabhub.io
 LETSENCRYPT_EMAIL=team@tabhub.io
 ```
 
