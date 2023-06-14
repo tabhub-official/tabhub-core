@@ -29,6 +29,15 @@ export class UserService extends BaseCRUDService<User> {
     return user;
   }
 
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const _collection = await db.collection(this.collectionRegistry);
+    const data = _collection.where('username', '==', username);
+    const _snapshot = await data.get();
+    if (_snapshot.empty) return undefined;
+    const user: User = _snapshot.docs.map<User>(doc => doc.data() as User)[0] as any;
+    return user;
+  }
+
   /** Create a new workspace */
   createNewUser = async (
     userId: string,

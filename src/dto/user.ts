@@ -42,3 +42,9 @@ export class GetUserByEmailArgs {
   @Field(() => String)
   email: string;
 }
+
+@InputType()
+export class GetUserByUsernameArgs {
+  @Field(() => String)
+  username: string;
+}

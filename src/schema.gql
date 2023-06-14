@@ -32,7 +32,7 @@ type AppResponse {
 
 input ChangeWorkspaceVisibilityArgs {
   id: String!
-  updated_date: Float! = 1686629920
+  updated_date: Float! = 1686736077
   visibility: AccessVisibility!
 }
 
@@ -117,6 +117,10 @@ input GetUserByIdArgs {
   id: String!
 }
 
+input GetUserByUsernameArgs {
+  username: String!
+}
+
 input GetUserRepositoriesArgs {
   userId: String!
 }
@@ -183,6 +187,7 @@ type Query {
   getRepositoryByName(getRepositoryByNameArgs: GetRepositoryByNameArgs!): Repository!
   getUserByEmail(getUserByEmailArgs: GetUserByEmailArgs!): User
   getUserById(getUserByIdArgs: GetUserByIdArgs!): User
+  getUserByUsername(getUserByUsernameArgs: GetUserByUsernameArgs!): User
   getUserRepositories(getUserRepositoriesArgs: GetUserRepositoriesArgs!): [Repository!]!
   getUserWorkspaces(getUserWorkspacesArgs: GetUserWorkspacesArgs!): [Workspace!]!
   getWorkspaceById(getWorkspaceByIdArgs: GetWorkspaceByIdArgs!): Workspace
@@ -297,7 +302,7 @@ input SearchTabOnWebArgs {
 
 input SelectQuickAccessWorkspaceArgs {
   id: String
-  updated_date: Float! = 1686629920
+  updated_date: Float! = 1686736077
 }
 
 input SetRepositoryTabsArgs {
@@ -394,7 +399,7 @@ input UpdateWorkspaceArgs {
   description: String = ""
   id: String!
   name: String!
-  updated_date: Float! = 1686629920
+  updated_date: Float! = 1686736077
   visibility: AccessVisibility!
 }
 

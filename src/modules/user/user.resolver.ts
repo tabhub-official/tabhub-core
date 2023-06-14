@@ -4,6 +4,7 @@ import {
   CreateNewUserArgs,
   GetUserByEmailArgs,
   GetUserByIdArgs,
+  GetUserByUsernameArgs,
   SmartTabGroupingArgs,
   TabWithCategory,
   UpdateUserArgs,
@@ -57,6 +58,18 @@ export class UserResolver {
   }
 
   @Query(() => User, { nullable: true })
+  async getUserByUsername(
+    @Args('getUserByUsernameArgs') args: GetUserByUsernameArgs
+  ): Promise<User | undefined> {
+    try {
+      const { username } = args;
+      return this.userService.getUserByUsername(username);
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  @Query(() => User, { nullable: true })
   async getCurrentUser(@Context('req') req): Promise<User | undefined> {
     const authUser = getAuthUser(req);
     try {
@@ -98,10 +111,13 @@ export class UserResolver {
   ): Promise<AppResponse> {
     try {
       const authUser = getAuthUser(req);
-      const { ...workspace } = args;
-      await this.userService.updateData(authUser.id, workspace);
+      const { ...user } = args;
+      const existingUser = await this.userService.getUserByUsername(user.username);
+      if (existingUser && existingUser.email !== authUser.email)
+        throw new Error('Username is taken already');
+      await this.userService.updateData(authUser.id, user);
       return {
-        message: `Successfully update workspace ${authUser.id}`,
+        message: `Successfully update user ${authUser.id}`,
         type: ResponseType.Success,
       };
     } catch (error: any) {
