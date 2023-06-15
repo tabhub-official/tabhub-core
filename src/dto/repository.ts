@@ -184,13 +184,13 @@ export class GetWorkspaceRepositoriesArgs {
 }
 
 @InputType()
-export class GetRepositoryByNameArgs {
+export class GetRepositoryBySlugArgs {
   @Field()
   @IsUUID('4')
   workspaceId: string;
 
   @Field()
-  name: string;
+  slug: string;
 }
 
 @InputType()

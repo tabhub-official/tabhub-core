@@ -66,13 +66,13 @@ export class RepositoryService extends BaseCRUDService<Repository> {
     return publicData.docs.map<Repository>(doc => doc.data() as Repository);
   };
 
-  getRepositoryByName = async (
+  getRepositoryBySlug = async (
     workspaceId: string,
-    name: string
+    slug: string
   ): Promise<Repository | undefined> => {
     const _collection = await db.collection(this.collectionRegistry);
     const publicData = await _collection
-      .where('name', '==', name)
+      .where('slug', '==', slug)
       .where('workspaceId', '==', workspaceId)
       .get();
     if (publicData.empty) return undefined;
@@ -106,6 +106,7 @@ export class RepositoryService extends BaseCRUDService<Repository> {
 
   createNewRepository = async (
     icon: string,
+    slug: string,
     name: string,
     tabs: RepositoryTabAsInput[],
     owner: string,
@@ -123,10 +124,12 @@ export class RepositoryService extends BaseCRUDService<Repository> {
     const _collection = await db.collection(this.collectionRegistry);
     const newRepositoryId = uuidV4();
     const repositoryTabs = this.repositoryTabService.createManyRepositoryTab(tabs);
+
     const data: Repository = {
       id: newRepositoryId,
       icon,
       name,
+      slug,
       tabs: repositoryTabs,
       description,
       owner,

@@ -1,11 +1,11 @@
 import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql';
 import moment from 'moment';
+import slugify from 'slugify';
 import {
   AddContributorArgs,
   CreateNewRepositoryArgs,
   DeleteRepositoryArgs,
   GetRepositoryByIdArgs,
-  GetRepositoryByNameArgs,
   GetUserRepositoriesArgs,
   GetWorkspaceRepositoriesArgs,
   ToggleLikeRepositoryArgs,
@@ -17,10 +17,11 @@ import {
   UpdateRepositoryAccessArgs,
   UnpinRepositoryTabArgs,
   PinRepositoryTabArgs,
+  GetRepositoryBySlugArgs,
 } from 'src/dto';
 import { AccessVisibility, AppResponse, Repository, ResponseType } from 'src/models';
 import { FlattenRolePermission, UserRole, throwPermissionChecker } from 'src/models/role.model';
-import { getAuthUser, getUnsafeAuthUser } from 'src/utils';
+import { getAuthUser, getUnsafeAuthUser, makeid } from 'src/utils';
 
 import { RepositoryTabService } from '../repository-tab';
 import { UserService } from '../user';
@@ -144,17 +145,17 @@ export class RepositoryResolver {
   }
 
   @Query(() => Repository)
-  async getRepositoryByName(
+  async getRepositoryBySlug(
     @Context('req') req,
-    @Args('getRepositoryByNameArgs') args: GetRepositoryByNameArgs
+    @Args('getRepositoryBySlugArgs') args: GetRepositoryBySlugArgs
   ): Promise<Repository> {
     try {
-      const { name, workspaceId } = args;
+      const { slug, workspaceId } = args;
       const authUser = getUnsafeAuthUser(req);
       /** If repository is private, check the read access */
-      const existingRepository = await this.repositoryService.getRepositoryByName(
+      const existingRepository = await this.repositoryService.getRepositoryBySlug(
         workspaceId,
-        name
+        slug
       );
       if (existingRepository.visibility === AccessVisibility.Private) {
         await this.checkRepositoryPermission(existingRepository, authUser.id, [
@@ -230,12 +231,17 @@ export class RepositoryResolver {
     try {
       const authUser = getAuthUser(req);
       const { name, tabs, workspaceId, description, icon, visibility, directories } = args;
+      const slug = `${slugify(name as string, {
+        lower: true,
+        strict: true,
+        trim: true,
+      })}-${makeid(5)}`;
 
       /** Must be a workspace member to create a repository */
       const isMember = await this.workspaceService.isWorkspaceMember(workspaceId, authUser.id);
       if (!isMember) throw new Error('Not workspace member');
 
-      const existingRepository = await this.repositoryService.getRepositoryByName(
+      const existingRepository = await this.repositoryService.getRepositoryBySlug(
         workspaceId,
         name
       );
@@ -255,6 +261,7 @@ export class RepositoryResolver {
         /** Create new repository if not exist */
         await this.repositoryService.createNewRepository(
           icon,
+          slug,
           name,
           tabs,
           authUser.id,
@@ -445,6 +452,11 @@ export class RepositoryResolver {
 
       await this.repositoryService.updateData(id, {
         name,
+        slug: `${slugify(name as string, {
+          lower: true,
+          strict: true,
+          trim: true,
+        })}-${makeid(5)}`,
         visibility,
         description,
         icon,

@@ -32,7 +32,7 @@ type AppResponse {
 
 input ChangeWorkspaceVisibilityArgs {
   id: String!
-  updated_date: Float! = 1686808914
+  updated_date: Float! = 1686823089
   visibility: AccessVisibility!
 }
 
@@ -104,8 +104,8 @@ input GetRepositoryByIdArgs {
   id: String!
 }
 
-input GetRepositoryByNameArgs {
-  name: String!
+input GetRepositoryBySlugArgs {
+  slug: String!
   workspaceId: String!
 }
 
@@ -184,7 +184,7 @@ type Query {
   getCurrentUser: User
   getMyWorkspaces: [Workspace!]!
   getRepositoryById(getRepositoryByIdArgs: GetRepositoryByIdArgs!): Repository!
-  getRepositoryByName(getRepositoryByNameArgs: GetRepositoryByNameArgs!): Repository!
+  getRepositoryBySlug(getRepositoryBySlugArgs: GetRepositoryBySlugArgs!): Repository!
   getUserByEmail(getUserByEmailArgs: GetUserByEmailArgs!): User
   getUserById(getUserByIdArgs: GetUserByIdArgs!): User
   getUserByUsername(getUserByUsernameArgs: GetUserByUsernameArgs!): User
@@ -239,6 +239,7 @@ type Repository {
 
   """List of repository tabs IDs"""
   pinned: [String!]!
+  slug: String!
 
   """List of repository tab IDs"""
   tabs: [RepositoryTab!]!
@@ -302,7 +303,7 @@ input SearchTabOnWebArgs {
 
 input SelectQuickAccessWorkspaceArgs {
   id: String
-  updated_date: Float! = 1686808914
+  updated_date: Float! = 1686823089
 }
 
 input SetRepositoryTabsArgs {
@@ -358,6 +359,7 @@ input UpdateRepositoryArgs {
 
   """List of repository tabs IDs"""
   pinned: [String!] = []
+  slug: String
 
   """List of repository tab IDs"""
   tabs: [RepositoryTabInput!] = []
@@ -399,7 +401,7 @@ input UpdateWorkspaceArgs {
   description: String = ""
   id: String!
   name: String!
-  updated_date: Float! = 1686808914
+  updated_date: Float! = 1686823089
   visibility: AccessVisibility!
 }
 

@@ -1,5 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { MinLength, MaxLength, IsUUID, IsEmail, ArrayNotEmpty } from 'class-validator';
+import { MaxLength, IsUUID, IsEmail, ArrayNotEmpty } from 'class-validator';
 
 import { AccessPermission, AccessVisibility } from './accessibility';
 import { Directory } from './directory.model';
@@ -17,10 +17,11 @@ export class Repository {
   @Field({ nullable: false })
   updated_date: number;
 
-  @MinLength(1)
-  @MaxLength(40)
   @Field(() => String, { nullable: false })
   name: string;
+
+  @Field(() => String, { nullable: false })
+  slug: string;
 
   @Field(() => String, { nullable: false })
   icon: string;
