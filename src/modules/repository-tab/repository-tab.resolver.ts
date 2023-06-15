@@ -1,4 +1,5 @@
 import { Args, Query, Resolver } from '@nestjs/graphql';
+import axios from 'axios';
 import ogs from 'open-graph-scraper';
 import { QueryOpenGraphMetadataArgs, SearchTabOnWebArgs } from 'src/dto/repository-tab';
 import { AppResponse, RepositoryTab, ResponseType } from 'src/models';
@@ -47,13 +48,21 @@ export class RepositoryTabResolver {
             timeout: 500,
           });
           const res = data.result;
+          let faviconIcon = res.ogImage.length > 0 ? res.ogImage[0].url : '';
+          try {
+            const getFaviconUrl = `http://www.google.com/s2/favicons?domain=${url}`;
+            const response = await axios.get(getFaviconUrl);
+            faviconIcon = response.data;
+          } catch (error) {
+            console.log(error);
+          }
           repositoryTab = {
             id: `temp-${uuidV4()}`,
             description: res.ogDescription,
             url: url,
             title: res.ogTitle || '',
             customName: res.ogTitle || '',
-            favIconUrl: res.ogImage.length > 0 ? res.ogImage[0].url : '',
+            favIconUrl: faviconIcon,
           };
         } catch (error) {
           repositoryTab = {
