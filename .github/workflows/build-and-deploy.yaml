@@ -54,6 +54,8 @@ jobs:
           script: |
             # Login to registry
             docker login -u ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }} -p ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }} registry.digitalocean.com
+            # Pull latest image 
+            docker image pull $(echo $CONTAINER_REGISTRY)/$(echo $CONTAINER_IMAGE_NAME)
             # Stop running container
             docker stop $(echo $CONTAINER_IMAGE_NAME)
             # Remove old container
