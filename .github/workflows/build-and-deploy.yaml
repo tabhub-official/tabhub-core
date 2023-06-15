@@ -1,4 +1,4 @@
-name: Build and Deploy TabHub to S3
+name: Build and Deploy server to Digital Ocena
 on:
   push:
     branches: [master]
@@ -49,7 +49,6 @@ jobs:
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSHKEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
           envs: CONTAINER_IMAGE_NAME,CONTAINER_REGISTRY,{{ secrets.DIGITALOCEAN_ACCESS_TOKEN }},GITHUB_SHA
           script: |
