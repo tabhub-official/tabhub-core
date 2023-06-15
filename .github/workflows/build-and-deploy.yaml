@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Build container image
-        run: docker buildx build --platform linux/amd64 -t $(echo $CONTAINER_REGISTRY)/$(echo $CONTAINER_IMAGE_NAME):$(echo $GITHUB_SHA | head -c7) .
+        run: docker buildx build --platform linux/amd64 -t $(echo $CONTAINER_REGISTRY)/$(echo $CONTAINER_IMAGE_NAME)
 
       - name: Install doctl
         uses: digitalocean/action-doctl@v2
@@ -37,7 +37,7 @@ jobs:
         run: if [ ! -z "$(doctl registry repository list | grep "$(echo $CONTAINER_IMAGE_NAME)")" ]; then doctl registry repository delete-manifest $(echo $CONTAINER_IMAGE_NAME) $(doctl registry repository list-tags $(echo $CONTAINER_IMAGE_NAME) | grep -o "sha.*") --force; else echo "No repository"; fi
 
       - name: Push image to DigitalOcean Container Registry
-        run: docker push $(echo $CONTAINER_REGISTRY)/$(echo $CONTAINER_IMAGE_NAME):$(echo $GITHUB_SHA | head -c7)
+        run: docker push $(echo $CONTAINER_REGISTRY)/$(echo $CONTAINER_IMAGE_NAME)
 
   deploy:
     runs-on: ubuntu-latest
@@ -50,7 +50,7 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           passphrase: ${{ secrets.PASSPHRASE }}
-          envs: CONTAINER_IMAGE_NAME,CONTAINER_REGISTRY,{{ secrets.DIGITALOCEAN_ACCESS_TOKEN }},GITHUB_SHA
+          envs: CONTAINER_IMAGE_NAME,CONTAINER_REGISTRY,{{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
           script: |
             # Login to registry
             docker login -u ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }} -p ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }} registry.digitalocean.com
