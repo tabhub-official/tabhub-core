@@ -20,6 +20,7 @@ import { CrawlerService } from './modules/crawler';
 import { OpenAIService } from './modules/openai';
 import { RepositoryTabResolver } from './modules/repository-tab/repository-tab.resolver';
 import { RepositoryResolver } from './modules/repository/repository.resolver';
+import { StorageService } from './modules/storage';
 
 const graphQLConfiguration = GraphQLModule.forRoot<ApolloDriverConfig>({
   driver: ApolloDriver,
@@ -58,6 +59,7 @@ const generalConfiguration = ConfigModule.forRoot({
 
 const resolvers = [WorkspaceResolver, RepositoryResolver, RepositoryTabResolver, UserResolver];
 const services = [
+  StorageService,
   CrawlerService,
   RepositoryService,
   DirectoryService,

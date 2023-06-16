@@ -205,6 +205,21 @@ export class PinRepositoryTabArgs {
 }
 
 @InputType()
+export class UpdateReadmeArgs {
+  @Field()
+  repositoryId: string;
+
+  @Field()
+  readmeData: string;
+}
+
+@InputType()
+export class ReadReadmeArgs {
+  @Field()
+  repositoryId: string;
+}
+
+@InputType()
 export class UnpinRepositoryTabArgs {
   @Field()
   @IsUUID('4')

@@ -1,6 +1,8 @@
 import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql';
+import axios from 'axios';
 import moment from 'moment';
 import slugify from 'slugify';
+import { storage } from 'src/config/firebase-config';
 import {
   AddContributorArgs,
   CreateNewRepositoryArgs,
@@ -18,12 +20,15 @@ import {
   UnpinRepositoryTabArgs,
   PinRepositoryTabArgs,
   GetRepositoryBySlugArgs,
+  UpdateReadmeArgs,
+  ReadReadmeArgs,
 } from 'src/dto';
 import { AccessVisibility, AppResponse, Repository, ResponseType } from 'src/models';
 import { FlattenRolePermission, UserRole, throwPermissionChecker } from 'src/models/role.model';
 import { getAuthUser, getUnsafeAuthUser, makeid } from 'src/utils';
 
 import { RepositoryTabService } from '../repository-tab';
+import { StorageService } from '../storage';
 import { UserService } from '../user';
 import { WorkspaceService } from '../workspace';
 import { RepositoryService } from './repository.service';
@@ -42,7 +47,8 @@ export class RepositoryResolver {
     private repositoryService: RepositoryService,
     private workspaceService: WorkspaceService,
     private repositoryTabService: RepositoryTabService,
-    private userService: UserService
+    private userService: UserService,
+    private storageService: StorageService
   ) {}
 
   async checkRepositoryPermission(
@@ -628,6 +634,68 @@ export class RepositoryResolver {
         type: ResponseType.Success,
       };
     } catch (error) {
+      return {
+        message: error,
+        type: ResponseType.Error,
+      };
+    }
+  }
+
+  @Query(() => String)
+  async getReadmeContent(
+    @Context('req') req,
+    @Args('readReadmeArgs') args: ReadReadmeArgs
+  ): Promise<string> {
+    try {
+      const { repositoryId } = args;
+      const authUser = getAuthUser(req);
+      const userId = authUser.id;
+      const existingRepository = await this.repositoryService.getDataById(repositoryId);
+
+      if (!existingRepository) throw new Error('No repository found');
+      /** Handle check permission */
+      await this.checkRepositoryPermission(existingRepository, userId, ['repository', 'read']);
+
+      const response = await axios.get(existingRepository.readme);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error);
+    }
+  }
+
+  @Mutation(() => AppResponse)
+  async updateReadme(
+    @Context('req') req,
+    @Args('updateReadmeArgs') args: UpdateReadmeArgs
+  ): Promise<AppResponse> {
+    try {
+      const { readmeData, repositoryId } = args;
+      const authUser = getAuthUser(req);
+      const userId = authUser.id;
+      const existingRepository = await this.repositoryService.getDataById(repositoryId);
+
+      if (!existingRepository) throw new Error('No repository found');
+      /** Handle check permission */
+      await this.checkRepositoryPermission(existingRepository, userId, ['repository', 'update']);
+
+      /** Upload README to object storage */
+      const bucket = storage.bucket();
+      const prefixPath = `${existingRepository.workspaceId}/${existingRepository.slug}`;
+      await this.storageService.uploadMarkdownFilePath(bucket, prefixPath, 'README.md', readmeData);
+      /** Get file path on cloud storage */
+      const fileName = `${prefixPath}/README.md`;
+
+      if (existingRepository.readme.length === 0) {
+        const url = await this.storageService.generateSignedUrl(bucket, fileName);
+        await this.repositoryService.updateData(repositoryId, {
+          readme: url,
+        });
+      }
+      return {
+        message: `Successfully update repository ${repositoryId}`,
+        type: ResponseType.Success,
+      };
+    } catch (error: any) {
       return {
         message: error,
         type: ResponseType.Error,

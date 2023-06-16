@@ -32,7 +32,7 @@ type AppResponse {
 
 input ChangeWorkspaceVisibilityArgs {
   id: String!
-  updated_date: Float! = 1686824686
+  updated_date: Float! = 1686906836
   visibility: AccessVisibility!
 }
 
@@ -162,6 +162,7 @@ type Mutation {
   toggleLikeRepository(toggleLikeRepositoryArgs: ToggleLikeRepositoryArgs!): AppResponse!
   unpinRepository(unpinRepositoryArgs: PinRepositoryArgs!): AppResponse!
   unpinRepositoryTab(unpinRepositoryTabArgs: UnpinRepositoryTabArgs!): AppResponse!
+  updateReadme(updateReadmeArgs: UpdateReadmeArgs!): AppResponse!
   updateRepositoryAccess(updateRepositoryAccessArgs: UpdateRepositoryAccessArgs!): AppResponse!
   updateRepositoryInfo(updateRepositoryInfoArgs: UpdateRepositoryArgs!): AppResponse!
   updateUser(updateUserArgs: UpdateUserArgs!): AppResponse!
@@ -183,6 +184,7 @@ type Query {
   getAllWorkspaces: [Workspace!]!
   getCurrentUser: User
   getMyWorkspaces: [Workspace!]!
+  getReadmeContent(readReadmeArgs: ReadReadmeArgs!): String!
   getRepositoryById(getRepositoryByIdArgs: GetRepositoryByIdArgs!): Repository!
   getRepositoryBySlug(getRepositoryBySlugArgs: GetRepositoryBySlugArgs!): Repository!
   getUserByEmail(getUserByEmailArgs: GetUserByEmailArgs!): User
@@ -199,6 +201,10 @@ type Query {
 
 input QueryOpenGraphMetadataArgs {
   websiteUrl: String!
+}
+
+input ReadReadmeArgs {
+  repositoryId: String!
 }
 
 input RemoveContributorArgs {
@@ -239,6 +245,7 @@ type Repository {
 
   """List of repository tabs IDs"""
   pinned: [String!]!
+  readme: String
   slug: String!
 
   """List of repository tab IDs"""
@@ -303,7 +310,7 @@ input SearchTabOnWebArgs {
 
 input SelectQuickAccessWorkspaceArgs {
   id: String
-  updated_date: Float! = 1686824686
+  updated_date: Float! = 1686906836
 }
 
 input SetRepositoryTabsArgs {
@@ -328,6 +335,11 @@ input ToggleLikeRepositoryArgs {
 
 input UnpinRepositoryTabArgs {
   tabId: String!
+}
+
+input UpdateReadmeArgs {
+  readmeData: String!
+  repositoryId: String!
 }
 
 input UpdateRepositoryAccessArgs {
@@ -359,6 +371,7 @@ input UpdateRepositoryArgs {
 
   """List of repository tabs IDs"""
   pinned: [String!] = []
+  readme: String
   slug: String
 
   """List of repository tab IDs"""
@@ -401,7 +414,7 @@ input UpdateWorkspaceArgs {
   description: String = ""
   id: String!
   name: String!
-  updated_date: Float! = 1686824686
+  updated_date: Float! = 1686906836
   visibility: AccessVisibility!
 }
 

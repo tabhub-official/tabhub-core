@@ -20,6 +20,9 @@ export class Repository {
   @Field(() => String, { nullable: false })
   name: string;
 
+  @Field(() => String, { nullable: true })
+  readme: string;
+
   @Field(() => String, { nullable: false })
   slug: string;
 

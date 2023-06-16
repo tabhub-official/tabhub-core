@@ -127,6 +127,7 @@ export class RepositoryService extends BaseCRUDService<Repository> {
 
     const data: Repository = {
       id: newRepositoryId,
+      readme: '',
       icon,
       name,
       slug,
