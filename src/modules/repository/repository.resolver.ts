@@ -1,7 +1,6 @@
 import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql';
 import axios from 'axios';
 import moment from 'moment';
-import slugify from 'slugify';
 import { storage } from 'src/config/firebase-config';
 import {
   AddContributorArgs,
@@ -25,7 +24,7 @@ import {
 } from 'src/dto';
 import { AccessVisibility, AppResponse, Repository, ResponseType } from 'src/models';
 import { FlattenRolePermission, UserRole, throwPermissionChecker } from 'src/models/role.model';
-import { getAuthUser, getUnsafeAuthUser, makeid } from 'src/utils';
+import { buildSlug, getAuthUser, getUnsafeAuthUser } from 'src/utils';
 
 import { RepositoryTabService } from '../repository-tab';
 import { StorageService } from '../storage';
@@ -237,19 +236,15 @@ export class RepositoryResolver {
     try {
       const authUser = getAuthUser(req);
       const { name, tabs, workspaceId, description, icon, visibility, directories } = args;
-      const slug = `${slugify(name as string, {
-        lower: true,
-        strict: true,
-        trim: true,
-      })}-${makeid(5)}`;
 
       /** Must be a workspace member to create a repository */
       const isMember = await this.workspaceService.isWorkspaceMember(workspaceId, authUser.id);
       if (!isMember) throw new Error('Not workspace member');
 
+      const slug = buildSlug(name);
       const existingRepository = await this.repositoryService.getRepositoryBySlug(
         workspaceId,
-        name
+        slug
       );
       if (existingRepository) {
         /** Add tabs to existing repository if existed */
@@ -456,13 +451,10 @@ export class RepositoryResolver {
         'update',
       ]);
 
+      const slug = buildSlug(name);
       await this.repositoryService.updateData(id, {
         name,
-        slug: `${slugify(name as string, {
-          lower: true,
-          strict: true,
-          trim: true,
-        })}-${makeid(5)}`,
+        slug,
         visibility,
         description,
         icon,

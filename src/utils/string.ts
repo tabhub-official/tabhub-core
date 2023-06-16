@@ -1,3 +1,5 @@
+import slugify from 'slugify';
+
 export function makeid(length) {
   let result = '';
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -8,4 +10,12 @@ export function makeid(length) {
     counter += 1;
   }
   return result;
+}
+
+export function buildSlug(name: string) {
+  return `${slugify(name as string, {
+    lower: true,
+    strict: true,
+    trim: true,
+  })}-${makeid(5)}`;
 }
