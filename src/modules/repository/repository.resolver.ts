@@ -646,7 +646,7 @@ export class RepositoryResolver {
   ): Promise<string> {
     try {
       const { repositoryId } = args;
-      const authUser = getAuthUser(req);
+      const authUser = getUnsafeAuthUser(req);
       const userId = authUser.id;
       const existingRepository = await this.repositoryService.getDataById(repositoryId);
 
@@ -708,7 +708,7 @@ export class RepositoryResolver {
   ): Promise<string> {
     try {
       const { repositoryId } = args;
-      const authUser = getAuthUser(req);
+      const authUser = getUnsafeAuthUser(req);
       const userId = authUser.id;
       const existingRepository = await this.repositoryService.getDataById(repositoryId);
 
