@@ -1,5 +1,6 @@
 import { Field, InputType, PartialType } from '@nestjs/graphql';
 import { ArrayNotEmpty, IsUUID, MaxLength, MinLength } from 'class-validator';
+import GraphQLUpload from 'graphql-upload/GraphQLUpload.js';
 import {
   AccessPermission,
   AccessVisibility,
@@ -205,6 +206,18 @@ export class PinRepositoryTabArgs {
 }
 
 @InputType()
+export class UpdateRepositoryBannerArgs {
+  @Field()
+  repositoryId: string;
+
+  @Field(() => GraphQLUpload)
+  bannerData: GraphQLUpload;
+
+  @Field()
+  mimeType: string;
+}
+
+@InputType()
 export class UpdateReadmeArgs {
   @Field()
   repositoryId: string;
@@ -215,6 +228,12 @@ export class UpdateReadmeArgs {
 
 @InputType()
 export class ReadReadmeArgs {
+  @Field()
+  repositoryId: string;
+}
+
+@InputType()
+export class GetRepositoryBannerArgs {
   @Field()
   repositoryId: string;
 }

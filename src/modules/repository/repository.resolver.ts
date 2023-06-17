@@ -1,4 +1,6 @@
+import { UseGuards } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql';
+import { Throttle } from '@nestjs/throttler';
 import axios from 'axios';
 import moment from 'moment';
 import { storage } from 'src/config/firebase-config';
@@ -21,10 +23,14 @@ import {
   GetRepositoryBySlugArgs,
   UpdateReadmeArgs,
   ReadReadmeArgs,
+  UpdateRepositoryBannerArgs,
+  GetRepositoryBannerArgs,
 } from 'src/dto';
+import { GqlThrottlerGuard } from 'src/middlewares';
 import { AccessVisibility, AppResponse, Repository, ResponseType } from 'src/models';
 import { FlattenRolePermission, UserRole, throwPermissionChecker } from 'src/models/role.model';
-import { buildSlug, getAuthUser, getUnsafeAuthUser } from 'src/utils';
+import { buildSlug, getAuthUser, getUnsafeAuthUser, makeid } from 'src/utils';
+import stream from 'stream';
 
 import { RepositoryTabService } from '../repository-tab';
 import { StorageService } from '../storage';
@@ -688,6 +694,111 @@ export class RepositoryResolver {
         type: ResponseType.Success,
       };
     } catch (error: any) {
+      return {
+        message: error,
+        type: ResponseType.Error,
+      };
+    }
+  }
+
+  @Query(() => String)
+  async getRepositoryBanner(
+    @Context('req') req,
+    @Args('getRepositoryBannerArgs') args: GetRepositoryBannerArgs
+  ): Promise<string> {
+    try {
+      const { repositoryId } = args;
+      const authUser = getAuthUser(req);
+      const userId = authUser.id;
+      const existingRepository = await this.repositoryService.getDataById(repositoryId);
+
+      if (!existingRepository) throw new Error('No repository found');
+      /** Handle check permission */
+      await this.checkRepositoryPermission(existingRepository, userId, ['repository', 'read']);
+
+      const response = await axios.get(existingRepository.bannerUrl, {
+        responseType: 'arraybuffer',
+      });
+      const base64Image = Buffer.from(response.data, 'binary').toString('base64');
+      return base64Image;
+    } catch (error: any) {
+      throw new Error(error);
+    }
+  }
+
+  // Can only upload 5 images every 15 minutes
+  @UseGuards(GqlThrottlerGuard)
+  @Throttle(5, 60 * 15)
+  @Mutation(() => AppResponse)
+  async updateRepositoryBanner(
+    @Context('req') req,
+    @Args('updateRepositoryBannerArgs') args: UpdateRepositoryBannerArgs
+  ): Promise<AppResponse> {
+    try {
+      const { bannerData, repositoryId, mimeType } = args;
+      const { createReadStream } = await bannerData;
+      /** Buffer streaming the image data and convert to base 64 */
+      const readStream = createReadStream();
+      const chunks = [];
+      const buffer = await new Promise<Buffer>((resolve, reject) => {
+        let buffer: Buffer;
+        readStream.on('data', function (chunk) {
+          chunks.push(chunk);
+        });
+        readStream.on('end', function () {
+          buffer = Buffer.concat(chunks);
+          resolve(buffer);
+        });
+        readStream.on('error', reject);
+      });
+
+      const authUser = getAuthUser(req);
+      const userId = authUser.id;
+      const existingRepository = await this.repositoryService.getDataById(repositoryId);
+
+      if (!existingRepository) throw new Error('No repository found');
+      /** Handle check permission */
+      await this.checkRepositoryPermission(existingRepository, userId, ['repository', 'update']);
+
+      /** Upload README to object storage */
+      const bucket = storage.bucket();
+      const prefixPath = `${existingRepository.workspaceId}/${existingRepository.slug}`;
+      const imageName = `profile-${makeid(10)}.png`;
+
+      /** Write file to cloud */
+      const thumbFile = bucket.file(`${prefixPath}/${imageName}`);
+      const writeStream = new stream.PassThrough();
+      writeStream.end(buffer);
+      writeStream
+        .pipe(
+          thumbFile.createWriteStream({
+            metadata: {
+              contentType: mimeType,
+              metadata: {
+                workspace: existingRepository.workspaceId,
+                repository: repositoryId,
+                repositoryName: existingRepository.name,
+                uploadedAt: moment().format('DD-MM-YYYY'),
+              },
+            },
+            public: true,
+            validation: 'md5',
+          })
+        )
+        .on('error', err => console.log('Error while saving thumbfile', err))
+        .on('finish', () => console.log('Thumbfile saved.'));
+      /** Get file path on cloud storage */
+      const fileName = `${prefixPath}/${imageName}`;
+      const url = await this.storageService.generateSignedUrl(bucket, fileName);
+      await this.repositoryService.updateData(repositoryId, {
+        bannerUrl: url,
+      });
+      return {
+        message: `Successfully update repository banner ${repositoryId}`,
+        type: ResponseType.Success,
+      };
+    } catch (error: any) {
+      console.log(error);
       return {
         message: error,
         type: ResponseType.Error,

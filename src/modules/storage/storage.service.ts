@@ -1,3 +1,5 @@
+import { Bucket } from '@google-cloud/storage';
+
 export class StorageService {
   async generateSignedUrl(bucket, filename: string) {
     const options = {
@@ -11,7 +13,7 @@ export class StorageService {
   }
 
   async uploadMarkdownFilePath(
-    bucket,
+    bucket: Bucket,
     prefixPath: string,
     destination: string,
     readmeData: string
@@ -21,6 +23,25 @@ export class StorageService {
       contentType: 'text/markdown',
       private: true,
       origin: process.env.GOOGLE_CLOUD_ORIGIN,
+    });
+  }
+
+  async uploadImage(
+    bucket: Bucket,
+    prefixPath: string,
+    destination: string,
+    imageData: string,
+    mimeType: string
+  ) {
+    await bucket.upload(imageData, {
+      contentType: mimeType,
+      destination: `${prefixPath}/${destination}`,
+      gzip: true,
+      private: true,
+      metadata: {
+        origin: process.env.GOOGLE_CLOUD_ORIGIN,
+        cacheControl: 'public, max-age=31536000',
+      },
     });
   }
 }

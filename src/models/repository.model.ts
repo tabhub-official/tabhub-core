@@ -23,6 +23,9 @@ export class Repository {
   @Field(() => String, { nullable: true })
   readme: string;
 
+  @Field(() => String, { nullable: true })
+  bannerUrl: string;
+
   @Field(() => String, { nullable: false })
   slug: string;
 

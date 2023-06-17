@@ -32,7 +32,7 @@ type AppResponse {
 
 input ChangeWorkspaceVisibilityArgs {
   id: String!
-  updated_date: Float! = 1686929180
+  updated_date: Float! = 1686998525
   visibility: AccessVisibility!
 }
 
@@ -100,6 +100,10 @@ input FullRepositoryTabAsInput {
   url: String!
 }
 
+input GetRepositoryBannerArgs {
+  repositoryId: String!
+}
+
 input GetRepositoryByIdArgs {
   id: String!
 }
@@ -164,6 +168,7 @@ type Mutation {
   unpinRepositoryTab(unpinRepositoryTabArgs: UnpinRepositoryTabArgs!): AppResponse!
   updateReadme(updateReadmeArgs: UpdateReadmeArgs!): AppResponse!
   updateRepositoryAccess(updateRepositoryAccessArgs: UpdateRepositoryAccessArgs!): AppResponse!
+  updateRepositoryBanner(updateRepositoryBannerArgs: UpdateRepositoryBannerArgs!): AppResponse!
   updateRepositoryInfo(updateRepositoryInfoArgs: UpdateRepositoryArgs!): AppResponse!
   updateUser(updateUserArgs: UpdateUserArgs!): AppResponse!
   updateWorkspace(updateWorkspaceArgs: UpdateWorkspaceArgs!): AppResponse!
@@ -185,6 +190,7 @@ type Query {
   getCurrentUser: User
   getMyWorkspaces: [Workspace!]!
   getReadmeContent(readReadmeArgs: ReadReadmeArgs!): String!
+  getRepositoryBanner(getRepositoryBannerArgs: GetRepositoryBannerArgs!): String!
   getRepositoryById(getRepositoryByIdArgs: GetRepositoryByIdArgs!): Repository!
   getRepositoryBySlug(getRepositoryBySlugArgs: GetRepositoryBySlugArgs!): Repository!
   getUserByEmail(getUserByEmailArgs: GetUserByEmailArgs!): User
@@ -224,6 +230,7 @@ input RemoveTabsFromRepositoryArgs {
 
 type Repository {
   accessPermission: AccessPermission!
+  bannerUrl: String
 
   """List of user IDs"""
   contributors: [String!]!
@@ -310,7 +317,7 @@ input SearchTabOnWebArgs {
 
 input SelectQuickAccessWorkspaceArgs {
   id: String
-  updated_date: Float! = 1686929180
+  updated_date: Float! = 1686998525
 }
 
 input SetRepositoryTabsArgs {
@@ -350,6 +357,7 @@ input UpdateRepositoryAccessArgs {
 
 input UpdateRepositoryArgs {
   accessPermission: AccessPermission = OnlyPeopleWhoHasAccess
+  bannerUrl: String
 
   """List of user IDs"""
   contributors: [String!] = []
@@ -379,6 +387,12 @@ input UpdateRepositoryArgs {
   updated_date: Float
   visibility: AccessVisibility = Private
   workspaceId: String
+}
+
+input UpdateRepositoryBannerArgs {
+  bannerData: Upload!
+  mimeType: String!
+  repositoryId: String!
 }
 
 input UpdateUserArgs {
@@ -414,9 +428,12 @@ input UpdateWorkspaceArgs {
   description: String = ""
   id: String!
   name: String!
-  updated_date: Float! = 1686929180
+  updated_date: Float! = 1686998525
   visibility: AccessVisibility!
 }
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
 
 type User {
   created_date: Float!

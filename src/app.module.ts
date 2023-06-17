@@ -2,6 +2,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { join } from 'path';
 
 import { AppController } from './app.controller';
@@ -22,8 +23,9 @@ import { RepositoryTabResolver } from './modules/repository-tab/repository-tab.r
 import { RepositoryResolver } from './modules/repository/repository.resolver';
 import { StorageService } from './modules/storage';
 
-const graphQLConfiguration = GraphQLModule.forRoot<ApolloDriverConfig>({
+const graphQLConfiguration = GraphQLModule.forRoot<ApolloDriverConfig & { uploads: boolean }>({
   driver: ApolloDriver,
+  uploads: false, // disable built-in upload handling
   autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
   sortSchema: true,
   context: async context => {
@@ -45,7 +47,7 @@ const graphQLConfiguration = GraphQLModule.forRoot<ApolloDriverConfig>({
           };
         }
       }
-      return { req };
+      return { ...context, req };
     } catch (error) {
       console.log(error);
       return { req };
@@ -71,7 +73,7 @@ const services = [
 ];
 
 @Module({
-  imports: [graphQLConfiguration, generalConfiguration],
+  imports: [graphQLConfiguration, generalConfiguration, ThrottlerModule.forRoot()],
   controllers: [AppController],
   providers: [...services, ...resolvers],
 })
