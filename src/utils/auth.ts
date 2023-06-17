@@ -8,5 +8,5 @@ export const getAuthUser = (req: any): AuthUser => {
 
 export const getUnsafeAuthUser = (req: any): AuthUser | undefined => {
   const user = req.user;
-  return user;
+  return user || { example: true };
 };

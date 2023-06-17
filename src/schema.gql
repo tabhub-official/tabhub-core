@@ -32,7 +32,7 @@ type AppResponse {
 
 input ChangeWorkspaceVisibilityArgs {
   id: String!
-  updated_date: Float! = 1687009158
+  updated_date: Float! = 1687022552
   visibility: AccessVisibility!
 }
 
@@ -317,7 +317,7 @@ input SearchTabOnWebArgs {
 
 input SelectQuickAccessWorkspaceArgs {
   id: String
-  updated_date: Float! = 1687009158
+  updated_date: Float! = 1687022552
 }
 
 input SetRepositoryTabsArgs {
@@ -428,7 +428,7 @@ input UpdateWorkspaceArgs {
   description: String = ""
   id: String!
   name: String!
-  updated_date: Float! = 1687009158
+  updated_date: Float! = 1687022552
   visibility: AccessVisibility!
 }
 
