@@ -32,7 +32,7 @@ type AppResponse {
 
 input ChangeWorkspaceVisibilityArgs {
   id: String!
-  updated_date: Float! = 1687022552
+  updated_date: Float! = 1687059056
   visibility: AccessVisibility!
 }
 
@@ -169,7 +169,7 @@ type Mutation {
   updateReadme(updateReadmeArgs: UpdateReadmeArgs!): AppResponse!
   updateRepositoryAccess(updateRepositoryAccessArgs: UpdateRepositoryAccessArgs!): AppResponse!
   updateRepositoryBanner(updateRepositoryBannerArgs: UpdateRepositoryBannerArgs!): AppResponse!
-  updateRepositoryInfo(updateRepositoryInfoArgs: UpdateRepositoryArgs!): AppResponse!
+  updateRepositoryInfo(updateRepositoryInfoArgs: UpdateRepositoryArgs!): Repository!
   updateUser(updateUserArgs: UpdateUserArgs!): AppResponse!
   updateWorkspace(updateWorkspaceArgs: UpdateWorkspaceArgs!): AppResponse!
 }
@@ -317,7 +317,7 @@ input SearchTabOnWebArgs {
 
 input SelectQuickAccessWorkspaceArgs {
   id: String
-  updated_date: Float! = 1687022552
+  updated_date: Float! = 1687059056
 }
 
 input SetRepositoryTabsArgs {
@@ -428,7 +428,7 @@ input UpdateWorkspaceArgs {
   description: String = ""
   id: String!
   name: String!
-  updated_date: Float! = 1687022552
+  updated_date: Float! = 1687059056
   visibility: AccessVisibility!
 }
 

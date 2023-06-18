@@ -5,14 +5,16 @@ export abstract class BaseCRUDService<T> {
   constructor(_registry: CollectionRegistry) {
     this.collectionRegistry = _registry;
   }
-  async updateData(id: string, updatedData: Partial<T>): Promise<void> {
+  async updateData(id: string, updatedData: Partial<T>): Promise<T> {
     const _collection = await db.collection(this.collectionRegistry).doc(id);
     const _snapshot = await _collection.get();
     const oldData = _snapshot.data();
-    await _collection.update({
+    const _updatedRecord = {
       ...oldData,
       ...updatedData,
-    });
+    };
+    await _collection.update(_updatedRecord);
+    return _updatedRecord as T;
   }
 
   async getAllData(): Promise<T[]> {

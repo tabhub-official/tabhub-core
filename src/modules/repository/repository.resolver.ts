@@ -441,11 +441,11 @@ export class RepositoryResolver {
     }
   }
 
-  @Mutation(() => AppResponse)
+  @Mutation(() => Repository)
   async updateRepositoryInfo(
     @Context('req') req,
     @Args('updateRepositoryInfoArgs') args: UpdateRepositoryArgs
-  ): Promise<AppResponse> {
+  ): Promise<Repository> {
     try {
       const authUser = getAuthUser(req);
       const { id, name, visibility, description, icon } = args;
@@ -458,22 +458,16 @@ export class RepositoryResolver {
       ]);
 
       const slug = buildSlug(name);
-      await this.repositoryService.updateData(id, {
+      const updatedRecord = await this.repositoryService.updateData(id, {
         name,
         slug,
         visibility,
         description,
         icon,
       });
-      return {
-        message: `Successfully update repository ${id}`,
-        type: ResponseType.Success,
-      };
+      return updatedRecord;
     } catch (error: any) {
-      return {
-        message: error,
-        type: ResponseType.Error,
-      };
+      throw new Error(error);
     }
   }
 
@@ -652,7 +646,9 @@ export class RepositoryResolver {
 
       if (!existingRepository) throw new Error('No repository found');
       /** Handle check permission */
-      await this.checkRepositoryPermission(existingRepository, userId, ['repository', 'read']);
+      if (existingRepository.visibility === AccessVisibility.Private) {
+        await this.checkRepositoryPermission(existingRepository, userId, ['repository', 'read']);
+      }
 
       const response = await axios.get(existingRepository.readme);
       return response.data;
@@ -714,7 +710,9 @@ export class RepositoryResolver {
 
       if (!existingRepository) throw new Error('No repository found');
       /** Handle check permission */
-      await this.checkRepositoryPermission(existingRepository, userId, ['repository', 'read']);
+      if (existingRepository.visibility === AccessVisibility.Private) {
+        await this.checkRepositoryPermission(existingRepository, userId, ['repository', 'read']);
+      }
 
       const response = await axios.get(existingRepository.bannerUrl, {
         responseType: 'arraybuffer',
