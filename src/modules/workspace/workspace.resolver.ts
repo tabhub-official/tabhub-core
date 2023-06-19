@@ -8,6 +8,7 @@ import {
   GetUserWorkspacesArgs,
   GetWorkspaceByIdArgs,
   GetWorkspaceByNameArgs,
+  GetWorkspaceBySlugArgs,
   RemoveMemberArgs,
   SelectQuickAccessWorkspaceArgs,
   UpdateWorkspaceArgs,
@@ -15,7 +16,7 @@ import {
 import { AccessVisibility, AppResponse, ResponseType, Workspace } from 'src/models';
 import { throwPermissionChecker } from 'src/models/role.model';
 import { UserRole } from 'src/models/role.model';
-import { getAuthUser, getUnsafeAuthUser } from 'src/utils';
+import { buildSlug, getAuthUser, getUnsafeAuthUser } from 'src/utils';
 
 import { RepositoryService } from '../repository';
 import { RepositoryTabService } from '../repository-tab';
@@ -88,6 +89,20 @@ export class WorkspaceResolver {
     }
   }
 
+  @Query(() => Workspace, { nullable: true })
+  async getWorkspaceBySlug(
+    @Context('req') req,
+    @Args('getWorkspaceBySlugArgs') args: GetWorkspaceBySlugArgs
+  ): Promise<Workspace> {
+    try {
+      const { workspace_slug } = args;
+      const authUser = getUnsafeAuthUser(req);
+      return this.workspaceService.getAuthUserWorkspaceBySlug(authUser?.id, workspace_slug);
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
   @Mutation(() => AppResponse)
   async createNewWorkspace(
     @Context('req') req,
@@ -129,7 +144,11 @@ export class WorkspaceResolver {
       const userRole = this.workspaceService.findUserRoleInWorkspace(_workspace, authUser.id);
       throwPermissionChecker(userRole, ['workspace', 'update']);
 
-      await this.workspaceService.updateData(id, workspace);
+      const slug = buildSlug(workspace.name, true);
+      await this.workspaceService.updateData(id, {
+        ...workspace,
+        slug,
+      });
       return {
         message: `Successfully update workspace ${id}`,
         type: ResponseType.Success,

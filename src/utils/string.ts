@@ -12,10 +12,10 @@ export function makeid(length) {
   return result;
 }
 
-export function buildSlug(name: string) {
+export function buildSlug(name: string, nonceHidden?: boolean) {
   return `${slugify(name as string, {
     lower: true,
     strict: true,
     trim: true,
-  })}-${makeid(5)}`;
+  })}${nonceHidden ? `` : `-${makeid(5)}`}`;
 }

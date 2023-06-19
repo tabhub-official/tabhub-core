@@ -101,6 +101,12 @@ export class GetWorkspaceByNameArgs {
 }
 
 @InputType()
+export class GetWorkspaceBySlugArgs {
+  @Field()
+  workspace_slug: string;
+}
+
+@InputType()
 export class GetWorkspaceByIdArgs {
   @Field()
   @IsUUID()

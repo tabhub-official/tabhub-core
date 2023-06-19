@@ -3,6 +3,7 @@ import moment from 'moment';
 import { CollectionRegistry, db } from 'src/config/firebase-config';
 import { AccessVisibility, Workspace } from 'src/models';
 import { UserRole, checkPermission } from 'src/models/role.model';
+import { buildSlug } from 'src/utils';
 import { v4 as uuidV4 } from 'uuid';
 
 import { BaseCRUDService } from '../_base/baseCRUD.service';
@@ -42,7 +43,6 @@ export class WorkspaceService extends BaseCRUDService<Workspace> {
     const query = await _collection.where('id', '==', id).get();
     if (query.empty) return undefined;
     const foundWorkspace = query.docs.map<Workspace>(doc => doc.data() as Workspace)[0];
-
     if (this.userCanViewWorkspace(authUserId, foundWorkspace)) {
       return foundWorkspace;
     }
@@ -55,6 +55,21 @@ export class WorkspaceService extends BaseCRUDService<Workspace> {
   ): Promise<Workspace | undefined> => {
     const _collection = await db.collection(this.collectionRegistry);
     const query = await _collection.where('name', '==', name).get();
+    if (query.empty) return undefined;
+    const foundWorkspace = query.docs.map<Workspace>(doc => doc.data() as Workspace)[0];
+
+    if (this.userCanViewWorkspace(authUserId, foundWorkspace)) {
+      return foundWorkspace;
+    }
+    return undefined;
+  };
+
+  getAuthUserWorkspaceBySlug = async (
+    authUserId: string | undefined,
+    slug: string
+  ): Promise<Workspace | undefined> => {
+    const _collection = await db.collection(this.collectionRegistry);
+    const query = await _collection.where('slug', '==', slug).get();
     if (query.empty) return undefined;
     const foundWorkspace = query.docs.map<Workspace>(doc => doc.data() as Workspace)[0];
 
@@ -97,9 +112,12 @@ export class WorkspaceService extends BaseCRUDService<Workspace> {
   ): Promise<void> => {
     const _collection = await db.collection(CollectionRegistry.Workspace);
     const workspaceId = uuidV4();
+
+    const slug = buildSlug(name, true);
     const data: Partial<Workspace> = {
       id: workspaceId,
       name,
+      slug,
       description,
       visibility: visibility,
       owner,

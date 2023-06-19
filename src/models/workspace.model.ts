@@ -21,6 +21,9 @@ export class Workspace {
   @Field({ nullable: false })
   name: string;
 
+  @Field(() => String)
+  slug: string;
+
   @Field()
   @IsUUID('4')
   owner: string;
