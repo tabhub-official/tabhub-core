@@ -4,12 +4,12 @@ import { Field, InputType } from '@nestjs/graphql';
 export class SearchTabOnWebArgs {
   @Field()
   websiteUrl: string;
+}
 
-  @Field()
-  offset: number;
-
-  @Field()
-  limit: number;
+@InputType()
+export class GatherUrlsMetadataArgs {
+  @Field(() => [String])
+  websiteUrls: string[];
 }
 
 @InputType()

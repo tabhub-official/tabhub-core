@@ -213,7 +213,7 @@ export class RepositoryResolver {
       const { id: repositoryId, tabs, directories } = args;
       const existingRepository = await this.repositoryService.getDataById(repositoryId);
       if (!existingRepository) throw new Error('No repository found');
-
+      const workspaceId = existingRepository.workspaceId;
       /** Handle check permission */
       await this.checkRepositoryPermission(existingRepository, authUser.id, [
         'repository',
@@ -224,6 +224,10 @@ export class RepositoryResolver {
       await this.repositoryService.updateData(repositoryId, {
         tabs: tabs,
         directories,
+      });
+      /** Track the latest updated time of workspace */
+      await this.workspaceService.updateData(workspaceId, {
+        updated_date: moment().unix(),
       });
     } catch (error) {
       return {
@@ -278,6 +282,10 @@ export class RepositoryResolver {
           directories,
           description
         );
+        /** Track the latest updated time of workspace */
+        await this.workspaceService.updateData(workspaceId, {
+          updated_date: moment().unix(),
+        });
         return {
           message: `Successfully create new repository ${name}`,
           type: ResponseType.Success,
@@ -482,6 +490,7 @@ export class RepositoryResolver {
 
       const existingRepository = await this.repositoryService.getDataById(id);
       if (!existingRepository) throw new Error('No repository found');
+      const workspaceId = existingRepository.workspaceId;
 
       /** Handle check permission */
       await this.checkRepositoryPermission(existingRepository, authUser.id, [
@@ -490,6 +499,10 @@ export class RepositoryResolver {
       ]);
 
       await this.repositoryService.deleteData(id);
+      /** Track the latest updated time of workspace */
+      await this.workspaceService.updateData(workspaceId, {
+        updated_date: moment().unix(),
+      });
       return {
         message: `Successfully delete repository ${id}`,
         type: ResponseType.Success,

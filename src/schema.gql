@@ -32,7 +32,7 @@ type AppResponse {
 
 input ChangeWorkspaceVisibilityArgs {
   id: String!
-  updated_date: Float! = 1687159572
+  updated_date: Float! = 1687237344
   visibility: AccessVisibility!
 }
 
@@ -98,6 +98,10 @@ input FullRepositoryTabAsInput {
   repositoryId: String
   title: String!
   url: String!
+}
+
+input GatherUrlsMetadataArgs {
+  websiteUrls: [String!]!
 }
 
 input GetRepositoryBannerArgs {
@@ -188,6 +192,7 @@ input PinRepositoryTabArgs {
 }
 
 type Query {
+  gatherUrlsMetadata(gatherUrlsMetadataArgs: GatherUrlsMetadataArgs!): [RepositoryTab!]!
   getAllPublicRepositories: [Repository!]!
   getAllUsers: [User!]!
   getAllWorkspaces: [Workspace!]!
@@ -207,7 +212,7 @@ type Query {
   getWorkspaceBySlug(getWorkspaceBySlugArgs: GetWorkspaceBySlugArgs!): Workspace
   getWorkspaceRepositories(getWorkspaceRepositoriesArgs: GetWorkspaceRepositoriesArgs!): [Repository!]!
   queryOpenGraphMetadata(queryOpenGraphMetadata: QueryOpenGraphMetadataArgs!): AppResponse!
-  searchOnWeb(searchTabOnWebArgs: SearchTabOnWebArgs!): [RepositoryTab!]!
+  searchOnWeb(searchTabOnWebArgs: SearchTabOnWebArgs!): String!
 }
 
 input QueryOpenGraphMetadataArgs {
@@ -315,14 +320,12 @@ enum ResponseType {
 }
 
 input SearchTabOnWebArgs {
-  limit: Float!
-  offset: Float!
   websiteUrl: String!
 }
 
 input SelectQuickAccessWorkspaceArgs {
   id: String
-  updated_date: Float! = 1687159572
+  updated_date: Float! = 1687237344
 }
 
 input SetRepositoryTabsArgs {
@@ -433,7 +436,7 @@ input UpdateWorkspaceArgs {
   description: String = ""
   id: String!
   name: String!
-  updated_date: Float! = 1687159572
+  updated_date: Float! = 1687237344
   visibility: AccessVisibility!
 }
 
