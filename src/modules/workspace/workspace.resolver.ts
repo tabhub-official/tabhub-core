@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql';
 import moment from 'moment';
 import {
@@ -25,6 +26,8 @@ import { WorkspaceService } from './workspace.service';
 
 @Resolver(() => Workspace)
 export class WorkspaceResolver {
+  private readonly logger = new Logger(WorkspaceResolver.name);
+
   constructor(
     private workspaceService: WorkspaceService,
     private userService: UserService,
@@ -80,11 +83,12 @@ export class WorkspaceResolver {
     @Context('req') req,
     @Args('getWorkspaceByNameArgs') args: GetWorkspaceByNameArgs
   ): Promise<Workspace> {
+    const { workspace_name } = args;
     try {
-      const { workspace_name } = args;
       const authUser = getUnsafeAuthUser(req);
       return this.workspaceService.getAuthUserWorkspaceByName(authUser?.id, workspace_name);
     } catch (error) {
+      this.logger.error(`[GET_WORKSPACE_BY_NAME] ${workspace_name}: ${error.message}`);
       throw new Error(error);
     }
   }
@@ -94,11 +98,12 @@ export class WorkspaceResolver {
     @Context('req') req,
     @Args('getWorkspaceBySlugArgs') args: GetWorkspaceBySlugArgs
   ): Promise<Workspace> {
+    const { workspace_slug } = args;
     try {
-      const { workspace_slug } = args;
       const authUser = getUnsafeAuthUser(req);
       return this.workspaceService.getAuthUserWorkspaceBySlug(authUser?.id, workspace_slug);
     } catch (error) {
+      this.logger.error(`[GET_WORKSPACE_BY_SLUG] ${workspace_slug}: ${error.message}`);
       throw new Error(error);
     }
   }
@@ -108,9 +113,9 @@ export class WorkspaceResolver {
     @Context('req') req,
     @Args('createNewWorksapceArgs') args: CreateNewWorkspaceArgs
   ): Promise<AppResponse> {
+    const { name, visibility, description } = args;
     try {
       const authUser = getAuthUser(req);
-      const { name, visibility, description } = args;
       await this.workspaceService.createNewWorkspace(
         authUser.id,
         name,
@@ -123,6 +128,7 @@ export class WorkspaceResolver {
         type: ResponseType.Success,
       };
     } catch (error: any) {
+      this.logger.error(`[CREATE_NEW_WORKSPACE] ${name}: ${error.message}`);
       return {
         message: error,
         type: ResponseType.Error,
@@ -135,8 +141,8 @@ export class WorkspaceResolver {
     @Context('req') req,
     @Args('updateWorkspaceArgs') args: UpdateWorkspaceArgs
   ): Promise<AppResponse> {
+    const { id, ...workspace } = args;
     try {
-      const { id, ...workspace } = args;
       const authUser = getAuthUser(req);
       const _workspace = await this.workspaceService.getDataById(id);
 
@@ -154,6 +160,7 @@ export class WorkspaceResolver {
         type: ResponseType.Success,
       };
     } catch (error: any) {
+      this.logger.error(`[UPDATE_WORKSPACE] ${id}: ${error.message}`);
       return {
         message: error,
         type: ResponseType.Error,
@@ -166,8 +173,8 @@ export class WorkspaceResolver {
     @Context('req') req,
     @Args('addWorkspaceMemberArgs') args: AddNewMemberArgs
   ): Promise<AppResponse> {
+    const { id, member_email, role } = args;
     try {
-      const { id, member_email, role } = args;
       const authUser = getAuthUser(req);
       const _workspace = await this.workspaceService.getDataById(id);
 
@@ -193,6 +200,7 @@ export class WorkspaceResolver {
         type: ResponseType.Success,
       };
     } catch (error: any) {
+      this.logger.error(`[ADD_WORKSPACE_MEMBER] ${id}: ${error.message}`);
       return {
         message: error,
         type: ResponseType.Error,
@@ -205,9 +213,9 @@ export class WorkspaceResolver {
     @Context('req') req,
     @Args('selectQuickAccessWorkspaceArgs') args: SelectQuickAccessWorkspaceArgs
   ): Promise<AppResponse> {
+    const { id, updated_date } = args;
     try {
       const authUser = getAuthUser(req);
-      const { id, updated_date } = args;
       /** Undefined id is suppposed to be local workspace */
       if (id) {
         const workspace = await this.workspaceService.getDataById(id);
@@ -229,6 +237,7 @@ export class WorkspaceResolver {
         type: ResponseType.Success,
       };
     } catch (error: any) {
+      this.logger.error(`[SELECT_QUICK_ACCESS_WORKSPACE] ${id}: ${error.message}`);
       return {
         message: error,
         type: ResponseType.Error,
@@ -241,8 +250,8 @@ export class WorkspaceResolver {
     @Context('req') req,
     @Args('removeWorkspaceMemberArgs') args: RemoveMemberArgs
   ): Promise<AppResponse> {
+    const { id, member_email } = args;
     try {
-      const { id, member_email } = args;
       const authUser = getAuthUser(req);
 
       const _workspace = await this.workspaceService.getDataById(id);
@@ -278,6 +287,7 @@ export class WorkspaceResolver {
         type: ResponseType.Success,
       };
     } catch (error: any) {
+      this.logger.error(`[REMOVE_WORKSPACE_MEMBER] ${id}: ${error.message}`);
       return {
         message: error,
         type: ResponseType.Error,
@@ -290,8 +300,8 @@ export class WorkspaceResolver {
     @Context('req') req,
     @Args('changeWorkspaceVisibilityArgs') args: ChangeWorkspaceVisibilityArgs
   ): Promise<AppResponse> {
+    const { visibility, id, updated_date } = args;
     try {
-      const { visibility, id, updated_date } = args;
       const authUser = getAuthUser(req);
       const _workspace = await this.workspaceService.getDataById(id);
 
@@ -309,6 +319,7 @@ export class WorkspaceResolver {
         type: ResponseType.Success,
       };
     } catch (error: any) {
+      this.logger.error(`[CHANGE_WORKSPACE_VISIBILITY] ${id}: ${error.message}`);
       return {
         message: error,
         type: ResponseType.Error,
@@ -321,8 +332,8 @@ export class WorkspaceResolver {
     @Context('req') req,
     @Args('deleteWorkspaceArgs') args: DeleteWorkspaceArgs
   ): Promise<AppResponse> {
+    const { id } = args;
     try {
-      const { id } = args;
       const authUser = getAuthUser(req);
       const _workspace = await this.workspaceService.getDataById(id);
 
@@ -347,6 +358,7 @@ export class WorkspaceResolver {
         type: ResponseType.Success,
       };
     } catch (error: any) {
+      this.logger.error(`[DELETE_WORKSPACE] ${id}: ${error.message}`);
       return {
         message: error,
         type: ResponseType.Error,

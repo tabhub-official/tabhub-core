@@ -1,4 +1,4 @@
-import { UseGuards } from '@nestjs/common';
+import { Logger, UseGuards } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql';
 import { Throttle } from '@nestjs/throttler';
 import axios from 'axios';
@@ -48,6 +48,8 @@ const isContributor = (repository: Repository, userId: string): boolean => {
 
 @Resolver(() => Repository)
 export class RepositoryResolver {
+  private readonly logger = new Logger(RepositoryResolver.name);
+
   constructor(
     private repositoryService: RepositoryService,
     private workspaceService: WorkspaceService,
@@ -110,6 +112,7 @@ export class RepositoryResolver {
       const contributedRepositories = await this.repositoryService.getAuthUserRepositories(userId);
       return [...repositories, ...contributedRepositories];
     } catch (error: any) {
+      this.logger.error(`[GET_USER_REPOSITORIES]: ${error.message}`);
       throw new Error(error);
     }
   }
@@ -134,6 +137,7 @@ export class RepositoryResolver {
           isPermitted(repository, authUser.id)
       );
     } catch (error: any) {
+      this.logger.error(`[GET_WORKSPACE_REPOSITORIES]: ${error.message}`);
       throw new Error(error);
     }
   }
@@ -141,16 +145,10 @@ export class RepositoryResolver {
   @Query(() => [Repository])
   async getAllPublicRepositories() {
     try {
-      let repositories = [];
-      const workspaces = await this.workspaceService.getPublicWorkspaces();
-      for (const workspace of workspaces) {
-        const workspaceRepositories = await this.repositoryService.getWorkspacePublicRepositories(
-          workspace.id
-        );
-        repositories = repositories.concat(workspaceRepositories);
-      }
+      const repositories = await this.repositoryService.getAllPublicRepositories();
       return repositories;
     } catch (error: any) {
+      this.logger.error(`[GET_ALL_PUBLIC_REPOSITORIES]: ${error.message}`);
       throw new Error(error);
     }
   }
@@ -160,8 +158,8 @@ export class RepositoryResolver {
     @Context('req') req,
     @Args('getRepositoryBySlugArgs') args: GetRepositoryBySlugArgs
   ): Promise<Repository> {
+    const { slug, workspaceId } = args;
     try {
-      const { slug, workspaceId } = args;
       const authUser = getUnsafeAuthUser(req);
       /** If repository is private, check the read access */
       const existingRepository = await this.repositoryService.getRepositoryBySlug(
@@ -176,6 +174,7 @@ export class RepositoryResolver {
       }
       return existingRepository;
     } catch (error) {
+      this.logger.error(`[GET_REPOSITORY_BY_SLUG] ${slug}: ${error.message}`);
       throw new Error(error);
     }
   }
@@ -185,8 +184,8 @@ export class RepositoryResolver {
     @Context('req') req,
     @Args('getRepositoryByIdArgs') args: GetRepositoryByIdArgs
   ): Promise<Repository> {
+    const { id } = args;
     try {
-      const { id } = args;
       const authUser = getUnsafeAuthUser(req);
 
       /** If repository is private, check the read access */
@@ -199,6 +198,7 @@ export class RepositoryResolver {
       }
       return this.repositoryService.getDataById(id);
     } catch (error) {
+      this.logger.error(`[GET_REPOSITORY_BY_ID] ${id}: ${error.message}`);
       throw new Error(error);
     }
   }
@@ -208,9 +208,9 @@ export class RepositoryResolver {
     @Context('req') req,
     @Args('setRepositoryTabsArgs') args: SetRepositoryTabsArgs
   ): Promise<AppResponse> {
+    const { id: repositoryId, tabs, directories } = args;
     try {
       const authUser = getAuthUser(req);
-      const { id: repositoryId, tabs, directories } = args;
       const existingRepository = await this.repositoryService.getDataById(repositoryId);
       if (!existingRepository) throw new Error('No repository found');
       const workspaceId = existingRepository.workspaceId;
@@ -230,6 +230,7 @@ export class RepositoryResolver {
         updated_date: moment().unix(),
       });
     } catch (error) {
+      this.logger.error(`[SET_REPOSITORY_TABS] ${repositoryId}: ${error.message}`);
       return {
         message: error,
         type: ResponseType.Error,
@@ -243,9 +244,9 @@ export class RepositoryResolver {
     @Args('createRepositoryArgs') args: CreateNewRepositoryArgs
   ): Promise<AppResponse> {
     /** Upsert repository */
+    const { name, tabs, workspaceId, description, icon, visibility, directories } = args;
     try {
       const authUser = getAuthUser(req);
-      const { name, tabs, workspaceId, description, icon, visibility, directories } = args;
 
       /** Must be a workspace member to create a repository */
       const isMember = await this.workspaceService.isWorkspaceMember(workspaceId, authUser.id);
@@ -292,6 +293,7 @@ export class RepositoryResolver {
         };
       }
     } catch (error: any) {
+      this.logger.error(`[CREATE_NEW_REPOSITORY] ${name}: ${error.message}`);
       return {
         message: error,
         type: ResponseType.Error,
@@ -305,9 +307,9 @@ export class RepositoryResolver {
     @Args('removeTabsFromRepositoryArgs') args: RemoveTabsFromRepositoryArgs
   ): Promise<AppResponse> {
     /** Upsert repository */
+    const { id, tabs } = args;
     try {
       const authUser = getAuthUser(req);
-      const { id, tabs } = args;
 
       const existingRepository = await this.repositoryService.getDataById(id);
       if (!existingRepository) throw new Error('No repository found');
@@ -330,6 +332,7 @@ export class RepositoryResolver {
         type: ResponseType.Success,
       };
     } catch (error: any) {
+      this.logger.error(`[REMOVE_TABS_FROM_REPOSITORY] ${id}: ${error.message}`);
       return {
         message: error,
         type: ResponseType.Error,
@@ -342,8 +345,8 @@ export class RepositoryResolver {
     @Context('req') req,
     @Args('addRepositoryContributorArgs') args: AddContributorArgs
   ): Promise<AppResponse> {
+    const { id, member_email } = args;
     try {
-      const { id, member_email } = args;
       const authUser = getAuthUser(req);
       const _repository = await this.repositoryService.getDataById(id);
 
@@ -369,6 +372,7 @@ export class RepositoryResolver {
         type: ResponseType.Success,
       };
     } catch (error: any) {
+      this.logger.error(`[ADD_REPOSITORY_CONTRIBUTOR] ${id}: ${error.message}`);
       return {
         message: error,
         type: ResponseType.Error,
@@ -381,8 +385,8 @@ export class RepositoryResolver {
     @Context('req') req,
     @Args('removeRepositoryContributorArgs') args: RemoveContributorArgs
   ): Promise<AppResponse> {
+    const { id, member_email } = args;
     try {
-      const { id, member_email } = args;
       const authUser = getAuthUser(req);
       const _repository = await this.repositoryService.getDataById(id);
 
@@ -408,6 +412,7 @@ export class RepositoryResolver {
         type: ResponseType.Success,
       };
     } catch (error: any) {
+      this.logger.error(`[REMOVE_REPOSITORY_CONTRIBUTOR] ${id}: ${error.message}`);
       return {
         message: error,
         type: ResponseType.Error,
@@ -420,9 +425,9 @@ export class RepositoryResolver {
     @Context('req') req,
     @Args('updateRepositoryAccessArgs') args: UpdateRepositoryAccessArgs
   ): Promise<AppResponse> {
+    const { id, accessPermission, permittedUsers } = args;
     try {
       const authUser = getAuthUser(req);
-      const { id, accessPermission, permittedUsers } = args;
       const existingRepository = await this.repositoryService.getDataById(id);
       if (!existingRepository) throw new Error('No repository found');
 
@@ -442,6 +447,7 @@ export class RepositoryResolver {
         type: ResponseType.Success,
       };
     } catch (error: any) {
+      this.logger.error(`[UPDATE_REPOSITORY_ACCESS] ${id}: ${error.message}`);
       return {
         message: error,
         type: ResponseType.Error,
@@ -454,9 +460,9 @@ export class RepositoryResolver {
     @Context('req') req,
     @Args('updateRepositoryInfoArgs') args: UpdateRepositoryArgs
   ): Promise<Repository> {
+    const { id, name, visibility, description, icon } = args;
     try {
       const authUser = getAuthUser(req);
-      const { id, name, visibility, description, icon } = args;
       const existingRepository = await this.repositoryService.getDataById(id);
       if (!existingRepository) throw new Error('No repository found');
       /** Handle check permission */
@@ -475,6 +481,7 @@ export class RepositoryResolver {
       });
       return updatedRecord;
     } catch (error: any) {
+      this.logger.error(`[UPDATE_REPOSITORY_INFO] ${id}: ${error.message}`);
       throw new Error(error);
     }
   }
@@ -484,9 +491,9 @@ export class RepositoryResolver {
     @Context('req') req,
     @Args('deleteRepositoryArgs') args: DeleteRepositoryArgs
   ): Promise<AppResponse> {
+    const { id } = args;
     try {
       const authUser = getAuthUser(req);
-      const { id } = args;
 
       const existingRepository = await this.repositoryService.getDataById(id);
       if (!existingRepository) throw new Error('No repository found');
@@ -508,6 +515,7 @@ export class RepositoryResolver {
         type: ResponseType.Success,
       };
     } catch (error: any) {
+      this.logger.error(`[DELETE_REPOSITORY] ${id}: ${error.message}`);
       return {
         message: error,
         type: ResponseType.Error,
@@ -517,9 +525,9 @@ export class RepositoryResolver {
 
   @Mutation(() => AppResponse)
   async pinRepository(@Context('req') req, @Args('pinRepositoryArgs') args: PinRepositoryArgs) {
+    const { id } = args;
     try {
       const authUser = getAuthUser(req);
-      const { id } = args;
       const userId = authUser.id;
 
       /** Find current user */
@@ -552,6 +560,7 @@ export class RepositoryResolver {
         type: ResponseType.Success,
       };
     } catch (error: any) {
+      this.logger.error(`[PIN_REPOSITORY] ${id}: ${error.message}`);
       return {
         message: error,
         type: ResponseType.Error,
@@ -561,9 +570,9 @@ export class RepositoryResolver {
 
   @Mutation(() => AppResponse)
   async unpinRepository(@Context('req') req, @Args('unpinRepositoryArgs') args: PinRepositoryArgs) {
+    const { id } = args;
     try {
       const authUser = getAuthUser(req);
-      const { id } = args;
       const userId = authUser.id;
 
       /** Find current user */
@@ -598,6 +607,7 @@ export class RepositoryResolver {
         type: ResponseType.Success,
       };
     } catch (error: any) {
+      this.logger.error(`[UNPIN_REPOSITORY] ${id}: ${error.message}`);
       return {
         message: error,
         type: ResponseType.Error,
@@ -610,9 +620,9 @@ export class RepositoryResolver {
     @Context('req') req,
     @Args('toggleLikeRepositoryArgs') args: ToggleLikeRepositoryArgs
   ) {
+    const { id } = args;
     try {
       const authUser = getAuthUser(req);
-      const { id } = args;
       const userId = authUser.id;
 
       /** Find current user */
@@ -639,6 +649,7 @@ export class RepositoryResolver {
         type: ResponseType.Success,
       };
     } catch (error) {
+      this.logger.error(`[TOGGLE_LIKE_REPOSITORY] ${id}: ${error.message}`);
       return {
         message: error,
         type: ResponseType.Error,
@@ -651,8 +662,8 @@ export class RepositoryResolver {
     @Context('req') req,
     @Args('readReadmeArgs') args: ReadReadmeArgs
   ): Promise<string> {
+    const { repositoryId } = args;
     try {
-      const { repositoryId } = args;
       const authUser = getUnsafeAuthUser(req);
       const userId = authUser.id;
       const existingRepository = await this.repositoryService.getDataById(repositoryId);
@@ -666,6 +677,7 @@ export class RepositoryResolver {
       const response = await axios.get(existingRepository.readme);
       return response.data;
     } catch (error: any) {
+      this.logger.error(`[GET_README_CONTENT] ${repositoryId}: ${error.message}`);
       throw new Error(error);
     }
   }
@@ -675,8 +687,8 @@ export class RepositoryResolver {
     @Context('req') req,
     @Args('updateReadmeArgs') args: UpdateReadmeArgs
   ): Promise<AppResponse> {
+    const { readmeData, repositoryId } = args;
     try {
-      const { readmeData, repositoryId } = args;
       const authUser = getAuthUser(req);
       const userId = authUser.id;
       const existingRepository = await this.repositoryService.getDataById(repositoryId);
@@ -703,6 +715,7 @@ export class RepositoryResolver {
         type: ResponseType.Success,
       };
     } catch (error: any) {
+      this.logger.error(`[UPDATE_README] ${repositoryId}: ${error.message}`);
       return {
         message: error,
         type: ResponseType.Error,
@@ -715,8 +728,8 @@ export class RepositoryResolver {
     @Context('req') req,
     @Args('getRepositoryBannerArgs') args: GetRepositoryBannerArgs
   ): Promise<string> {
+    const { repositoryId } = args;
     try {
-      const { repositoryId } = args;
       const authUser = getUnsafeAuthUser(req);
       const userId = authUser.id;
       const existingRepository = await this.repositoryService.getDataById(repositoryId);
@@ -733,6 +746,7 @@ export class RepositoryResolver {
       const base64Image = Buffer.from(response.data, 'binary').toString('base64');
       return base64Image;
     } catch (error: any) {
+      this.logger.error(`[GET_REPOSITORY_BANNER] ${repositoryId}: ${error.message}`);
       throw new Error(error);
     }
   }
@@ -745,8 +759,8 @@ export class RepositoryResolver {
     @Context('req') req,
     @Args('updateRepositoryBannerArgs') args: UpdateRepositoryBannerArgs
   ): Promise<AppResponse> {
+    const { bannerData, repositoryId, mimeType } = args;
     try {
-      const { bannerData, repositoryId, mimeType } = args;
       const { createReadStream } = await bannerData;
       /** Buffer streaming the image data and convert to base 64 */
       const readStream = createReadStream();
@@ -809,7 +823,7 @@ export class RepositoryResolver {
         type: ResponseType.Success,
       };
     } catch (error: any) {
-      console.log(error);
+      this.logger.error(`[UPDATE_REPOSITORY_BANNER] ${repositoryId}: ${error.message}`);
       return {
         message: error,
         type: ResponseType.Error,
@@ -822,8 +836,8 @@ export class RepositoryResolver {
     @Context('req') req,
     @Args('pinRepositoryTabArgs') args: PinRepositoryTabArgs
   ): Promise<AppResponse> {
+    const { tabId, repositoryId } = args;
     try {
-      const { tabId, repositoryId } = args;
       const authUser = getAuthUser(req);
       const userId = authUser.id;
       /** Find current user */
@@ -843,6 +857,7 @@ export class RepositoryResolver {
         type: ResponseType.Success,
       };
     } catch (error: any) {
+      this.logger.error(`[PIN_REPOSITORY_TAB] ${tabId}: ${error.message}`);
       return {
         message: error,
         type: ResponseType.Error,
@@ -855,8 +870,8 @@ export class RepositoryResolver {
     @Context('req') req,
     @Args('unpinRepositoryTabArgs') args: UnpinRepositoryTabArgs
   ): Promise<AppResponse> {
+    const { tabId } = args;
     try {
-      const { tabId } = args;
       const authUser = getAuthUser(req);
       const userId = authUser.id;
       /** Find current user */
@@ -871,6 +886,7 @@ export class RepositoryResolver {
         type: ResponseType.Success,
       };
     } catch (error: any) {
+      this.logger.error(`[UNPIN_REPOSITORY_TAB] ${tabId}: ${error.message}`);
       return {
         message: error,
         type: ResponseType.Error,

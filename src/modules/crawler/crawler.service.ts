@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit, Scope } from '@nestjs/common';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import ogs from 'open-graph-scraper';
-import puppeteer from 'puppeteer';
+import puppeteer, { Browser } from 'puppeteer';
 import { RepositoryTab } from 'src/models';
 import { v4 as uuidV4 } from 'uuid';
 
@@ -14,22 +14,39 @@ function getBase64(url) {
     .then(response => Buffer.from(response.data, 'binary').toString('base64'));
 }
 
-@Injectable()
-export class CrawlerService {
+/** RAII server to handle search on web feature */
+@Injectable({ scope: Scope.DEFAULT })
+export class CrawlerService implements OnModuleDestroy, OnModuleInit {
+  private readonly logger = new Logger(CrawlerService.name);
+  headlessBrowser: Browser | undefined = undefined;
+
+  async onModuleDestroy() {
+    await this.headlessBrowser.close();
+  }
+
+  async onModuleInit() {
+    const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+    if (executablePath) this.logger.log(`Puppeteer instance is running on path ${executablePath}`);
+    else this.logger.log('Puppeteer instance is running using default path');
+
+    this.headlessBrowser = await puppeteer.launch({
+      headless: 'new',
+      executablePath,
+      args: ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage', '--disable-extensions'],
+    });
+  }
+
   async crawlWebsite(url: string): Promise<string[]> {
+    if (!this.headlessBrowser) throw new Error('No puppeteer instance found');
+    this.logger.log(`🔍 Crawling website ${url}...`);
     const hrefRegex = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/;
     const paginationURLsToVisit = [url];
     const productURLs: string[] = [];
 
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-gpu'],
-    });
-
     while (paginationURLsToVisit.length > 0) {
       const paginationUrl = paginationURLsToVisit.pop();
 
-      const page = await browser.newPage();
+      const page = await this.headlessBrowser.newPage();
       await page.setRequestInterception(true);
 
       page.on('request', interceptedRequest => {
@@ -46,6 +63,7 @@ export class CrawlerService {
 
       const htmlResponse = await page.goto(paginationUrl);
       const data = await htmlResponse.text();
+      await page.close();
 
       const $ = cheerio.load(data);
       $('a').each((_, element) => {

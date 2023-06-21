@@ -1,7 +1,6 @@
 ###################
 # BUILD FOR LOCAL DEVELOPMENT
 ###################
-
 FROM node:18-alpine As development
 
 EXPOSE 8080
@@ -61,6 +60,18 @@ USER node
 
 FROM node:18-alpine As production
 
+RUN apk add --no-cache \
+      chromium \
+      nss \
+      freetype \
+      harfbuzz \
+      ca-certificates \
+      ttf-freefont \
+      nodejs \
+      yarn
+    
+WORKDIR /app
+
 ENV SERVER_PORT=8080
 
 EXPOSE 8080
@@ -68,6 +79,8 @@ EXPOSE 8080
 # Copy the bundled code from the build stage to the production image
 COPY --chown=node:node --from=build /usr/src/app/node_modules ./node_modules
 COPY --chown=node:node --from=build /usr/src/app/dist ./dist
+
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 
 # Start the server using the production build
 CMD [ "node", "dist/main.js" ]
