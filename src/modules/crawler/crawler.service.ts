@@ -37,43 +37,48 @@ export class CrawlerService implements OnModuleDestroy, OnModuleInit {
   }
 
   async crawlWebsite(url: string): Promise<string[]> {
-    if (!this.headlessBrowser) throw new Error('No puppeteer instance found');
-    this.logger.log(`🔍 Crawling website ${url}...`);
-    const hrefRegex = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/;
-    const paginationURLsToVisit = [url];
-    const productURLs: string[] = [];
+    try {
+      if (!this.headlessBrowser) throw new Error('No puppeteer instance found');
+      this.logger.log(`🔍 Crawling website ${url}...`);
+      const hrefRegex = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/;
+      const paginationURLsToVisit = [url];
+      const productURLs: string[] = [];
 
-    while (paginationURLsToVisit.length > 0) {
-      const paginationUrl = paginationURLsToVisit.pop();
+      while (paginationURLsToVisit.length > 0) {
+        const paginationUrl = paginationURLsToVisit.pop();
 
-      const page = await this.headlessBrowser.newPage();
-      await page.setRequestInterception(true);
+        const page = await this.headlessBrowser.newPage();
+        await page.setRequestInterception(true);
 
-      page.on('request', interceptedRequest => {
-        if (interceptedRequest.isInterceptResolutionHandled()) return;
-        const requestUrl = interceptedRequest.url();
-        if (
-          requestUrl.endsWith('.png') ||
-          requestUrl.endsWith('.jpg') ||
-          !hrefRegex.test(requestUrl)
-        )
-          interceptedRequest.abort();
-        else interceptedRequest.continue();
-      });
+        page.on('request', interceptedRequest => {
+          if (interceptedRequest.isInterceptResolutionHandled()) return;
+          const requestUrl = interceptedRequest.url();
+          if (
+            requestUrl.endsWith('.png') ||
+            requestUrl.endsWith('.jpg') ||
+            !hrefRegex.test(requestUrl)
+          )
+            interceptedRequest.abort();
+          else interceptedRequest.continue();
+        });
 
-      const htmlResponse = await page.goto(paginationUrl);
-      const data = await htmlResponse.text();
-      await page.close();
+        const htmlResponse = await page.goto(paginationUrl);
+        const data = await htmlResponse.text();
+        await page.close();
 
-      const $ = cheerio.load(data);
-      $('a').each((_, element) => {
-        const paginationURL = $(element).attr('href');
-        if (!paginationURLsToVisit.includes(paginationURL) && hrefRegex.test(paginationURL)) {
-          productURLs.push(paginationURL);
-        }
-      });
+        const $ = cheerio.load(data);
+        $('a').each((_, element) => {
+          const paginationURL = $(element).attr('href');
+          if (!paginationURLsToVisit.includes(paginationURL) && hrefRegex.test(paginationURL)) {
+            productURLs.push(paginationURL);
+          }
+        });
+      }
+      return productURLs;
+    } catch (error: any) {
+      this.logger.error(error.message);
+      return [];
     }
-    return productURLs;
   }
 
   queryOpenGraphMetadata = async (websiteUrl: string) => {

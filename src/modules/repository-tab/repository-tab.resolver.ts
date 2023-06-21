@@ -17,7 +17,7 @@ export class RepositoryTabResolver {
     @Args('queryOpenGraphMetadata') { websiteUrl }: QueryOpenGraphMetadataArgs
   ): Promise<AppResponse> {
     try {
-      const res = this.crawlerService.queryOpenGraphMetadata(websiteUrl);
+      const res = await this.crawlerService.queryOpenGraphMetadata(websiteUrl);
       return {
         message: JSON.stringify(res),
         type: ResponseType.Success,
