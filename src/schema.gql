@@ -32,7 +32,7 @@ type AppResponse {
 
 input ChangeWorkspaceVisibilityArgs {
   id: String!
-  updated_date: Float! = 1687345739
+  updated_date: Float! = 1687425924
   visibility: AccessVisibility!
 }
 
@@ -102,6 +102,11 @@ input FullRepositoryTabAsInput {
 
 input GatherUrlsMetadataArgs {
   websiteUrls: [String!]!
+}
+
+input GetAllPublicRepositoriesArgs {
+  limit: Float!
+  offset: Float!
 }
 
 input GetRepositoryBannerArgs {
@@ -193,7 +198,7 @@ input PinRepositoryTabArgs {
 
 type Query {
   gatherUrlsMetadata(gatherUrlsMetadataArgs: GatherUrlsMetadataArgs!): [RepositoryTab!]!
-  getAllPublicRepositories: [Repository!]!
+  getAllPublicRepositories(getAllPublicRepositoriesArgs: GetAllPublicRepositoriesArgs!): [Repository!]!
   getAllUsers: [User!]!
   getAllWorkspaces: [Workspace!]!
   getCurrentUser: User
@@ -249,6 +254,9 @@ type Repository {
 
   """List of directory IDs"""
   directories: [Directory!]!
+
+  """Number of favorites"""
+  favorite_count: Float!
 
   """List of user IDs"""
   favorites: [String!]!
@@ -325,7 +333,7 @@ input SearchTabOnWebArgs {
 
 input SelectQuickAccessWorkspaceArgs {
   id: String
-  updated_date: Float! = 1687345739
+  updated_date: Float! = 1687425924
 }
 
 input SetRepositoryTabsArgs {
@@ -374,6 +382,9 @@ input UpdateRepositoryArgs {
 
   """List of directory IDs"""
   directories: [DirectoryAsInput!] = []
+
+  """Number of favorites"""
+  favorite_count: Float = 0
 
   """List of user IDs"""
   favorites: [String!] = []
@@ -436,7 +447,7 @@ input UpdateWorkspaceArgs {
   description: String = ""
   id: String!
   name: String!
-  updated_date: Float! = 1687345739
+  updated_date: Float! = 1687425924
   visibility: AccessVisibility!
 }
 

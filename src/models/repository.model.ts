@@ -56,6 +56,9 @@ export class Repository {
   @Field(() => [String], { defaultValue: [], description: 'List of user IDs' })
   favorites: string[];
 
+  @Field(() => Number, { defaultValue: 0, description: 'Number of favorites' })
+  favorite_count: number;
+
   @Field(() => AccessPermission, { defaultValue: AccessPermission.OnlyPeopleWhoHasAccess })
   accessPermission: AccessPermission;
 

@@ -185,6 +185,15 @@ export class GetWorkspaceRepositoriesArgs {
 }
 
 @InputType()
+export class GetAllPublicRepositoriesArgs {
+  @Field()
+  limit: number;
+
+  @Field()
+  offset: number;
+}
+
+@InputType()
 export class GetRepositoryBySlugArgs {
   @Field()
   @IsUUID('4')

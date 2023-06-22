@@ -30,9 +30,15 @@ export class RepositoryService extends BaseCRUDService<Repository> {
     return (_repository.pinned || []).some(userWhoPin => userWhoPin == userId);
   };
 
-  getAllPublicRepositories = async (): Promise<Repository[]> => {
+  getAllPublicRepositories = async (limit: number, offset: number): Promise<Repository[]> => {
     const _collection = await db.collection(this.collectionRegistry);
-    const publicData = await _collection.where('visibility', '==', AccessVisibility.Public).get();
+    const publicData = await _collection
+      .where('visibility', '==', AccessVisibility.Public)
+      .orderBy('updated_date', 'desc')
+      .orderBy('favorite_count', 'desc')
+      .limit(limit)
+      .offset(offset)
+      .get();
     return publicData.docs.map<Repository>(doc => doc.data() as Repository);
   };
 
@@ -141,6 +147,7 @@ export class RepositoryService extends BaseCRUDService<Repository> {
       pinned: [],
       contributors,
       favorites: [],
+      favorite_count: 0,
       permittedUsers: [],
       accessPermission:
         visibility === AccessVisibility.Public

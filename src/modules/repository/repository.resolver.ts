@@ -25,6 +25,7 @@ import {
   ReadReadmeArgs,
   UpdateRepositoryBannerArgs,
   GetRepositoryBannerArgs,
+  GetAllPublicRepositoriesArgs,
 } from 'src/dto';
 import { GqlThrottlerGuard } from 'src/middlewares';
 import { AccessVisibility, AppResponse, Repository, ResponseType } from 'src/models';
@@ -143,9 +144,12 @@ export class RepositoryResolver {
   }
 
   @Query(() => [Repository])
-  async getAllPublicRepositories() {
+  async getAllPublicRepositories(
+    @Args('getAllPublicRepositoriesArgs') args: GetAllPublicRepositoriesArgs
+  ) {
+    const { limit, offset } = args;
     try {
-      const repositories = await this.repositoryService.getAllPublicRepositories();
+      const repositories = await this.repositoryService.getAllPublicRepositories(limit, offset);
       return repositories;
     } catch (error: any) {
       this.logger.error(`[GET_ALL_PUBLIC_REPOSITORIES]: ${error.message}`);
@@ -632,6 +636,7 @@ export class RepositoryResolver {
       const repository = await this.repositoryService.getDataById(id);
       const liked = repository.favorites.some(userId => userId === authUser.id);
 
+      const favorites = repository.favorites;
       /** Add / Remove repository id from the list of favorites in user */
       await this.userService.updateData(authUser.id, {
         favorites: liked
@@ -641,8 +646,9 @@ export class RepositoryResolver {
       /** Add / Remove user id from the list of favorites in repository */
       await this.repositoryService.updateData(id, {
         favorites: liked
-          ? repository.favorites.filter(userId => userId !== authUser.id)
-          : repository.favorites.concat([userId]),
+          ? favorites.filter(userId => userId !== authUser.id)
+          : favorites.concat([userId]),
+        favorite_count: liked ? favorites.length + 1 : favorites.length - 1,
       });
       return {
         message: 'Successfully toggle repository favorite',
