@@ -32,7 +32,7 @@ type AppResponse {
 
 input ChangeWorkspaceVisibilityArgs {
   id: String!
-  updated_date: Float! = 1687425924
+  updated_date: Float! = 1687766222
   visibility: AccessVisibility!
 }
 
@@ -170,6 +170,7 @@ type Mutation {
   deleteWorkspace(deleteWorkspaceArgs: DeleteWorkspaceArgs!): AppResponse!
   pinRepository(pinRepositoryArgs: PinRepositoryArgs!): AppResponse!
   pinRepositoryTab(pinRepositoryTabArgs: PinRepositoryTabArgs!): AppResponse!
+  ping: Ping!
   removeRepositoryContributor(removeRepositoryContributorArgs: RemoveContributorArgs!): AppResponse!
   removeTabsFromRepository(removeTabsFromRepositoryArgs: RemoveTabsFromRepositoryArgs!): AppResponse!
   removeWorkspaceMember(removeWorkspaceMemberArgs: RemoveMemberArgs!): AppResponse!
@@ -194,6 +195,14 @@ input PinRepositoryArgs {
 input PinRepositoryTabArgs {
   repositoryId: String!
   tabId: String!
+}
+
+type Ping {
+  id: String!
+}
+
+type Pong {
+  pingId: String!
 }
 
 type Query {
@@ -333,7 +342,7 @@ input SearchTabOnWebArgs {
 
 input SelectQuickAccessWorkspaceArgs {
   id: String
-  updated_date: Float! = 1687425924
+  updated_date: Float! = 1687766222
 }
 
 input SetRepositoryTabsArgs {
@@ -345,6 +354,11 @@ input SetRepositoryTabsArgs {
 input SmartTabGroupingArgs {
   groups: [String!]!
   tabs: [RepositoryTabAsInput!]!
+}
+
+type Subscription {
+  commentAdded: RepositoryTab!
+  pong: Pong!
 }
 
 type TabWithCategory {
@@ -447,7 +461,7 @@ input UpdateWorkspaceArgs {
   description: String = ""
   id: String!
   name: String!
-  updated_date: Float! = 1687425924
+  updated_date: Float! = 1687766222
   visibility: AccessVisibility!
 }
 

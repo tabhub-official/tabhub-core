@@ -4,3 +4,5 @@ export * from './repository-tab';
 export * from './user';
 export * from './category';
 export * from './directory';
+export * from './storage';
+export * from './tab-manager';
