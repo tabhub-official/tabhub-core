@@ -3,6 +3,7 @@ import { Resolver, Mutation, Subscription, ObjectType, Field } from '@nestjs/gra
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 
 import { PUB_SUB } from '../pubsub';
+import { PubSubEvent } from '../pubsub/pubsub.event';
 
 @ObjectType()
 export class Ping {
@@ -16,8 +17,6 @@ export class Pong {
   pingId: string;
 }
 
-const PONG_EVENT_NAME = 'pong';
-
 @Resolver(() => Ping)
 export class PingPongResolver {
   constructor(@Inject(PUB_SUB) private pubSub: RedisPubSub) {}
@@ -25,12 +24,12 @@ export class PingPongResolver {
   @Mutation(() => Ping)
   async ping() {
     const pingId = Date.now();
-    this.pubSub.publish(PONG_EVENT_NAME, { [PONG_EVENT_NAME]: { pingId } });
+    this.pubSub.publish(PubSubEvent.PONG, { [PubSubEvent.PONG]: { pingId } });
     return { id: pingId };
   }
 
   @Subscription(() => Pong)
   pong() {
-    return this.pubSub.asyncIterator(PONG_EVENT_NAME);
+    return this.pubSub.asyncIterator(PubSubEvent.PONG);
   }
 }

@@ -7,12 +7,12 @@ import { join } from 'path';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { auth } from './config';
 import { contextAuthorizationMiddlware } from './middlewares';
 import {
   DirectoryService,
   RepositoryService,
   RepositoryTabService,
-  TabManagerResolver,
   UserResolver,
   UserService,
   WorkspaceResolver,
@@ -25,6 +25,7 @@ import { PubSubModule } from './modules/pubsub';
 import { RepositoryTabResolver } from './modules/repository-tab/repository-tab.resolver';
 import { RepositoryResolver } from './modules/repository/repository.resolver';
 import { StorageService } from './modules/storage';
+import { TabManagerResolver } from './modules/tab-manager';
 
 const generalConfiguration = ConfigModule.forRoot({
   envFilePath: '.env',
@@ -41,8 +42,31 @@ const graphQLConfiguration = GraphQLModule.forRootAsync<ApolloDriverConfig & { u
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       installSubscriptionHandlers: true,
       subscriptions: {
-        'subscriptions-transport-ws': true,
-        'graphql-ws': true,
+        'subscriptions-transport-ws': {
+          onConnect: async connectionParams => {
+            try {
+              console.log('Connection params: ', connectionParams);
+              const authToken = connectionParams.authToken;
+              const token = await auth.verifyIdToken(authToken);
+              if (!token) {
+                throw new Error('Token is not valid');
+              }
+              // extract user information from token
+              // return user info to add them to the context later
+              return {
+                user: {
+                  id: token.uid,
+                  email: token.email,
+                  phone: token.phone_number,
+                  picture: token.picture,
+                },
+              };
+            } catch (error) {
+              console.log(error.message);
+              return undefined;
+            }
+          },
+        },
       },
       sortSchema: true,
       context: contextAuthorizationMiddlware,

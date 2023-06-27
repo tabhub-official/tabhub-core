@@ -32,7 +32,7 @@ type AppResponse {
 
 input ChangeWorkspaceVisibilityArgs {
   id: String!
-  updated_date: Float! = 1687766222
+  updated_date: Float! = 1687853475
   visibility: AccessVisibility!
 }
 
@@ -178,6 +178,7 @@ type Mutation {
   setRepositoryTabs(setRepositoryTabsArgs: SetRepositoryTabsArgs!): AppResponse
   smartTabGrouping(smartTabGroupingArgs: SmartTabGroupingArgs!): [TabWithCategory!]!
   toggleLikeRepository(toggleLikeRepositoryArgs: ToggleLikeRepositoryArgs!): AppResponse!
+  triggerOnTabManagerUpdatedEvent(browser_client_id: String!, event_name: String!): TabManagerOnUpdatedEvent!
   unpinRepository(unpinRepositoryArgs: PinRepositoryArgs!): AppResponse!
   unpinRepositoryTab(unpinRepositoryTabArgs: UnpinRepositoryTabArgs!): AppResponse!
   updateReadme(updateReadmeArgs: UpdateReadmeArgs!): AppResponse!
@@ -342,7 +343,7 @@ input SearchTabOnWebArgs {
 
 input SelectQuickAccessWorkspaceArgs {
   id: String
-  updated_date: Float! = 1687766222
+  updated_date: Float! = 1687853475
 }
 
 input SetRepositoryTabsArgs {
@@ -357,8 +358,14 @@ input SmartTabGroupingArgs {
 }
 
 type Subscription {
-  commentAdded: RepositoryTab!
+  onTabManagerUpdated(browser_client_id: String!): TabManagerOnUpdatedEvent!
   pong: Pong!
+}
+
+type TabManagerOnUpdatedEvent {
+  browser_client_id: String!
+  event_name: String!
+  trigger_at: Float!
 }
 
 type TabWithCategory {
@@ -461,7 +468,7 @@ input UpdateWorkspaceArgs {
   description: String = ""
   id: String!
   name: String!
-  updated_date: Float! = 1687766222
+  updated_date: Float! = 1687853475
   visibility: AccessVisibility!
 }
 

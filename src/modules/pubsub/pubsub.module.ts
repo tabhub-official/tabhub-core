@@ -4,6 +4,14 @@ import { RedisPubSub } from 'graphql-redis-subscriptions';
 
 export const PUB_SUB = 'PUB_SUB';
 
+const RedisPubSubServer = (host: string, port: number) =>
+  new RedisPubSub({
+    connection: {
+      host,
+      port,
+    },
+  });
+
 @Global()
 @Module({
   imports: [ConfigModule],
@@ -11,12 +19,7 @@ export const PUB_SUB = 'PUB_SUB';
     {
       provide: PUB_SUB,
       useFactory: (configService: ConfigService) =>
-        new RedisPubSub({
-          connection: {
-            host: configService.get('REDIS_HOST'),
-            port: configService.get('REDIS_PORT'),
-          },
-        }),
+        RedisPubSubServer(configService.get('REDIS_HOST'), configService.get('REDIS_PORT')),
       inject: [ConfigService],
     },
   ],
