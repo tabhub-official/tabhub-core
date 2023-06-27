@@ -25,7 +25,7 @@ export class CrawlerService implements OnModuleDestroy, OnModuleInit {
   }
 
   async onModuleInit() {
-    if (!process.env.PUPPETEER_DISABLE) return;
+    if (process.env.PUPPETEER_DISABLE) return;
     const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
     if (executablePath) this.logger.log(`Puppeteer instance is running on path ${executablePath}`);
     else this.logger.log('Puppeteer instance is running using default path');
