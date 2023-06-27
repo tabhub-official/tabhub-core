@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { auth } from 'src/config';
 
 export const contextAuthorizationMiddlware = async context => {
@@ -7,8 +8,9 @@ export const contextAuthorizationMiddlware = async context => {
   } else if (req) {
     try {
       const regex = /Bearer (.+)/i;
-      if (req.headers['authorization']) {
-        const idToken = req.headers['authorization'].match(regex)?.[1];
+      const authorizationToken = req.headers['authorization'];
+      if (authorizationToken) {
+        const idToken = authorizationToken.match(regex)?.[1];
         if (idToken) {
           const token = await auth.verifyIdToken(idToken);
           req.user = {
@@ -21,7 +23,7 @@ export const contextAuthorizationMiddlware = async context => {
       }
       return { ...context, req };
     } catch (error) {
-      console.log(error.message);
+      new Logger('MIDDLEWARE').error(error.message);
       return { req };
     }
   }
