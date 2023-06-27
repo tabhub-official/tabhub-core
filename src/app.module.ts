@@ -25,6 +25,7 @@ import { PubSubModule } from './modules/pubsub';
 import { RepositoryTabResolver } from './modules/repository-tab/repository-tab.resolver';
 import { RepositoryResolver } from './modules/repository/repository.resolver';
 import { StorageService } from './modules/storage';
+import { TabLensResolver } from './modules/tab-lens';
 import { TabManagerResolver } from './modules/tab-manager';
 
 const generalConfiguration = ConfigModule.forRoot({
@@ -80,6 +81,7 @@ const resolvers = [
   RepositoryTabResolver,
   UserResolver,
   TabManagerResolver,
+  TabLensResolver,
   PingPongResolver,
 ];
 const services = [
