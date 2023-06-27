@@ -4,12 +4,13 @@ import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.js';
 
 import { AppModule } from './app.module';
 import { MAX_FILE_SIZE } from './config';
+import { isEnv } from './utils';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: ['http://localhost:3000', 'https://app.tabhub.io'],
+    origin: isEnv('DEVELOPMENT') ? '*' : ['http://localhost:3000', 'https://app.tabhub.io'],
   });
   app.use(bodyParser.json({ limit: '50mb' }));
   app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));

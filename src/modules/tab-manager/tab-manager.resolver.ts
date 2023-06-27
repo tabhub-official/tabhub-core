@@ -30,7 +30,7 @@ export class TabManagerResolver {
     @Args('event_name') event_name: string
   ): Promise<TabManagerOnUpdatedEvent> {
     const topic = PubSubEvent.ON_TAB_MANAGER_UPDATED;
-    this.logger.log(`[SUBSCRIPTION] ${topic} from ${browser_client_id}`);
+    this.logger.debug(`[SUBSCRIPTION] ${topic} from ${browser_client_id}`);
     const returnData = {
       browser_client_id: browser_client_id,
       trigger_at: moment().unix(),
@@ -46,7 +46,7 @@ export class TabManagerResolver {
   })
   onTabManagerUpdated(@Args('browser_client_id') browser_client_id: string) {
     const topic = PubSubEvent.ON_TAB_MANAGER_UPDATED;
-    this.logger.log(`-- [SUBSCRIPTION] Subscription for ${topic} from ${browser_client_id}`);
+    this.logger.debug(`-- [SUBSCRIPTION] Subscription for ${topic} from ${browser_client_id}`);
     return this.pubSub.asyncIterator(topic);
   }
 }
