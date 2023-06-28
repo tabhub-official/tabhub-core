@@ -7,3 +7,4 @@ export * from './repository.model';
 export * from './repository-tab.model';
 export * from './category.model';
 export * from './directory.model';
+export * from './browsing-event.model';

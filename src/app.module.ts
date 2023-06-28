@@ -18,6 +18,7 @@ import {
   WorkspaceResolver,
   WorkspaceService,
 } from './modules';
+import { BrowsingEventResolver } from './modules/browsing-event';
 import { CrawlerService } from './modules/crawler';
 import { OpenAIService } from './modules/openai';
 import { PingPongResolver } from './modules/ping';
@@ -25,8 +26,6 @@ import { PubSubModule } from './modules/pubsub';
 import { RepositoryTabResolver } from './modules/repository-tab/repository-tab.resolver';
 import { RepositoryResolver } from './modules/repository/repository.resolver';
 import { StorageService } from './modules/storage';
-import { TabLensResolver } from './modules/tab-lens';
-import { TabManagerResolver } from './modules/tab-manager';
 
 const generalConfiguration = ConfigModule.forRoot({
   envFilePath: '.env',
@@ -80,8 +79,7 @@ const resolvers = [
   RepositoryResolver,
   RepositoryTabResolver,
   UserResolver,
-  TabManagerResolver,
-  TabLensResolver,
+  BrowsingEventResolver,
   PingPongResolver,
 ];
 const services = [

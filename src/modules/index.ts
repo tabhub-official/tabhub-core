@@ -5,4 +5,4 @@ export * from './user';
 export * from './category';
 export * from './directory';
 export * from './storage';
-export * from './tab-manager';
+export * from './browsing-event';

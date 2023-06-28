@@ -30,9 +30,17 @@ type AppResponse {
   type: ResponseType!
 }
 
+type BrowsingEvent {
+  browser_client_id: String!
+  event_name: String!
+  properties: String
+  trigger_at: Float!
+  user_id: String
+}
+
 input ChangeWorkspaceVisibilityArgs {
   id: String!
-  updated_date: Float! = 1687863686
+  updated_date: Float! = 1687929915
   visibility: AccessVisibility!
 }
 
@@ -178,8 +186,7 @@ type Mutation {
   setRepositoryTabs(setRepositoryTabsArgs: SetRepositoryTabsArgs!): AppResponse
   smartTabGrouping(smartTabGroupingArgs: SmartTabGroupingArgs!): [TabWithCategory!]!
   toggleLikeRepository(toggleLikeRepositoryArgs: ToggleLikeRepositoryArgs!): AppResponse!
-  triggerOnTabLensUpdatedEvent(browser_client_id: String!, data: String!): TabLensUpdatedEvent!
-  triggerOnTabManagerUpdatedEvent(browser_client_id: String!, event_name: String!): TabManagerOnUpdatedEvent!
+  triggerOnBrowsingEventUpdated(triggerBrowsingEventArgs: TriggerBrowsingEventArgs!): BrowsingEvent!
   unpinRepository(unpinRepositoryArgs: PinRepositoryArgs!): AppResponse!
   unpinRepositoryTab(unpinRepositoryTabArgs: UnpinRepositoryTabArgs!): AppResponse!
   updateReadme(updateReadmeArgs: UpdateReadmeArgs!): AppResponse!
@@ -188,6 +195,11 @@ type Mutation {
   updateRepositoryInfo(updateRepositoryInfoArgs: UpdateRepositoryArgs!): Repository!
   updateUser(updateUserArgs: UpdateUserArgs!): AppResponse!
   updateWorkspace(updateWorkspaceArgs: UpdateWorkspaceArgs!): AppResponse!
+}
+
+input OnBrowsingEventUpdatedArgs {
+  browser_client_id: String!
+  subscribed_events: [String!]!
 }
 
 input PinRepositoryArgs {
@@ -344,7 +356,7 @@ input SearchTabOnWebArgs {
 
 input SelectQuickAccessWorkspaceArgs {
   id: String
-  updated_date: Float! = 1687863686
+  updated_date: Float! = 1687929915
 }
 
 input SetRepositoryTabsArgs {
@@ -359,21 +371,8 @@ input SmartTabGroupingArgs {
 }
 
 type Subscription {
-  onTabLensUpdated(browser_client_id: String!): TabLensUpdatedEvent!
-  onTabManagerUpdated(browser_client_id: String!): TabManagerOnUpdatedEvent!
+  onBrowsingEventUpdated(onBrowsingEventArgs: OnBrowsingEventUpdatedArgs!): BrowsingEvent!
   pong: Pong!
-}
-
-type TabLensUpdatedEvent {
-  browser_client_id: String!
-  data: String!
-  trigger_at: Float!
-}
-
-type TabManagerOnUpdatedEvent {
-  browser_client_id: String!
-  event_name: String!
-  trigger_at: Float!
 }
 
 type TabWithCategory {
@@ -383,6 +382,14 @@ type TabWithCategory {
 
 input ToggleLikeRepositoryArgs {
   id: String!
+}
+
+input TriggerBrowsingEventArgs {
+  browser_client_id: String
+  event_name: String
+  properties: String
+  trigger_at: Float
+  user_id: String
 }
 
 input UnpinRepositoryTabArgs {
@@ -476,7 +483,7 @@ input UpdateWorkspaceArgs {
   description: String = ""
   id: String!
   name: String!
-  updated_date: Float! = 1687863686
+  updated_date: Float! = 1687929915
   visibility: AccessVisibility!
 }
 
