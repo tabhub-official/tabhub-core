@@ -248,7 +248,8 @@ export class RepositoryResolver {
     @Args('createRepositoryArgs') args: CreateNewRepositoryArgs
   ): Promise<AppResponse> {
     /** Upsert repository */
-    const { name, tabs, workspaceId, description, icon, visibility, directories } = args;
+    const { name, tabs, workspaceId, description, icon, visibility, directories, repositorySlug } =
+      args;
     try {
       const authUser = getAuthUser(req);
 
@@ -256,10 +257,9 @@ export class RepositoryResolver {
       const isMember = await this.workspaceService.isWorkspaceMember(workspaceId, authUser.id);
       if (!isMember) throw new Error('Not workspace member');
 
-      const slug = buildSlug(name);
       const existingRepository = await this.repositoryService.getRepositoryBySlug(
         workspaceId,
-        slug
+        repositorySlug
       );
       if (existingRepository) {
         /** Add tabs to existing repository if existed */
@@ -277,7 +277,7 @@ export class RepositoryResolver {
         /** Create new repository if not exist */
         await this.repositoryService.createNewRepository(
           icon,
-          slug,
+          buildSlug(name),
           name,
           tabs,
           authUser.id,

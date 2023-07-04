@@ -74,8 +74,9 @@ export class RepositoryService extends BaseCRUDService<Repository> {
 
   getRepositoryBySlug = async (
     workspaceId: string,
-    slug: string
+    slug: string | undefined
   ): Promise<Repository | undefined> => {
+    if (!slug) return undefined;
     const _collection = await db.collection(this.collectionRegistry);
     const publicData = await _collection
       .where('slug', '==', slug)

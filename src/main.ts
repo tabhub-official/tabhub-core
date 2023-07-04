@@ -13,9 +13,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: isEnv('DEVELOPMENT')
-      ? ['http://localhost:3000', EXTENSION_URL]
-      : ['https://app.tabhub.io', EXTENSION_URL],
+    origin: isEnv('DEVELOPMENT') ? '*' : ['https://app.tabhub.io', EXTENSION_URL],
   });
   app.use(bodyParser.json({ limit: '50mb' }));
   app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));

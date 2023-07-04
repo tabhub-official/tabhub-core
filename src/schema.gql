@@ -40,7 +40,7 @@ type BrowsingEvent {
 
 input ChangeWorkspaceVisibilityArgs {
   id: String!
-  updated_date: Float! = 1687929915
+  updated_date: Float! = 1688454898
   visibility: AccessVisibility!
 }
 
@@ -49,6 +49,7 @@ input CreateNewRepositoryArgs {
   directories: [DirectoryAsInput!]!
   icon: String!
   name: String!
+  repositorySlug: String
   tabs: [RepositoryTabAsInput!]!
   visibility: AccessVisibility! = Private
   workspaceId: String!
@@ -356,7 +357,7 @@ input SearchTabOnWebArgs {
 
 input SelectQuickAccessWorkspaceArgs {
   id: String
-  updated_date: Float! = 1687929915
+  updated_date: Float! = 1688454898
 }
 
 input SetRepositoryTabsArgs {
@@ -483,7 +484,7 @@ input UpdateWorkspaceArgs {
   description: String = ""
   id: String!
   name: String!
-  updated_date: Float! = 1687929915
+  updated_date: Float! = 1688454898
   visibility: AccessVisibility!
 }
 
