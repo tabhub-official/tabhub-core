@@ -6,7 +6,7 @@ import { AppModule } from './app.module';
 import { MAX_FILE_SIZE } from './config';
 import { isEnv } from './utils';
 
-const CHROME_EXTENSION_ID = 'afbjlhknljajgfknandlilfgdiphmljn';
+const CHROME_EXTENSION_ID = 'lmofhhaibahhojhinmpgmifdmennlcjn';
 const EXTENSION_URL = `chrome-extension://${CHROME_EXTENSION_ID}`;
 
 async function bootstrap() {
