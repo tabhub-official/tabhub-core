@@ -40,7 +40,7 @@ type BrowsingEvent {
 
 input ChangeWorkspaceVisibilityArgs {
   id: String!
-  updated_date: Float! = 1688565393
+  updated_date: Float! = 1688623176
   visibility: AccessVisibility!
 }
 
@@ -100,6 +100,7 @@ input FullRepositoryTabAsInput {
 
   """List of labels"""
   labels: [String!]! = []
+  lastAccessed: Float
   parentDirectory: String
 
   """List of repository tabs IDs"""
@@ -312,6 +313,7 @@ type RepositoryTab {
 
   """List of labels"""
   labels: [String!]!
+  lastAccessed: Float
   parentDirectory: String
 
   """List of repository tabs IDs"""
@@ -337,6 +339,7 @@ input RepositoryTabInput {
 
   """List of labels"""
   labels: [String!]! = []
+  lastAccessed: Float
   parentDirectory: String
 
   """List of repository tabs IDs"""
@@ -357,7 +360,7 @@ input SearchTabOnWebArgs {
 
 input SelectQuickAccessWorkspaceArgs {
   id: String
-  updated_date: Float! = 1688565393
+  updated_date: Float! = 1688623176
 }
 
 input SetRepositoryTabsArgs {
@@ -484,7 +487,7 @@ input UpdateWorkspaceArgs {
   description: String = ""
   id: String!
   name: String!
-  updated_date: Float! = 1688565393
+  updated_date: Float! = 1688623176
   visibility: AccessVisibility!
 }
 
