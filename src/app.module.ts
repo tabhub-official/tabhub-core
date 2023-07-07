@@ -20,7 +20,7 @@ import {
 } from './modules';
 import { BrowsingEventResolver } from './modules/browsing-event';
 import { CrawlerService } from './modules/crawler';
-import { OpenAIService } from './modules/openai';
+import { OpenAIService, SmartGroupService } from './modules/openai';
 import { PingPongResolver } from './modules/ping';
 import { PubSubModule } from './modules/pubsub';
 import { RepositoryTabResolver } from './modules/repository-tab/repository-tab.resolver';
@@ -83,6 +83,7 @@ const resolvers = [
   PingPongResolver,
 ];
 const services = [
+  SmartGroupService,
   StorageService,
   CrawlerService,
   RepositoryService,

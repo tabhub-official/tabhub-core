@@ -12,7 +12,7 @@ import {
 import { AppResponse, ResponseType, User } from 'src/models';
 import { getAuthUser } from 'src/utils/auth';
 
-import { OpenAIService } from '../openai';
+import { SmartGroupService } from '../openai';
 import { UserService } from './user.service';
 
 export type CurrentUserType = {
@@ -24,7 +24,7 @@ export const CurrentUser = createParamDecorator((_, req) => req.user);
 
 @Resolver(() => User)
 export class UserResolver {
-  constructor(private userService: UserService, private openaiService: OpenAIService) {}
+  constructor(private userService: UserService, private smartGroupService: SmartGroupService) {}
 
   @Query(() => [User])
   async getAllUsers() {
@@ -152,31 +152,22 @@ export class UserResolver {
   ): Promise<TabWithCategory[]> {
     try {
       const { tabs, groups } = args;
-      const prompt = `
-        Act as a tab manager, categorize these browser tabs into groups following the JSON:\n
-        { url: string, category: string }\n
-        The provided list of browser tabs is: ${JSON.stringify(tabs)}\n
-        ${
-          groups.length > 0
-            ? `The provided list of recommneded groups is: ${JSON.stringify(groups)}\n
-        If browser tab can't be assigned to any group recommended in the provided list of groups, categorize it on your own.`
-            : ``
-        }
-        Please respond the array of object directly. Don't say anything else. 
-      `;
-      const response = await this.openaiService.makeRawCompletion('system', prompt);
-      const content = response.choices[0].message.content;
-      console.log(content);
-      let output: { url: string; category: string }[] = [];
-      try {
-        output = JSON.parse(content);
-      } catch (error) {
-        output = [];
+
+      let continuousGroups: string[] = groups;
+      let finalOutput = [];
+      let startIndex = 0;
+      const batchSize = 10;
+      while (true) {
+        const [startSize, endSize] = [startIndex * batchSize, (startIndex + 1) * batchSize];
+        const tabChunks = tabs.slice(startSize, endSize);
+        const output = await this.smartGroupService.generatePrompt(tabChunks, continuousGroups);
+        continuousGroups = continuousGroups.concat(output.map(item => item.category));
+        finalOutput = finalOutput.concat(output);
+        if (endSize >= tabs.length) break;
+        startIndex++;
       }
-      return output.map(item => ({
-        category: item.category.toUpperCase(),
-        url: item.url,
-      }));
+      console.log(finalOutput);
+      return finalOutput;
     } catch (error: any) {
       console.log(error);
       return [];

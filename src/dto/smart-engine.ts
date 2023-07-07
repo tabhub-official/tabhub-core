@@ -17,8 +17,5 @@ export class SmartTabGroupingArgs {
 @ObjectType()
 export class TabWithCategory {
   @Field(() => String)
-  url: string;
-
-  @Field(() => String)
   category: string;
 }

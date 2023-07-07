@@ -40,7 +40,7 @@ type BrowsingEvent {
 
 input ChangeWorkspaceVisibilityArgs {
   id: String!
-  updated_date: Float! = 1688700871
+  updated_date: Float! = 1688744911
   visibility: AccessVisibility!
 }
 
@@ -360,7 +360,7 @@ input SearchTabOnWebArgs {
 
 input SelectQuickAccessWorkspaceArgs {
   id: String
-  updated_date: Float! = 1688700871
+  updated_date: Float! = 1688744911
 }
 
 input SetRepositoryTabsArgs {
@@ -381,7 +381,6 @@ type Subscription {
 
 type TabWithCategory {
   category: String!
-  url: String!
 }
 
 input ToggleLikeRepositoryArgs {
@@ -487,7 +486,7 @@ input UpdateWorkspaceArgs {
   description: String = ""
   id: String!
   name: String!
-  updated_date: Float! = 1688700871
+  updated_date: Float! = 1688744911
   visibility: AccessVisibility!
 }
 
