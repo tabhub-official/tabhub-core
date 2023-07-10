@@ -16,22 +16,23 @@ export class SmartGroupService {
       id: makeid(4),
       ...tab,
     }));
+    console.log(`From ${tabsWithId.length} tabs`);
     const prompt = `
-          Categorize the provided browser tabs into groups using the JSON format: {id: string, category: string }
-          Tabs: ${JSON.stringify(tabsWithId)}
-          ${
-            groups.length > 0
-              ? `Recommended groups: ${JSON.stringify(
-                  groups
-                )}. If a tab doesn't fit any recommended group, create a category for it`
-              : `No recommended groups are provided. You need to categorize the tabs on your own.`
-          }
-          Goal: No more than ${
-            _tabs.length / 2
-          } groups generated. Each group should have at least 2 items
-          Requirements: Output array must contain data for all provided tabs. 
-          Please respond with an array of objects representing the tab categories, in the given order. Exclude any additional information in your response.
-        `;
+      Categorize the provided browser tabs into groups using the JSON format: {id: string, category: string }
+      Tabs: ${JSON.stringify(tabsWithId)}
+      ${
+        groups.length > 0
+          ? `Recommended groups: ${JSON.stringify(
+              groups
+            )}. If a tab doesn't fit any recommended group, create a category for it`
+          : `No recommended groups are provided. You need to categorize the tabs on your own.`
+      }
+      Goal: No more than ${
+        _tabs.length / 2
+      } groups generated. Each group should have at least 2 items
+      Requirements: Output array must contain data for all provided tabs. 
+      Please respond with an array of objects representing the tab categories, in the given order. Exclude any additional information in your response.
+    `;
     const response = await this.openaiService.makeRawCompletion('system', prompt);
     const content = response.choices[0].message.content;
     let output: { index: number; category: string }[] = [];
@@ -40,6 +41,7 @@ export class SmartGroupService {
     } catch (error) {
       output = [];
     }
+    console.log(`To ${output.length} tabs`);
     return output.map(item => ({
       category: item.category.toUpperCase(),
     }));

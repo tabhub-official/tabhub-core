@@ -1,4 +1,4 @@
-import { Field, ObjectType, registerEnumType } from '@nestjs/graphql';
+import { Field, InputType, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { IsUUID } from 'class-validator';
 
 export enum TimeTrackerEngineState {
@@ -24,6 +24,7 @@ registerEnumType(TimeTrackerProductivityMode, {
 });
 
 @ObjectType()
+@InputType('TimeTrackerSessionInputType')
 export class TimeTrackerSession {
   @Field()
   @IsUUID('4')

@@ -26,7 +26,7 @@ import { PubSubModule } from './modules/pubsub';
 import { RepositoryTabResolver } from './modules/repository-tab/repository-tab.resolver';
 import { RepositoryResolver } from './modules/repository/repository.resolver';
 import { StorageService } from './modules/storage';
-import { TimeTrackerResolver } from './modules/time-tracker';
+import { TimeTrackerResolver, TimeTrackerSessionService } from './modules/time-tracker';
 
 const generalConfiguration = ConfigModule.forRoot({
   envFilePath: '.env',
@@ -86,6 +86,7 @@ const resolvers = [
 ];
 
 const services = [
+  TimeTrackerSessionService,
   SmartGroupService,
   StorageService,
   CrawlerService,

@@ -1,4 +1,4 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, InputType, ObjectType } from '@nestjs/graphql';
 import { MinLength, MaxLength, IsUUID, IsEmail } from 'class-validator';
 
 import { RepositoryTab } from './repository-tab.model';
@@ -16,12 +16,14 @@ export class UserWhoHasAccess {
 }
 
 @ObjectType()
+@InputType('UserTimeTrackerSettingInputType')
 export class UserTimeTrackerSetting {
   @Field(() => Number)
   limitLeastUsedTime: number;
 }
 
 @ObjectType()
+@InputType('UserSettingInputType')
 export class UserSetting {
   @Field(() => UserTimeTrackerSetting)
   timeTracker: UserTimeTrackerSetting;

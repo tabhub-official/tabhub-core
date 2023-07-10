@@ -162,6 +162,7 @@ export class UserResolver {
       while (true) {
         const [startSize, endSize] = [startIndex * batchSize, (startIndex + 1) * batchSize];
         const tabChunks = tabs.slice(startSize, endSize);
+        console.log(tabChunks);
         const output = await this.smartGroupService.generatePrompt(tabChunks, continuousGroups);
         continuousGroups = continuousGroups.concat(output.map(item => item.category));
         finalOutput = finalOutput.concat(output);
