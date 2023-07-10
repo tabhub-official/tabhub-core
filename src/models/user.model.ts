@@ -2,6 +2,7 @@ import { Field, ObjectType } from '@nestjs/graphql';
 import { MinLength, MaxLength, IsUUID, IsEmail } from 'class-validator';
 
 import { RepositoryTab } from './repository-tab.model';
+import { TimeTrackerSession } from './time-tracker.model';
 
 @ObjectType()
 export class UserWhoHasAccess {
@@ -12,6 +13,18 @@ export class UserWhoHasAccess {
   /** public | contributor */
   @Field(() => String)
   type: string;
+}
+
+@ObjectType()
+export class UserTimeTrackerSetting {
+  @Field(() => Number)
+  limitLeastUsedTime: number;
+}
+
+@ObjectType()
+export class UserSetting {
+  @Field(() => UserTimeTrackerSetting)
+  timeTracker: UserTimeTrackerSetting;
 }
 
 @ObjectType()
@@ -63,6 +76,12 @@ export class User {
 
   @Field(() => [RepositoryTab], { defaultValue: [], description: 'List of repository tabs IDs' })
   pinned_tabs: RepositoryTab[];
+
+  @Field(() => UserSetting)
+  setting: UserSetting;
+
+  @Field(() => [TimeTrackerSession])
+  timeTrackerSessions: TimeTrackerSession[];
 
   /** If selected_workspace == null => Default set to local workspace */
   @Field({ nullable: true, description: 'ID of selected workspace' })

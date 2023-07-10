@@ -1,5 +1,6 @@
 import { createParamDecorator } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql';
+import { auth } from 'firebase-admin';
 import {
   CreateNewUserArgs,
   GetUserByEmailArgs,
@@ -133,6 +134,7 @@ export class UserResolver {
     try {
       const authUser = getAuthUser(req);
       await this.userService.deleteData(authUser.id);
+      await auth().deleteUser(authUser.id);
       return {
         message: `Successfully delete workspace ${authUser.id}`,
         type: ResponseType.Success,
