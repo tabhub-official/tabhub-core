@@ -154,23 +154,8 @@ export class UserResolver {
   ): Promise<TabWithCategory[]> {
     try {
       const { tabs, groups } = args;
-
-      let continuousGroups: string[] = groups;
-      let finalOutput = [];
-      let startIndex = 0;
-      const batchSize = 10;
-      while (true) {
-        const [startSize, endSize] = [startIndex * batchSize, (startIndex + 1) * batchSize];
-        const tabChunks = tabs.slice(startSize, endSize);
-        console.log(tabChunks);
-        const output = await this.smartGroupService.generatePrompt(tabChunks, continuousGroups);
-        continuousGroups = continuousGroups.concat(output.map(item => item.category));
-        finalOutput = finalOutput.concat(output);
-        if (endSize >= tabs.length) break;
-        startIndex++;
-      }
-      console.log(finalOutput);
-      return finalOutput;
+      const output = await this.smartGroupService.generatePrompt(tabs, groups);
+      return output;
     } catch (error: any) {
       console.log(error);
       return [];

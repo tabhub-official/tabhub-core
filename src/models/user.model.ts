@@ -30,7 +30,7 @@ export class UserSetting {
 }
 
 @ObjectType()
-export class User {
+export class BasicUser {
   @Field()
   @IsUUID('4')
   id: string;
@@ -79,13 +79,16 @@ export class User {
   @Field(() => [RepositoryTab], { defaultValue: [], description: 'List of repository tabs IDs' })
   pinned_tabs: RepositoryTab[];
 
+  /** If selected_workspace == null => Default set to local workspace */
+  @Field({ nullable: true, description: 'ID of selected workspace' })
+  selected_workspace?: string;
+}
+
+@ObjectType()
+export class User extends BasicUser {
   @Field(() => UserSetting)
   setting: UserSetting;
 
   @Field(() => [TimeTrackerSession])
   timeTrackerSessions: TimeTrackerSession[];
-
-  /** If selected_workspace == null => Default set to local workspace */
-  @Field({ nullable: true, description: 'ID of selected workspace' })
-  selected_workspace?: string;
 }

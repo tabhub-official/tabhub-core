@@ -40,7 +40,7 @@ type BrowsingEvent {
 
 input ChangeWorkspaceVisibilityArgs {
   id: String!
-  updated_date: Float! = 1689008089
+  updated_date: Float! = 1689093953
   visibility: AccessVisibility!
 }
 
@@ -370,7 +370,7 @@ input SearchTabOnWebArgs {
 
 input SelectQuickAccessWorkspaceArgs {
   id: String
-  updated_date: Float! = 1689008089
+  updated_date: Float! = 1689093953
 }
 
 input SetRepositoryTabsArgs {
@@ -391,6 +391,7 @@ type Subscription {
 
 type TabWithCategory {
   category: String!
+  url: String!
 }
 
 """Engine state for Time Tracker"""
@@ -534,7 +535,7 @@ input UpdateWorkspaceArgs {
   description: String = ""
   id: String!
   name: String!
-  updated_date: Float! = 1689008089
+  updated_date: Float! = 1689093953
   visibility: AccessVisibility!
 }
 
