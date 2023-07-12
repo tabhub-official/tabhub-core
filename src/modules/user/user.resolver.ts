@@ -1,5 +1,6 @@
 import { createParamDecorator } from '@nestjs/common';
 import { Resolver, Query, Args, Mutation, Context } from '@nestjs/graphql';
+import { auth } from 'firebase-admin';
 import {
   CreateNewUserArgs,
   GetUserByEmailArgs,
@@ -133,6 +134,7 @@ export class UserResolver {
     try {
       const authUser = getAuthUser(req);
       await this.userService.deleteData(authUser.id);
+      await auth().deleteUser(authUser.id);
       return {
         message: `Successfully delete workspace ${authUser.id}`,
         type: ResponseType.Success,
@@ -152,22 +154,8 @@ export class UserResolver {
   ): Promise<TabWithCategory[]> {
     try {
       const { tabs, groups } = args;
-
-      let continuousGroups: string[] = groups;
-      let finalOutput = [];
-      let startIndex = 0;
-      const batchSize = 10;
-      while (true) {
-        const [startSize, endSize] = [startIndex * batchSize, (startIndex + 1) * batchSize];
-        const tabChunks = tabs.slice(startSize, endSize);
-        const output = await this.smartGroupService.generatePrompt(tabChunks, continuousGroups);
-        continuousGroups = continuousGroups.concat(output.map(item => item.category));
-        finalOutput = finalOutput.concat(output);
-        if (endSize >= tabs.length) break;
-        startIndex++;
-      }
-      console.log(finalOutput);
-      return finalOutput;
+      const output = await this.smartGroupService.generatePrompt(tabs, groups);
+      return output;
     } catch (error: any) {
       console.log(error);
       return [];

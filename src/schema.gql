@@ -40,7 +40,7 @@ type BrowsingEvent {
 
 input ChangeWorkspaceVisibilityArgs {
   id: String!
-  updated_date: Float! = 1688744911
+  updated_date: Float! = 1689093953
   visibility: AccessVisibility!
 }
 
@@ -53,6 +53,14 @@ input CreateNewRepositoryArgs {
   tabs: [RepositoryTabAsInput!]!
   visibility: AccessVisibility! = Private
   workspaceId: String!
+}
+
+input CreateNewTimeTrackerArgs {
+  date: Float!
+  mode: TimeTrackerProductivityMode!
+  recurring: Boolean!
+  sessionEndTime: Float!
+  sessionStartTime: Float!
 }
 
 input CreateNewUserArgs {
@@ -173,6 +181,7 @@ type Mutation {
   addWorkspaceMember(addWorkspaceMemberArgs: AddNewMemberArgs!): AppResponse!
   changeWorkspaceVisibility(changeWorkspaceVisibilityArgs: ChangeWorkspaceVisibilityArgs!): AppResponse!
   createNewRepository(createRepositoryArgs: CreateNewRepositoryArgs!): AppResponse!
+  createNewTimeTrackerSession(createNewTimeTrackerArgs: CreateNewTimeTrackerArgs!): AppResponse!
   createNewUser(createNewUserArgs: CreateNewUserArgs!): AppResponse!
   createNewWorkspace(createNewWorksapceArgs: CreateNewWorkspaceArgs!): AppResponse!
   deleteRepository(deleteRepositoryArgs: DeleteRepositoryArgs!): AppResponse!
@@ -236,6 +245,7 @@ type Query {
   getUserById(getUserByIdArgs: GetUserByIdArgs!): User
   getUserByUsername(getUserByUsernameArgs: GetUserByUsernameArgs!): User
   getUserRepositories(getUserRepositoriesArgs: GetUserRepositoriesArgs!): [Repository!]!
+  getUserTimeTrackerSessions: [TimeTrackerSession!]!
   getUserWorkspaces(getUserWorkspacesArgs: GetUserWorkspacesArgs!): [Workspace!]!
   getWorkspaceById(getWorkspaceByIdArgs: GetWorkspaceByIdArgs!): Workspace
   getWorkspaceByName(getWorkspaceByNameArgs: GetWorkspaceByNameArgs!): Workspace
@@ -360,7 +370,7 @@ input SearchTabOnWebArgs {
 
 input SelectQuickAccessWorkspaceArgs {
   id: String
-  updated_date: Float! = 1688744911
+  updated_date: Float! = 1689093953
 }
 
 input SetRepositoryTabsArgs {
@@ -381,6 +391,43 @@ type Subscription {
 
 type TabWithCategory {
   category: String!
+  url: String!
+}
+
+"""Engine state for Time Tracker"""
+enum TimeTrackerEngineState {
+  Idle
+  Offline
+  Running
+  Void
+}
+
+"""Productivity mode for Time Tracker"""
+enum TimeTrackerProductivityMode {
+  CasualMode
+  FocusMode
+}
+
+type TimeTrackerSession {
+  createdAt: Float!
+  date: Float!
+  id: String!
+  mode: TimeTrackerProductivityMode!
+  recurring: Boolean!
+  sessionEndTime: Float!
+  sessionStartTime: Float!
+  state: TimeTrackerEngineState!
+}
+
+input TimeTrackerSessionInputType {
+  createdAt: Float!
+  date: Float!
+  id: String!
+  mode: TimeTrackerProductivityMode!
+  recurring: Boolean!
+  sessionEndTime: Float!
+  sessionStartTime: Float!
+  state: TimeTrackerEngineState!
 }
 
 input ToggleLikeRepositoryArgs {
@@ -475,6 +522,8 @@ input UpdateUserArgs {
 
   """ID of selected workspace"""
   selected_workspace: String
+  setting: UserSettingInputType
+  timeTrackerSessions: [TimeTrackerSessionInputType!]
   updated_date: Float
   username: String
 
@@ -486,7 +535,7 @@ input UpdateWorkspaceArgs {
   description: String = ""
   id: String!
   name: String!
-  updated_date: Float! = 1688744911
+  updated_date: Float! = 1689093953
   visibility: AccessVisibility!
 }
 
@@ -516,6 +565,8 @@ type User {
 
   """ID of selected workspace"""
   selected_workspace: String
+  setting: UserSetting!
+  timeTrackerSessions: [TimeTrackerSession!]!
   updated_date: Float!
   username: String!
 
@@ -530,6 +581,22 @@ enum UserRole {
   WorkspaceMember
   WorkspaceModerator
   WorkspaceOwner
+}
+
+type UserSetting {
+  timeTracker: UserTimeTrackerSetting!
+}
+
+input UserSettingInputType {
+  timeTracker: UserTimeTrackerSettingInputType!
+}
+
+type UserTimeTrackerSetting {
+  limitLeastUsedTime: Float!
+}
+
+input UserTimeTrackerSettingInputType {
+  limitLeastUsedTime: Float!
 }
 
 type Workspace {

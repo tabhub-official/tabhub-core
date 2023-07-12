@@ -21,6 +21,7 @@ export const storage = admin.storage();
 export const enum CollectionRegistry {
   Workspace = 'workspaces',
   User = 'users',
+  TimeTracker = 'time-tracker',
   Repository = 'repositories',
   RepositoryTab = 'repository-tabs',
   Category = 'category',

@@ -26,6 +26,7 @@ import { PubSubModule } from './modules/pubsub';
 import { RepositoryTabResolver } from './modules/repository-tab/repository-tab.resolver';
 import { RepositoryResolver } from './modules/repository/repository.resolver';
 import { StorageService } from './modules/storage';
+import { TimeTrackerResolver, TimeTrackerSessionService } from './modules/time-tracker';
 
 const generalConfiguration = ConfigModule.forRoot({
   envFilePath: '.env',
@@ -75,6 +76,7 @@ const graphQLConfiguration = GraphQLModule.forRootAsync<ApolloDriverConfig & { u
 });
 
 const resolvers = [
+  TimeTrackerResolver,
   WorkspaceResolver,
   RepositoryResolver,
   RepositoryTabResolver,
@@ -82,7 +84,9 @@ const resolvers = [
   BrowsingEventResolver,
   PingPongResolver,
 ];
+
 const services = [
+  TimeTrackerSessionService,
   SmartGroupService,
   StorageService,
   CrawlerService,

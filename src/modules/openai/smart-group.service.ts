@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { RepositoryTabAsInput, TabWithCategory } from 'src/dto';
-import { makeid } from 'src/utils';
+import { shortenString } from 'src/utils';
 
 import { OpenAIService } from './openai.service';
 
@@ -13,34 +13,34 @@ export class SmartGroupService {
     groups: string[]
   ): Promise<TabWithCategory[]> => {
     const tabsWithId = _tabs.map(tab => ({
-      id: makeid(4),
-      ...tab,
+      title: shortenString(tab.title, 50),
+      url: tab.url,
     }));
     const prompt = `
-          Categorize the provided browser tabs into groups using the JSON format: {id: string, category: string }
-          Tabs: ${JSON.stringify(tabsWithId)}
-          ${
-            groups.length > 0
-              ? `Recommended groups: ${JSON.stringify(
-                  groups
-                )}. If a tab doesn't fit any recommended group, create a category for it`
-              : `No recommended groups are provided. You need to categorize the tabs on your own.`
-          }
-          Goal: No more than ${
-            _tabs.length / 2
-          } groups generated. Each group should have at least 2 items
-          Requirements: Output array must contain data for all provided tabs. 
-          Please respond with an array of objects representing the tab categories, in the given order. Exclude any additional information in your response.
-        `;
+      Categorize the provided browser tabs into groups, output following the JSON format: {url: string, category: string }
+      Tabs: ${JSON.stringify(tabsWithId)}
+      ${
+        groups.length > 0
+          ? `Existing groups: ${JSON.stringify(
+              groups
+            )}. If a tab doesn't fit in any existing group, you need to categorize the tabs on your own.`
+          : `No recommended groups are provided. You need to categorize the tabs on your own.`
+      }
+      Goal: No more than ${
+        _tabs.length / 2
+      } groups generated. Each group should have at least 2 items
+      Please respond with an array of objects in the provided order. Exclude any additional information in your response.
+    `;
     const response = await this.openaiService.makeRawCompletion('system', prompt);
     const content = response.choices[0].message.content;
-    let output: { index: number; category: string }[] = [];
+    let output: { url: string; category: string }[] = [];
     try {
       output = JSON.parse(content);
     } catch (error) {
       output = [];
     }
     return output.map(item => ({
+      ...item,
       category: item.category.toUpperCase(),
     }));
   };

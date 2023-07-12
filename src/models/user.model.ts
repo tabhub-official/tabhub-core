@@ -1,7 +1,8 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, InputType, ObjectType } from '@nestjs/graphql';
 import { MinLength, MaxLength, IsUUID, IsEmail } from 'class-validator';
 
 import { RepositoryTab } from './repository-tab.model';
+import { TimeTrackerSession } from './time-tracker.model';
 
 @ObjectType()
 export class UserWhoHasAccess {
@@ -15,7 +16,21 @@ export class UserWhoHasAccess {
 }
 
 @ObjectType()
-export class User {
+@InputType('UserTimeTrackerSettingInputType')
+export class UserTimeTrackerSetting {
+  @Field(() => Number)
+  limitLeastUsedTime: number;
+}
+
+@ObjectType()
+@InputType('UserSettingInputType')
+export class UserSetting {
+  @Field(() => UserTimeTrackerSetting)
+  timeTracker: UserTimeTrackerSetting;
+}
+
+@ObjectType()
+export class BasicUser {
   @Field()
   @IsUUID('4')
   id: string;
@@ -67,4 +82,13 @@ export class User {
   /** If selected_workspace == null => Default set to local workspace */
   @Field({ nullable: true, description: 'ID of selected workspace' })
   selected_workspace?: string;
+}
+
+@ObjectType()
+export class User extends BasicUser {
+  @Field(() => UserSetting)
+  setting: UserSetting;
+
+  @Field(() => [TimeTrackerSession])
+  timeTrackerSessions: TimeTrackerSession[];
 }
