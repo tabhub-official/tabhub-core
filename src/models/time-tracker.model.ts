@@ -24,30 +24,52 @@ registerEnumType(TimeTrackerProductivityMode, {
 });
 
 @ObjectType()
+@InputType('TimeTrackerSessionSettingInputType')
+export class TimeTrackerSessionSetting {
+  @Field(() => Number)
+  limit_least_used_time: number;
+
+  @Field(() => TimeTrackerProductivityMode)
+  mode: TimeTrackerProductivityMode;
+
+  @Field(() => Number)
+  session_start_time: number;
+
+  @Field(() => Number)
+  session_end_time: number;
+
+  @Field(() => Number)
+  setting_enabled_from: number;
+
+  @Field(() => Number, { nullable: true })
+  setting_enabled_to: number | null;
+}
+
+@ObjectType()
 @InputType('TimeTrackerSessionInputType')
 export class TimeTrackerSession {
   @Field()
   @IsUUID('4')
   id: string;
 
-  @Field(() => TimeTrackerProductivityMode)
-  mode: TimeTrackerProductivityMode;
-
   @Field(() => TimeTrackerEngineState)
   state: TimeTrackerEngineState;
 
-  @Field(() => Number)
-  sessionStartTime: number;
+  @Field(() => TimeTrackerProductivityMode)
+  mode: TimeTrackerProductivityMode;
+
+  @Field(() => Number, { defaultValue: undefined })
+  aborted_at: number | undefined;
 
   @Field(() => Number)
-  sessionEndTime: number;
+  session_start_time: number;
 
   @Field(() => Number)
-  createdAt: number;
+  session_end_time: number;
+
+  @Field(() => Number)
+  create_at: number;
 
   @Field(() => Number)
   date: number;
-
-  @Field(() => Boolean)
-  recurring: boolean;
 }

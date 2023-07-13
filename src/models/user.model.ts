@@ -1,8 +1,8 @@
-import { Field, InputType, ObjectType } from '@nestjs/graphql';
+import { Field, ObjectType } from '@nestjs/graphql';
 import { MinLength, MaxLength, IsUUID, IsEmail } from 'class-validator';
 
 import { RepositoryTab } from './repository-tab.model';
-import { TimeTrackerSession } from './time-tracker.model';
+import { TimeTrackerSession, TimeTrackerSessionSetting } from './time-tracker.model';
 
 @ObjectType()
 export class UserWhoHasAccess {
@@ -16,21 +16,19 @@ export class UserWhoHasAccess {
 }
 
 @ObjectType()
-@InputType('UserTimeTrackerSettingInputType')
-export class UserTimeTrackerSetting {
-  @Field(() => Number)
-  limitLeastUsedTime: number;
+export class SteinGateZeroUser {
+  @Field(() => Boolean, { defaultValue: false })
+  time_tracker_enabled: boolean;
+
+  @Field(() => TimeTrackerSessionSetting, { defaultValue: null, nullable: true })
+  time_tracker_setting?: TimeTrackerSessionSetting | undefined;
+
+  @Field(() => [TimeTrackerSession], { defaultValue: [] })
+  time_tracker_sessions: TimeTrackerSession[];
 }
 
 @ObjectType()
-@InputType('UserSettingInputType')
-export class UserSetting {
-  @Field(() => UserTimeTrackerSetting)
-  timeTracker: UserTimeTrackerSetting;
-}
-
-@ObjectType()
-export class BasicUser {
+export class User extends SteinGateZeroUser {
   @Field()
   @IsUUID('4')
   id: string;
@@ -82,13 +80,4 @@ export class BasicUser {
   /** If selected_workspace == null => Default set to local workspace */
   @Field({ nullable: true, description: 'ID of selected workspace' })
   selected_workspace?: string;
-}
-
-@ObjectType()
-export class User extends BasicUser {
-  @Field(() => UserSetting)
-  setting: UserSetting;
-
-  @Field(() => [TimeTrackerSession])
-  timeTrackerSessions: TimeTrackerSession[];
 }

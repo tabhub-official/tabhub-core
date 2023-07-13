@@ -9,9 +9,6 @@ export class CreateNewTimeTrackerArgs {
   @Field(() => Number)
   date: number;
 
-  @Field(() => Boolean)
-  recurring: boolean;
-
   @Field(() => Number)
   sessionStartTime: number;
 

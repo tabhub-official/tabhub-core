@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import moment from 'moment';
 import { CollectionRegistry, db } from 'src/config/firebase-config';
 import { User } from 'src/models';
+import { TimeTrackerSessionSetting } from 'src/models/time-tracker.model';
 
 import { BaseCRUDService } from '../_base/baseCRUD.service';
 
@@ -9,6 +10,20 @@ import { BaseCRUDService } from '../_base/baseCRUD.service';
 export class UserService extends BaseCRUDService<User> {
   constructor() {
     super(CollectionRegistry.User);
+  }
+
+  async updateTimeTrackerSetting(
+    userId: string,
+    setting: TimeTrackerSessionSetting
+  ): Promise<TimeTrackerSessionSetting | undefined> {
+    const user = await this.getDataById(userId);
+    if (user) {
+      await this.updateData(userId, {
+        time_tracker_setting: setting,
+      });
+      return setting;
+    }
+    return undefined;
   }
 
   async removeWorkspace(workspaceId: string, userId: string) {

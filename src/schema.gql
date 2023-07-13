@@ -40,7 +40,7 @@ type BrowsingEvent {
 
 input ChangeWorkspaceVisibilityArgs {
   id: String!
-  updated_date: Float! = 1689093953
+  updated_date: Float! = 1689243157
   visibility: AccessVisibility!
 }
 
@@ -58,7 +58,6 @@ input CreateNewRepositoryArgs {
 input CreateNewTimeTrackerArgs {
   date: Float!
   mode: TimeTrackerProductivityMode!
-  recurring: Boolean!
   sessionEndTime: Float!
   sessionStartTime: Float!
 }
@@ -197,6 +196,7 @@ type Mutation {
   setRepositoryTabs(setRepositoryTabsArgs: SetRepositoryTabsArgs!): AppResponse
   smartTabGrouping(smartTabGroupingArgs: SmartTabGroupingArgs!): [TabWithCategory!]!
   toggleLikeRepository(toggleLikeRepositoryArgs: ToggleLikeRepositoryArgs!): AppResponse!
+  toggleTimeTracker: AppResponse!
   triggerOnBrowsingEventUpdated(triggerBrowsingEventArgs: TriggerBrowsingEventArgs!): BrowsingEvent!
   unpinRepository(unpinRepositoryArgs: PinRepositoryArgs!): AppResponse!
   unpinRepositoryTab(unpinRepositoryTabArgs: UnpinRepositoryTabArgs!): AppResponse!
@@ -204,6 +204,7 @@ type Mutation {
   updateRepositoryAccess(updateRepositoryAccessArgs: UpdateRepositoryAccessArgs!): AppResponse!
   updateRepositoryBanner(updateRepositoryBannerArgs: UpdateRepositoryBannerArgs!): AppResponse!
   updateRepositoryInfo(updateRepositoryInfoArgs: UpdateRepositoryArgs!): Repository!
+  updateTimeTrackerSetting(updateTimeTrackerSettingArgs: TimeTrackerSessionSettingInputType!): TimeTrackerSessionSetting!
   updateUser(updateUserArgs: UpdateUserArgs!): AppResponse!
   updateWorkspace(updateWorkspaceArgs: UpdateWorkspaceArgs!): AppResponse!
 }
@@ -370,7 +371,7 @@ input SearchTabOnWebArgs {
 
 input SelectQuickAccessWorkspaceArgs {
   id: String
-  updated_date: Float! = 1689093953
+  updated_date: Float! = 1689243157
 }
 
 input SetRepositoryTabsArgs {
@@ -409,25 +410,43 @@ enum TimeTrackerProductivityMode {
 }
 
 type TimeTrackerSession {
-  createdAt: Float!
+  aborted_at: Float!
+  create_at: Float!
   date: Float!
   id: String!
   mode: TimeTrackerProductivityMode!
-  recurring: Boolean!
-  sessionEndTime: Float!
-  sessionStartTime: Float!
+  session_end_time: Float!
+  session_start_time: Float!
   state: TimeTrackerEngineState!
 }
 
 input TimeTrackerSessionInputType {
-  createdAt: Float!
+  aborted_at: Float!
+  create_at: Float!
   date: Float!
   id: String!
   mode: TimeTrackerProductivityMode!
-  recurring: Boolean!
-  sessionEndTime: Float!
-  sessionStartTime: Float!
+  session_end_time: Float!
+  session_start_time: Float!
   state: TimeTrackerEngineState!
+}
+
+type TimeTrackerSessionSetting {
+  limit_least_used_time: Float!
+  mode: TimeTrackerProductivityMode!
+  session_end_time: Float!
+  session_start_time: Float!
+  setting_enabled_from: Float!
+  setting_enabled_to: Float
+}
+
+input TimeTrackerSessionSettingInputType {
+  limit_least_used_time: Float!
+  mode: TimeTrackerProductivityMode!
+  session_end_time: Float!
+  session_start_time: Float!
+  setting_enabled_from: Float!
+  setting_enabled_to: Float
 }
 
 input ToggleLikeRepositoryArgs {
@@ -522,8 +541,9 @@ input UpdateUserArgs {
 
   """ID of selected workspace"""
   selected_workspace: String
-  setting: UserSettingInputType
-  timeTrackerSessions: [TimeTrackerSessionInputType!]
+  time_tracker_enabled: Boolean = false
+  time_tracker_sessions: [TimeTrackerSessionInputType!] = []
+  time_tracker_setting: TimeTrackerSessionSettingInputType = null
   updated_date: Float
   username: String
 
@@ -535,7 +555,7 @@ input UpdateWorkspaceArgs {
   description: String = ""
   id: String!
   name: String!
-  updated_date: Float! = 1689093953
+  updated_date: Float! = 1689243157
   visibility: AccessVisibility!
 }
 
@@ -565,8 +585,9 @@ type User {
 
   """ID of selected workspace"""
   selected_workspace: String
-  setting: UserSetting!
-  timeTrackerSessions: [TimeTrackerSession!]!
+  time_tracker_enabled: Boolean!
+  time_tracker_sessions: [TimeTrackerSession!]!
+  time_tracker_setting: TimeTrackerSessionSetting
   updated_date: Float!
   username: String!
 
@@ -581,22 +602,6 @@ enum UserRole {
   WorkspaceMember
   WorkspaceModerator
   WorkspaceOwner
-}
-
-type UserSetting {
-  timeTracker: UserTimeTrackerSetting!
-}
-
-input UserSettingInputType {
-  timeTracker: UserTimeTrackerSettingInputType!
-}
-
-type UserTimeTrackerSetting {
-  limitLeastUsedTime: Float!
-}
-
-input UserTimeTrackerSettingInputType {
-  limitLeastUsedTime: Float!
 }
 
 type Workspace {
