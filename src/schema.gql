@@ -40,7 +40,7 @@ type BrowsingEvent {
 
 input ChangeWorkspaceVisibilityArgs {
   id: String!
-  updated_date: Float! = 1689243157
+  updated_date: Float! = 1689491566
   visibility: AccessVisibility!
 }
 
@@ -60,6 +60,7 @@ input CreateNewTimeTrackerArgs {
   mode: TimeTrackerProductivityMode!
   sessionEndTime: Float!
   sessionStartTime: Float!
+  trackedTabs: String!
 }
 
 input CreateNewUserArgs {
@@ -371,7 +372,7 @@ input SearchTabOnWebArgs {
 
 input SelectQuickAccessWorkspaceArgs {
   id: String
-  updated_date: Float! = 1689243157
+  updated_date: Float! = 1689491566
 }
 
 input SetRepositoryTabsArgs {
@@ -410,28 +411,27 @@ enum TimeTrackerProductivityMode {
 }
 
 type TimeTrackerSession {
-  aborted_at: Float!
-  create_at: Float!
   date: Float!
   id: String!
   mode: TimeTrackerProductivityMode!
   session_end_time: Float!
   session_start_time: Float!
   state: TimeTrackerEngineState!
+  trackedTabs: String!
 }
 
 input TimeTrackerSessionInputType {
-  aborted_at: Float!
-  create_at: Float!
   date: Float!
   id: String!
   mode: TimeTrackerProductivityMode!
   session_end_time: Float!
   session_start_time: Float!
   state: TimeTrackerEngineState!
+  trackedTabs: String! = "[]"
 }
 
 type TimeTrackerSessionSetting {
+  interrupt_on_close: Boolean!
   limit_least_used_time: Float!
   mode: TimeTrackerProductivityMode!
   session_end_time: Float!
@@ -441,6 +441,7 @@ type TimeTrackerSessionSetting {
 }
 
 input TimeTrackerSessionSettingInputType {
+  interrupt_on_close: Boolean! = true
   limit_least_used_time: Float!
   mode: TimeTrackerProductivityMode!
   session_end_time: Float!
@@ -555,7 +556,7 @@ input UpdateWorkspaceArgs {
   description: String = ""
   id: String!
   name: String!
-  updated_date: Float! = 1689243157
+  updated_date: Float! = 1689491566
   visibility: AccessVisibility!
 }
 

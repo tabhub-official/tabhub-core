@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import moment from 'moment';
 import { CollectionRegistry, db } from 'src/config';
 import {
   TimeTrackerEngineState,
@@ -21,19 +20,19 @@ export class TimeTrackerSessionService extends BaseCRUDService<TimeTrackerSessio
     mode: TimeTrackerProductivityMode,
     date: number,
     session_start_time: number,
-    session_end_time: number
+    session_end_time: number,
+    trackedTabs: string
   ): Promise<TimeTrackerSession> => {
     const _collection = await db.collection(this.collectionRegistry);
     const timeTrackerSessionID = `time-tracker-${uuidV4()}`;
     const data: TimeTrackerSession = {
       id: timeTrackerSessionID,
-      create_at: moment().unix(),
       date,
       mode,
-      aborted_at: undefined,
       session_start_time,
       session_end_time,
       state: TimeTrackerEngineState.Void,
+      trackedTabs,
     };
     await _collection.doc(timeTrackerSessionID).create(data);
     return data;

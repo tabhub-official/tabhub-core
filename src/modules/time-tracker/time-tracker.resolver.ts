@@ -72,18 +72,21 @@ export class TimeTrackerResolver {
   ): Promise<AppResponse> {
     try {
       const authUser = getAuthUser(req);
-      const { mode, date, sessionEndTime, sessionStartTime } = args;
+      const { mode, date, sessionEndTime, sessionStartTime, trackedTabs } = args;
       const existingUser = await this.userService.getUserByEmail(authUser.email);
       if (!existingUser) throw new Error('User not found');
       const timeTrackerSession = await this.timeTrackerSessionService.createNewSession(
         mode,
         date,
         sessionStartTime,
-        sessionEndTime
+        sessionEndTime,
+        trackedTabs
       );
-      existingUser.time_tracker_sessions = existingUser.time_tracker_sessions.concat([
-        timeTrackerSession,
-      ]);
+      await this.userService.updateData(existingUser.id, {
+        time_tracker_sessions: (existingUser.time_tracker_sessions || []).concat([
+          timeTrackerSession,
+        ]),
+      });
       return {
         message: `Successfully create time tracker session`,
         type: ResponseType.Success,

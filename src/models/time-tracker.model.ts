@@ -43,6 +43,9 @@ export class TimeTrackerSessionSetting {
 
   @Field(() => Number, { nullable: true })
   setting_enabled_to: number | null;
+
+  @Field(() => Boolean, { defaultValue: true })
+  interrupt_on_close: boolean;
 }
 
 @ObjectType()
@@ -58,9 +61,6 @@ export class TimeTrackerSession {
   @Field(() => TimeTrackerProductivityMode)
   mode: TimeTrackerProductivityMode;
 
-  @Field(() => Number, { defaultValue: undefined })
-  aborted_at: number | undefined;
-
   @Field(() => Number)
   session_start_time: number;
 
@@ -68,8 +68,8 @@ export class TimeTrackerSession {
   session_end_time: number;
 
   @Field(() => Number)
-  create_at: number;
-
-  @Field(() => Number)
   date: number;
+
+  @Field(() => String, { defaultValue: '[]' })
+  trackedTabs: string;
 }

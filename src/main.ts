@@ -1,3 +1,4 @@
+import { LogLevel } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import * as bodyParser from 'body-parser';
 import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.js';
@@ -10,7 +11,10 @@ const CHROME_EXTENSION_ID = 'lmofhhaibahhojhinmpgmifdmennlcjn';
 const EXTENSION_URL = `chrome-extension://${CHROME_EXTENSION_ID}`;
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const generalLogLevels: LogLevel[] = ['log', 'error'];
+  const app = await NestFactory.create(AppModule, {
+    logger: process.env.NODE_DEBUG === 'true' ? ['debug', ...generalLogLevels] : generalLogLevels,
+  });
 
   app.enableCors({
     origin: isEnv('DEVELOPMENT') ? '*' : ['https://app.tabhub.io', EXTENSION_URL],
@@ -21,6 +25,7 @@ async function bootstrap() {
 
   const port = process.env.SERVER_PORT;
   await app.listen(port);
+  console.log(`DEBUG: ${process.env.NODE_DEBUG}`);
   console.log(`ENV: ${process.env.NODE_ENV}`);
   console.log('Server is running on port: ', port);
 }

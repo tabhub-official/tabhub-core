@@ -14,4 +14,7 @@ export class CreateNewTimeTrackerArgs {
 
   @Field(() => Number)
   sessionEndTime: number;
+
+  @Field(() => String)
+  trackedTabs: string;
 }
