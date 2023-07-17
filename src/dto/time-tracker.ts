@@ -18,3 +18,9 @@ export class CreateNewTimeTrackerArgs {
   @Field(() => String)
   trackedTabs: string;
 }
+
+@InputType()
+export class GetTimeTrackerSessionArgs {
+  @Field(() => String)
+  id: string;
+}

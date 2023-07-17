@@ -40,7 +40,7 @@ type BrowsingEvent {
 
 input ChangeWorkspaceVisibilityArgs {
   id: String!
-  updated_date: Float! = 1689491566
+  updated_date: Float! = 1689578168
   visibility: AccessVisibility!
 }
 
@@ -138,6 +138,10 @@ input GetRepositoryByIdArgs {
 input GetRepositoryBySlugArgs {
   slug: String!
   workspaceId: String!
+}
+
+input GetTimeTrackerSessionArgs {
+  id: String!
 }
 
 input GetUserByEmailArgs {
@@ -247,7 +251,7 @@ type Query {
   getUserById(getUserByIdArgs: GetUserByIdArgs!): User
   getUserByUsername(getUserByUsernameArgs: GetUserByUsernameArgs!): User
   getUserRepositories(getUserRepositoriesArgs: GetUserRepositoriesArgs!): [Repository!]!
-  getUserTimeTrackerSessions: [TimeTrackerSession!]!
+  getUserTimeTrackerSession(getUserTimeTrackerSessionArgs: GetTimeTrackerSessionArgs!): TimeTrackerSession!
   getUserWorkspaces(getUserWorkspacesArgs: GetUserWorkspacesArgs!): [Workspace!]!
   getWorkspaceById(getWorkspaceByIdArgs: GetWorkspaceByIdArgs!): Workspace
   getWorkspaceByName(getWorkspaceByNameArgs: GetWorkspaceByNameArgs!): Workspace
@@ -372,7 +376,7 @@ input SearchTabOnWebArgs {
 
 input SelectQuickAccessWorkspaceArgs {
   id: String
-  updated_date: Float! = 1689491566
+  updated_date: Float! = 1689578168
 }
 
 input SetRepositoryTabsArgs {
@@ -398,6 +402,7 @@ type TabWithCategory {
 
 """Engine state for Time Tracker"""
 enum TimeTrackerEngineState {
+  Ended
   Idle
   Offline
   Running
@@ -556,7 +561,7 @@ input UpdateWorkspaceArgs {
   description: String = ""
   id: String!
   name: String!
-  updated_date: Float! = 1689491566
+  updated_date: Float! = 1689578168
   visibility: AccessVisibility!
 }
 

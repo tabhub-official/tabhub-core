@@ -6,6 +6,7 @@ export enum TimeTrackerEngineState {
   Idle,
   Running,
   Void,
+  Ended,
 }
 
 registerEnumType(TimeTrackerEngineState, {

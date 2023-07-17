@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { Args, Context, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { CreateNewTimeTrackerArgs } from 'src/dto/time-tracker';
+import { CreateNewTimeTrackerArgs, GetTimeTrackerSessionArgs } from 'src/dto/time-tracker';
 import { AppResponse, ResponseType } from 'src/models';
 import { TimeTrackerSession, TimeTrackerSessionSetting } from 'src/models/time-tracker.model';
 import { getAuthUser } from 'src/utils';
@@ -52,14 +52,21 @@ export class TimeTrackerResolver {
     }
   }
 
-  @Query(() => [TimeTrackerSession])
-  async getUserTimeTrackerSessions(@Context('req') req) {
+  @Query(() => TimeTrackerSession)
+  async getUserTimeTrackerSession(
+    @Context('req') req,
+    @Args('getUserTimeTrackerSessionArgs') args: GetTimeTrackerSessionArgs
+  ) {
     try {
+      const { id } = args;
       const authUser = getAuthUser(req);
       const existingUser = await this.userService.getUserByEmail(authUser.email);
       if (!existingUser) throw new Error('User not found');
-      const timeTrackerSessions = existingUser.time_tracker_sessions;
-      return timeTrackerSessions;
+      const timeTrackerSession = existingUser.time_tracker_sessions.find(
+        session => session.id === id
+      );
+      if (!timeTrackerSession) throw new Error('No time tracker session found');
+      return timeTrackerSession;
     } catch (error: any) {
       throw new Error(error);
     }
