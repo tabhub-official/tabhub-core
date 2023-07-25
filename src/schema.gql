@@ -40,7 +40,7 @@ type BrowsingEvent {
 
 input ChangeWorkspaceVisibilityArgs {
   id: String!
-  updated_date: Float! = 1687929915
+  updated_date: Float! = 1690264146
   visibility: AccessVisibility!
 }
 
@@ -49,9 +49,18 @@ input CreateNewRepositoryArgs {
   directories: [DirectoryAsInput!]!
   icon: String!
   name: String!
+  repositorySlug: String
   tabs: [RepositoryTabAsInput!]!
   visibility: AccessVisibility! = Private
   workspaceId: String!
+}
+
+input CreateNewTimeTrackerArgs {
+  date: Float!
+  mode: TimeTrackerProductivityMode!
+  sessionEndTime: Float!
+  sessionStartTime: Float!
+  trackedTabs: String!
 }
 
 input CreateNewUserArgs {
@@ -99,6 +108,7 @@ input FullRepositoryTabAsInput {
 
   """List of labels"""
   labels: [String!]! = []
+  lastAccessed: Float
   parentDirectory: String
 
   """List of repository tabs IDs"""
@@ -128,6 +138,10 @@ input GetRepositoryByIdArgs {
 input GetRepositoryBySlugArgs {
   slug: String!
   workspaceId: String!
+}
+
+input GetTimeTrackerSessionArgs {
+  id: String!
 }
 
 input GetUserByEmailArgs {
@@ -171,6 +185,7 @@ type Mutation {
   addWorkspaceMember(addWorkspaceMemberArgs: AddNewMemberArgs!): AppResponse!
   changeWorkspaceVisibility(changeWorkspaceVisibilityArgs: ChangeWorkspaceVisibilityArgs!): AppResponse!
   createNewRepository(createRepositoryArgs: CreateNewRepositoryArgs!): AppResponse!
+  createNewTimeTrackerSession(createNewTimeTrackerArgs: CreateNewTimeTrackerArgs!): AppResponse!
   createNewUser(createNewUserArgs: CreateNewUserArgs!): AppResponse!
   createNewWorkspace(createNewWorksapceArgs: CreateNewWorkspaceArgs!): AppResponse!
   deleteRepository(deleteRepositoryArgs: DeleteRepositoryArgs!): AppResponse!
@@ -186,6 +201,8 @@ type Mutation {
   setRepositoryTabs(setRepositoryTabsArgs: SetRepositoryTabsArgs!): AppResponse
   smartTabGrouping(smartTabGroupingArgs: SmartTabGroupingArgs!): [TabWithCategory!]!
   toggleLikeRepository(toggleLikeRepositoryArgs: ToggleLikeRepositoryArgs!): AppResponse!
+  toggleTimeTracker: AppResponse!
+  toggleTimeTrackerInAppWidget: AppResponse!
   triggerOnBrowsingEventUpdated(triggerBrowsingEventArgs: TriggerBrowsingEventArgs!): BrowsingEvent!
   unpinRepository(unpinRepositoryArgs: PinRepositoryArgs!): AppResponse!
   unpinRepositoryTab(unpinRepositoryTabArgs: UnpinRepositoryTabArgs!): AppResponse!
@@ -193,6 +210,7 @@ type Mutation {
   updateRepositoryAccess(updateRepositoryAccessArgs: UpdateRepositoryAccessArgs!): AppResponse!
   updateRepositoryBanner(updateRepositoryBannerArgs: UpdateRepositoryBannerArgs!): AppResponse!
   updateRepositoryInfo(updateRepositoryInfoArgs: UpdateRepositoryArgs!): Repository!
+  updateTimeTrackerSetting(updateTimeTrackerSettingArgs: TimeTrackerSessionSettingInputType!): TimeTrackerSessionSetting!
   updateUser(updateUserArgs: UpdateUserArgs!): AppResponse!
   updateWorkspace(updateWorkspaceArgs: UpdateWorkspaceArgs!): AppResponse!
 }
@@ -234,6 +252,7 @@ type Query {
   getUserById(getUserByIdArgs: GetUserByIdArgs!): User
   getUserByUsername(getUserByUsernameArgs: GetUserByUsernameArgs!): User
   getUserRepositories(getUserRepositoriesArgs: GetUserRepositoriesArgs!): [Repository!]!
+  getUserTimeTrackerSession(getUserTimeTrackerSessionArgs: GetTimeTrackerSessionArgs!): TimeTrackerSession!
   getUserWorkspaces(getUserWorkspacesArgs: GetUserWorkspacesArgs!): [Workspace!]!
   getWorkspaceById(getWorkspaceByIdArgs: GetWorkspaceByIdArgs!): Workspace
   getWorkspaceByName(getWorkspaceByNameArgs: GetWorkspaceByNameArgs!): Workspace
@@ -311,6 +330,7 @@ type RepositoryTab {
 
   """List of labels"""
   labels: [String!]!
+  lastAccessed: Float
   parentDirectory: String
 
   """List of repository tabs IDs"""
@@ -336,6 +356,7 @@ input RepositoryTabInput {
 
   """List of labels"""
   labels: [String!]! = []
+  lastAccessed: Float
   parentDirectory: String
 
   """List of repository tabs IDs"""
@@ -356,7 +377,7 @@ input SearchTabOnWebArgs {
 
 input SelectQuickAccessWorkspaceArgs {
   id: String
-  updated_date: Float! = 1687929915
+  updated_date: Float! = 1690264146
 }
 
 input SetRepositoryTabsArgs {
@@ -378,6 +399,63 @@ type Subscription {
 type TabWithCategory {
   category: String!
   url: String!
+}
+
+"""Engine state for Time Tracker"""
+enum TimeTrackerEngineState {
+  Ended
+  Idle
+  Offline
+  Running
+  Void
+}
+
+"""Productivity mode for Time Tracker"""
+enum TimeTrackerProductivityMode {
+  CasualMode
+  FocusMode
+}
+
+type TimeTrackerSession {
+  date: Float!
+  id: String!
+  mode: TimeTrackerProductivityMode!
+  session_end_time: Float!
+  session_start_time: Float!
+  state: TimeTrackerEngineState!
+  trackedTabs: String!
+}
+
+input TimeTrackerSessionInputType {
+  date: Float!
+  id: String!
+  mode: TimeTrackerProductivityMode!
+  session_end_time: Float!
+  session_start_time: Float!
+  state: TimeTrackerEngineState!
+  trackedTabs: String! = "[]"
+}
+
+type TimeTrackerSessionSetting {
+  interrupt_on_close: Boolean!
+  limit_least_used_time: Float!
+  mode: TimeTrackerProductivityMode!
+  session_end_time: Float!
+  session_start_time: Float!
+  setting_enabled_from: Float!
+  setting_enabled_to: Float
+  widget_enabled: Boolean
+}
+
+input TimeTrackerSessionSettingInputType {
+  interrupt_on_close: Boolean! = true
+  limit_least_used_time: Float!
+  mode: TimeTrackerProductivityMode!
+  session_end_time: Float!
+  session_start_time: Float!
+  setting_enabled_from: Float!
+  setting_enabled_to: Float
+  widget_enabled: Boolean
 }
 
 input ToggleLikeRepositoryArgs {
@@ -472,6 +550,9 @@ input UpdateUserArgs {
 
   """ID of selected workspace"""
   selected_workspace: String
+  time_tracker_enabled: Boolean = false
+  time_tracker_sessions: [TimeTrackerSessionInputType!] = []
+  time_tracker_setting: TimeTrackerSessionSettingInputType = null
   updated_date: Float
   username: String
 
@@ -483,7 +564,7 @@ input UpdateWorkspaceArgs {
   description: String = ""
   id: String!
   name: String!
-  updated_date: Float! = 1687929915
+  updated_date: Float! = 1690264146
   visibility: AccessVisibility!
 }
 
@@ -513,6 +594,9 @@ type User {
 
   """ID of selected workspace"""
   selected_workspace: String
+  time_tracker_enabled: Boolean!
+  time_tracker_sessions: [TimeTrackerSession!]!
+  time_tracker_setting: TimeTrackerSessionSetting
   updated_date: Float!
   username: String!
 

@@ -20,12 +20,14 @@ import {
 } from './modules';
 import { BrowsingEventResolver } from './modules/browsing-event';
 import { CrawlerService } from './modules/crawler';
-import { OpenAIService } from './modules/openai';
+import { OpenAIService, SmartGroupService } from './modules/openai';
 import { PingPongResolver } from './modules/ping';
 import { PubSubModule } from './modules/pubsub';
 import { RepositoryTabResolver } from './modules/repository-tab/repository-tab.resolver';
 import { RepositoryResolver } from './modules/repository/repository.resolver';
 import { StorageService } from './modules/storage';
+import { TimeTrackerResolver, TimeTrackerSessionService } from './modules/time-tracker';
+import { isEnv } from './utils';
 
 const generalConfiguration = ConfigModule.forRoot({
   envFilePath: '.env',
@@ -35,9 +37,9 @@ const graphQLConfiguration = GraphQLModule.forRootAsync<ApolloDriverConfig & { u
   driver: ApolloDriver,
   imports: [ConfigModule],
   inject: [ConfigService],
-  useFactory(configService: ConfigService) {
+  useFactory() {
     return {
-      playground: Boolean(configService.get('GRAPHQL_PLAYGROUND')),
+      playground: isEnv('DEVELOPMENT'),
       uploads: false, // disable built-in upload handling
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       installSubscriptionHandlers: true,
@@ -75,6 +77,7 @@ const graphQLConfiguration = GraphQLModule.forRootAsync<ApolloDriverConfig & { u
 });
 
 const resolvers = [
+  TimeTrackerResolver,
   WorkspaceResolver,
   RepositoryResolver,
   RepositoryTabResolver,
@@ -82,7 +85,10 @@ const resolvers = [
   BrowsingEventResolver,
   PingPongResolver,
 ];
+
 const services = [
+  TimeTrackerSessionService,
+  SmartGroupService,
   StorageService,
   CrawlerService,
   RepositoryService,

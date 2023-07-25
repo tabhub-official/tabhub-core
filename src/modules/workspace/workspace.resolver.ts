@@ -348,9 +348,6 @@ export class WorkspaceResolver {
       /** Cascading delete workspace -> repositories -> repository tabs */
       for (const repository of workspaceRepositories) {
         await this.repositoryService.deleteData(repository.id);
-        for (const tab of repository.tabs) {
-          await this.repositoryTabService.deleteData(tab.id);
-        }
       }
       await this.workspaceService.deleteData(id);
       return {

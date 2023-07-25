@@ -2,6 +2,7 @@ import { Field, ObjectType } from '@nestjs/graphql';
 import { MinLength, MaxLength, IsUUID, IsEmail } from 'class-validator';
 
 import { RepositoryTab } from './repository-tab.model';
+import { TimeTrackerSession, TimeTrackerSessionSetting } from './time-tracker.model';
 
 @ObjectType()
 export class UserWhoHasAccess {
@@ -15,7 +16,19 @@ export class UserWhoHasAccess {
 }
 
 @ObjectType()
-export class User {
+export class SteinGateZeroUser {
+  @Field(() => Boolean, { defaultValue: false })
+  time_tracker_enabled: boolean;
+
+  @Field(() => TimeTrackerSessionSetting, { defaultValue: null, nullable: true })
+  time_tracker_setting?: TimeTrackerSessionSetting | undefined;
+
+  @Field(() => [TimeTrackerSession], { defaultValue: [] })
+  time_tracker_sessions: TimeTrackerSession[];
+}
+
+@ObjectType()
+export class User extends SteinGateZeroUser {
   @Field()
   @IsUUID('4')
   id: string;

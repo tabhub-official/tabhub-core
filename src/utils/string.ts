@@ -19,3 +19,15 @@ export function buildSlug(name: string, nonceHidden?: boolean) {
     trim: true,
   })}${nonceHidden ? `` : `-${makeid(5)}`}`;
 }
+
+export const shortenString = (str: string, maxLength: number) =>
+  str?.length > maxLength ? `${str.slice(0, maxLength)}...` : str;
+
+export const getURLHost = (url: string) => {
+  try {
+    const _url = new URL(url);
+    return `${_url.protocol}//${_url.host}`;
+  } catch (error) {
+    return url;
+  }
+};

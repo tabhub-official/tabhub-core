@@ -43,6 +43,9 @@ export class SetRepositoryDirectoriesArgs {
 
 @InputType()
 export class CreateNewRepositoryArgs {
+  @Field({ nullable: true })
+  repositorySlug?: string;
+
   @Field()
   @MinLength(1)
   @MaxLength(40)

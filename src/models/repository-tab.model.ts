@@ -29,6 +29,9 @@ export class RepositoryTab {
   @Field(() => [String], { defaultValue: [], description: 'List of labels' })
   labels: string[];
 
+  @Field(() => Number, { nullable: true })
+  lastAccessed?: number;
+
   @Field(() => String, { nullable: true })
   repositoryId?: string;
 
