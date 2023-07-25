@@ -48,7 +48,7 @@ export class TimeTrackerSessionSetting {
   @Field(() => Boolean, { defaultValue: true })
   interrupt_on_close: boolean;
 
-  @Field(() => Boolean, {nullable: true})
+  @Field(() => Boolean, { nullable: true })
   widget_enabled: boolean;
 }
 
