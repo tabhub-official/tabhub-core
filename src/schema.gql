@@ -40,7 +40,7 @@ type BrowsingEvent {
 
 input ChangeWorkspaceVisibilityArgs {
   id: String!
-  updated_date: Float! = 1689578168
+  updated_date: Float! = 1690264146
   visibility: AccessVisibility!
 }
 
@@ -202,6 +202,7 @@ type Mutation {
   smartTabGrouping(smartTabGroupingArgs: SmartTabGroupingArgs!): [TabWithCategory!]!
   toggleLikeRepository(toggleLikeRepositoryArgs: ToggleLikeRepositoryArgs!): AppResponse!
   toggleTimeTracker: AppResponse!
+  toggleTimeTrackerInAppWidget: AppResponse!
   triggerOnBrowsingEventUpdated(triggerBrowsingEventArgs: TriggerBrowsingEventArgs!): BrowsingEvent!
   unpinRepository(unpinRepositoryArgs: PinRepositoryArgs!): AppResponse!
   unpinRepositoryTab(unpinRepositoryTabArgs: UnpinRepositoryTabArgs!): AppResponse!
@@ -376,7 +377,7 @@ input SearchTabOnWebArgs {
 
 input SelectQuickAccessWorkspaceArgs {
   id: String
-  updated_date: Float! = 1689578168
+  updated_date: Float! = 1690264146
 }
 
 input SetRepositoryTabsArgs {
@@ -443,6 +444,7 @@ type TimeTrackerSessionSetting {
   session_start_time: Float!
   setting_enabled_from: Float!
   setting_enabled_to: Float
+  widget_enabled: Boolean
 }
 
 input TimeTrackerSessionSettingInputType {
@@ -453,6 +455,7 @@ input TimeTrackerSessionSettingInputType {
   session_start_time: Float!
   setting_enabled_from: Float!
   setting_enabled_to: Float
+  widget_enabled: Boolean
 }
 
 input ToggleLikeRepositoryArgs {
@@ -561,7 +564,7 @@ input UpdateWorkspaceArgs {
   description: String = ""
   id: String!
   name: String!
-  updated_date: Float! = 1689578168
+  updated_date: Float! = 1690264146
   visibility: AccessVisibility!
 }
 

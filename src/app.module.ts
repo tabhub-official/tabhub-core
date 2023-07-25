@@ -27,6 +27,7 @@ import { RepositoryTabResolver } from './modules/repository-tab/repository-tab.r
 import { RepositoryResolver } from './modules/repository/repository.resolver';
 import { StorageService } from './modules/storage';
 import { TimeTrackerResolver, TimeTrackerSessionService } from './modules/time-tracker';
+import { isEnv } from './utils';
 
 const generalConfiguration = ConfigModule.forRoot({
   envFilePath: '.env',
@@ -36,9 +37,9 @@ const graphQLConfiguration = GraphQLModule.forRootAsync<ApolloDriverConfig & { u
   driver: ApolloDriver,
   imports: [ConfigModule],
   inject: [ConfigService],
-  useFactory(configService: ConfigService) {
+  useFactory() {
     return {
-      playground: Boolean(configService.get('GRAPHQL_PLAYGROUND')),
+      playground: isEnv('DEVELOPMENT'),
       uploads: false, // disable built-in upload handling
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       installSubscriptionHandlers: true,

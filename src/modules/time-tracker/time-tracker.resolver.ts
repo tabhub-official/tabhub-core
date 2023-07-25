@@ -38,6 +38,31 @@ export class TimeTrackerResolver {
     }
   }
 
+  @Mutation(() => AppResponse)
+  async toggleTimeTrackerInAppWidget(@Context('req') req): Promise<AppResponse> {
+    try {
+      const authUser = getAuthUser(req);
+      const existingUser = await this.userService.getUserByEmail(authUser.email);
+      if (!existingUser) throw new Error('User not found');
+      const setting = existingUser.time_tracker_setting;
+      await this.userService.updateData(existingUser.id, {
+        time_tracker_setting: {
+          ...setting,
+          widget_enabled: !setting?.widget_enabled,
+        },
+      });
+      return {
+        message: 'Toggled time tracker in-app widget',
+        type: ResponseType.Success,
+      };
+    } catch (error: any) {
+      return {
+        message: `Toggled time tracker in-app widget failed: ${error}`,
+        type: ResponseType.Error,
+      };
+    }
+  }
+
   @Mutation(() => TimeTrackerSessionSetting)
   async updateTimeTrackerSetting(
     @Context('req') req,
