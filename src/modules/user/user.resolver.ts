@@ -12,8 +12,10 @@ import {
 } from 'src/dto';
 import { AppResponse, ResponseType, User } from 'src/models';
 import { getAuthUser } from 'src/utils/auth';
+import { EmailTemplate } from 'src/utils/email';
 
 import { SmartGroupService } from '../openai';
+import { EmailService } from './email.service';
 import { UserService } from './user.service';
 
 export type CurrentUserType = {
@@ -25,7 +27,11 @@ export const CurrentUser = createParamDecorator((_, req) => req.user);
 
 @Resolver(() => User)
 export class UserResolver {
-  constructor(private userService: UserService, private smartGroupService: SmartGroupService) {}
+  constructor(
+    private userService: UserService,
+    private smartGroupService: SmartGroupService,
+    private emailService: EmailService
+  ) {}
 
   @Query(() => [User])
   async getAllUsers() {
@@ -93,10 +99,34 @@ export class UserResolver {
         provider,
         full_name
       );
-      return {
-        message: `Successfully create new user ${email}`,
-        type: ResponseType.Success,
+
+      const firstName = full_name.split(' ')[0];
+
+      // Create and send the email using SendGrid dynamic templates
+      const template: EmailTemplate = {
+        recipient: email,
+        from: 'an@tabhub.io',
+        subject: 'Welcome to TabHub!',
+        template_id: 123456, // SendGrid template ID
+        dynamic_template_data: {
+          // Replace with the dynamic data you want to include in the email
+          first_name: firstName,
+          // Add other dynamic data here
+        },
       };
+
+      const emailSent = await this.emailService.sendEmail(template);
+      if (emailSent) {
+        return {
+          message: `Successfully create new user ${email}`,
+          type: ResponseType.Success,
+        };
+      } else {
+        return {
+          message: 'Failed to send the welcome email.',
+          type: ResponseType.Error,
+        };
+      }
     } catch (error: any) {
       return {
         message: error,
