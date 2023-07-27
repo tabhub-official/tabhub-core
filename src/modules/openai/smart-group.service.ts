@@ -29,15 +29,21 @@ export class SmartGroupService {
       Goal: No more than ${
         _tabs.length / 2
       } groups generated. Each group should have at least 2 items
-      Please respond with an array of objects in the provided order. Exclude any additional information in your response.
+      Please respond with an array of objects in the provided order directly. 
+      Exclude any additional information in your response.
     `;
+    const pattern = /\[[^\]]*\]/;
     const response = await this.openaiService.makeRawCompletion('system', prompt);
     const content = response.choices[0].message.content;
     let output: { url: string; category: string }[] = [];
+    const matches = content.match(pattern);
     try {
-      output = JSON.parse(content);
+      output = JSON.parse(matches?.[0]);
     } catch (error) {
-      output = [];
+      output = _tabs.map(tab => ({
+        url: tab.url,
+        category: 'OTHER',
+      }));
     }
     return output.map(item => ({
       ...item,
