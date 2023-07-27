@@ -35,6 +35,7 @@
     "@nestjs/passport": "^9.0.3",
     "@nestjs/platform-express": "^9.0.0",
     "@nestjs/throttler": "^4.1.0",
+    "@sendgrid/mail": "^7.7.0",
     "@trivago/prettier-plugin-sort-imports": "^4.1.1",
     "@types/open-graph-scraper": "^4.8.2",
     "@types/webextension-polyfill": "^0.10.0",
@@ -60,6 +61,7 @@
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
     "slugify": "^1.6.6",
+    "tsyringe": "^4.8.0",
     "uuid": "^9.0.0",
     "webextension-polyfill": "^0.10.0"
   },
