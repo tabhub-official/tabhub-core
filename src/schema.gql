@@ -40,7 +40,7 @@ type BrowsingEvent {
 
 input ChangeWorkspaceVisibilityArgs {
   id: String!
-  updated_date: Float! = 1690420480
+  updated_date: Float! = 1691860396
   visibility: AccessVisibility!
 }
 
@@ -377,7 +377,7 @@ input SearchTabOnWebArgs {
 
 input SelectQuickAccessWorkspaceArgs {
   id: String
-  updated_date: Float! = 1690420480
+  updated_date: Float! = 1691860396
 }
 
 input SetRepositoryTabsArgs {
@@ -564,7 +564,7 @@ input UpdateWorkspaceArgs {
   description: String = ""
   id: String!
   name: String!
-  updated_date: Float! = 1690420480
+  updated_date: Float! = 1691860396
   visibility: AccessVisibility!
 }
 

@@ -26,4 +26,5 @@ export const enum CollectionRegistry {
   RepositoryTab = 'repository-tabs',
   Category = 'category',
   Directory = 'directory',
+  Subscription = 'subscription',
 }

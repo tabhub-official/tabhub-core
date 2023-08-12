@@ -26,6 +26,7 @@ import { PubSubModule } from './modules/pubsub';
 import { RepositoryTabResolver } from './modules/repository-tab/repository-tab.resolver';
 import { RepositoryResolver } from './modules/repository/repository.resolver';
 import { StorageService } from './modules/storage';
+import { SubscriptionService } from './modules/subscription';
 import { TimeTrackerResolver, TimeTrackerSessionService } from './modules/time-tracker';
 import { isEnv } from './utils';
 
@@ -87,6 +88,7 @@ const resolvers = [
 ];
 
 const services = [
+  SubscriptionService,
   TimeTrackerSessionService,
   SmartGroupService,
   StorageService,
