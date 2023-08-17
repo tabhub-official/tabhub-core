@@ -65,27 +65,8 @@ export class AppController {
     if (!signature) {
       throw new BadRequestException('Missing lemon-squeezy-signature header');
     }
-    console.log(request.body.data);
-    const subscriptionRelationshipResponse = await axios.get(
-      `${request.body.data['links']['self']}/relationships/subscription`,
-      {
-        headers: {
-          Authorization: `Bearer ${LEMON_SQUEZY_API}`,
-        },
-      }
-    );
-    console.log(subscriptionRelationshipResponse.data.data);
-    const subscriptionId = subscriptionRelationshipResponse.data.data.id;
-    const { data: responseData } = await axios.get(
-      `https://api.lemonsqueezy.com/v1/subscriptions/${subscriptionId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${LEMON_SQUEZY_API}`,
-        },
-      }
-    );
-    console.log(responseData.data);
-    const attributes = responseData.data.attributes;
+    const responseData = request.body.data;
+    const attributes = responseData.attributes;
     const customerEmail = attributes.user_email;
     const customerId = attributes.customer_id;
     await this.subscriptionService.upsertSubscription(customerEmail, customerId, 'pro');
